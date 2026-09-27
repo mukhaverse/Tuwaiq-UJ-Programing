@@ -1,0 +1,170 @@
+.journey {
+  border-top: var(--line);
+  background: var(--paper);
+}
+
+.journey__list {
+  --node: 46px;
+  --gap: clamp(16px, 2.4vw, 32px);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ms__rail {
+  position: relative;
+  height: var(--node);
+  margin-bottom: 18px;
+}
+
+.ms__node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.ms--done .ms__node {
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 1.1rem;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.ms--next .ms__node {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ms--next .ms__node::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  animation: ping 1.8s ease-out infinite;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* Connector from this node to the next one (horizontal by default). */
+.ms__seg {
+  position: absolute;
+  top: calc(50% - 2px);
+  left: calc(var(--node) / 2);
+  width: calc(100% + var(--gap));
+  height: 4px;
+  background-image: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+  background-size: 10px 4px;
+  opacity: 1;
+}
+
+.ms__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--p, 0));
+}
+
+.ms__when {
+  margin: 0;
+  opacity: 0.65;
+}
+
+.ms--done .ms__status {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.ms--next .ms__status {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ms__title {
+  margin: 6px 0 0;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.ms__note {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.ms__reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 5px 12px 5px 6px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  font-size: 0.85rem;
+}
+
+.ms--upcoming .ms__text {
+  opacity: 0.7;
+}
+
+/* Vertical timeline on narrow screens. */
+@media (max-width: 820px) {
+  .journey__list {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+  }
+
+  .ms {
+    display: grid;
+    grid-template-columns: var(--node) 1fr;
+    gap: 18px;
+  }
+
+  .ms__rail {
+    height: 100%;
+    margin: 0;
+  }
+
+  .ms__seg {
+    top: calc(var(--node) / 2);
+    left: calc(var(--node) / 2 - 2px);
+    width: 4px;
+    height: calc(100% + var(--gap));
+    background-image: linear-gradient(180deg, var(--ink) 50%, transparent 50%);
+    background-size: 4px 10px;
+  }
+
+  .ms__fill {
+    transform-origin: 50% 0;
+    transform: scaleY(var(--p, 0));
+  }
+
+  .ms__text {
+    padding-top: 8px;
+  }
+}

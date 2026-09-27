@@ -1,0 +1,33 @@
+.badge-mark {
+  flex-shrink: 0;
+  height: auto;
+  overflow: visible;
+}
+
+.badge-mark text {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.badge__name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.badge__desc {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  opacity: 0.75;
+}

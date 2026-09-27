@@ -1,0 +1,29 @@
+/* Design tokens. The UI is ink + paper + one accent; the brighter
+   character colours (mirrored in lib/palette.js) are for characters only. */
+:root {
+  --ink: #16181d;
+  --cream: #f4f3ef;
+  --paper: #fbfaf8;
+  --plum: #5b5bd6;
+  --blush: #f2b8c6;
+  --tomato: #e5484d;
+  --butter: #f2c14e;
+  --mint: #7dcfa3;
+  --sky: #8bb9ea;
+
+  --accent: #5b5bd6;
+  --accent-soft: #e4e4fa;
+  --muted: rgba(22, 24, 29, 0.55);
+  --hairline: rgba(22, 24, 29, 0.12);
+
+  --display: "Geist", system-ui, sans-serif;
+  --body: "Geist", system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, monospace;
+
+  --gutter: clamp(16px, 3vw, 40px);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --line: 2px solid var(--ink);
+  --shadow: 4px 4px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+}

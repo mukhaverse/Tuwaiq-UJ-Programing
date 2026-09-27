@@ -1,0 +1,159 @@
+.hero {
+  border-bottom: var(--line);
+  background-image:
+    linear-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 26, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px) clamp(32px, 5vw, 72px);
+  padding-block: clamp(56px, 9vw, 120px);
+}
+
+.hero__head {
+  grid-column: 1 / -1;
+}
+
+/* Sized so the longest word ("PROGRAMMING") always fits the container. */
+.hero__title {
+  margin: 0;
+  font-size: min(10vw, 9.5rem);
+}
+
+.hero__intro {
+  max-width: 46ch;
+  margin: 0;
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+}
+
+.hero__meet {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 32px;
+  font-weight: 700;
+}
+
+.hero__meet .mono {
+  font-weight: 700;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.hero__meet:hover .mono {
+  border-color: currentColor;
+}
+
+.hero__faces {
+  display: flex;
+}
+
+.hero__face {
+  width: 52px;
+  margin-left: -12px;
+  padding: 4px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hero__face:first-child {
+  margin-left: 0;
+}
+
+.hero__meet:hover .hero__face:nth-child(odd) {
+  transform: translateY(-5px);
+}
+
+.hero__meet:hover .hero__face:nth-child(even) {
+  transform: translateY(-2px);
+}
+
+/* ---------- Shell session ---------- */
+.sh {
+  align-self: end;
+  padding-left: clamp(16px, 2vw, 28px);
+  border-left: var(--line);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+
+.sh p,
+.sh ul,
+.sh ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sh__path {
+  color: var(--muted);
+}
+
+.sh__branch {
+  color: var(--accent);
+}
+
+.sh__block + .sh__block,
+.sh__idle {
+  margin-top: 14px !important;
+}
+
+.sh__prompt {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sh__ls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+}
+
+.sh__entry {
+  color: var(--accent);
+  font-weight: 500;
+  border-radius: 3px;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.sh__entry:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.sh__hash {
+  color: var(--muted);
+}
+
+.sh__head {
+  color: var(--accent);
+}
+
+.sh__note {
+  color: var(--muted);
+}
+
+.sh__idle .cursor {
+  margin-left: 0.5em;
+  background: var(--ink);
+}
+
+@media (max-width: 820px) {
+  .hero__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .sh {
+    font-size: 0.82rem;
+  }
+}

@@ -53,3 +53,11 @@ src/
 **New page section** — create a folder under `src/components/`, then add it to the section list in `src/App.jsx` (and a link in `Header.jsx` if it needs one).
 
 **Share a member's card** — every profile has a link: `/#member/<id>`.
+
+## Deploying
+
+The site is published to GitHub Pages by `.github/workflows/deploy.yml`: every push to `main` builds it (`npm ci && npm run build`) and deploys `dist/`. Progress shows under the repo's **Actions** tab; a deploy takes about a minute.
+
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+`vite.config.js` uses `base: './'` so the build works from the `/ptmain/` sub-path. Keep navigation hash-based (`#members`, `#member/<id>`) — real paths like `/members` would 404 on Pages.

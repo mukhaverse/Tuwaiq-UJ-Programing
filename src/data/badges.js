@@ -14,6 +14,12 @@ export const badges = [
     glyph: "01",
     milestone: "first-meeting",
   },
+  {
+    id: "helping-hand",
+    name: "Helping Hand",
+    description: "Helped another member get unstuck.",
+    glyph: "+1",
+  },
 ];
 
 const byId = Object.fromEntries(badges.map((b) => [b.id, b]));

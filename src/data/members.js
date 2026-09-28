@@ -123,7 +123,7 @@ export const members = [
     major: "Software Engineering",
     year: 5,
     avatar: { char: "blob", body: "tomato" },
-    badges: [],
+    badges: ["first-meeting", "helping-hand"],
   },
   {
     id: "hassna-alharbi",
@@ -177,7 +177,7 @@ export const members = [
     major: "Software Engineering",
     year: 4,
     avatar: { char: "cat", body: "blush" },
-    badges: [],
+    badges: ["first-meeting"],
   },
   {
     id: "ritaj-alharthi",

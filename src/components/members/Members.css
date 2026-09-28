@@ -12,18 +12,18 @@
 }
 
 .shows__heading > span:last-child {
-  margin-left: auto;
-  color: var(--accent);
+  margin-inline-start: auto;
+  color: var(--violet);
   white-space: nowrap;
 }
 
-/* ---------- Filters ---------- */
+/* ---------- Filters (keycaps) ---------- */
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding-bottom: 22px;
-  margin-bottom: clamp(24px, 3vw, 40px);
+  gap: 10px;
+  padding-bottom: 26px;
+  margin-bottom: clamp(28px, 3.5vw, 44px);
   border-bottom: var(--line);
 }
 
@@ -34,8 +34,9 @@
   gap: 4px;
   padding: 0.75em 1.3em;
   border: var(--line);
-  border-radius: var(--radius-sm);
-  background: none;
+  border-radius: 12px;
+  background: var(--raised);
+  box-shadow: var(--cap);
   font-family: var(--mono);
   font-weight: 700;
   font-size: 0.82rem;
@@ -43,24 +44,49 @@
   letter-spacing: 0.05em;
   cursor: pointer;
   isolation: isolate;
-  transition: color 0.25s;
+  transition:
+    translate 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.15s,
+    color 0.25s;
+}
+
+@media (hover: hover) {
+  .filter:hover {
+    border-color: var(--violet);
+  }
+}
+
+.filter:active {
+  translate: 0 3px;
+  box-shadow: var(--cap-down);
 }
 
 .filter.is-active {
-  color: var(--cream);
+  translate: 0 3px;
+  border-color: var(--cyan);
+  box-shadow:
+    0 2px 0 0 #0a0812,
+    0 2px 0 2px #2a9e96;
+  color: var(--bg);
 }
 
 .filter__bg {
   position: absolute;
-  inset: -3px;
+  inset: -2px;
   z-index: -1;
-  border-radius: var(--radius-sm);
-  background: var(--ink);
+  border-radius: 12px;
+  background: var(--cyan);
 }
 
 .filter__count {
+  color: var(--orange);
   font-size: 0.65em;
   line-height: 1;
+}
+
+.filter.is-active .filter__count {
+  color: inherit;
   opacity: 0.7;
 }
 
@@ -71,7 +97,7 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(14px, 2vw, 28px);
+  gap: clamp(18px, 2.2vw, 32px);
 }
 
 .grid__item {
@@ -82,48 +108,95 @@
   grid-column: span 2;
 }
 
+/* The tile is a plate lifted off a dotted pixel shadow (.card::before, sized
+   to match the tile); hover lifts it further. */
 .card {
+  --lift: 5px;
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
   border: 0;
   background: none;
-  text-align: left;
+  color: var(--fg);
+  text-align: start;
   cursor: pointer;
   transform-style: preserve-3d;
 }
 
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: radial-gradient(var(--dot) 30%, transparent 32%) 0 0 / 6px 6px var(--bg);
+  transform: translateZ(-1px);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    --lift: 8px;
+  }
+
+  .card:hover .card__tile {
+    border-color: var(--violet);
+  }
+}
+
+.card:active {
+  --lift: 1px;
+}
+
 .card__tile {
   position: relative;
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(var(--hairline) 1px, transparent 1px),
-    linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: center;
+  background: radial-gradient(circle at 50% 58%, var(--raised), var(--surface) 70%);
   aspect-ratio: 4 / 5;
   display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   place-items: center;
   border: var(--line);
   border-radius: var(--radius);
   overflow: hidden;
+  translate: var(--lift) calc(var(--lift) * -1);
+  transition:
+    translate 0.22s var(--spring),
+    border-color 0.2s;
 }
 
 .card__char {
-  width: 66%;
+  width: 58%;
+  margin-top: 8%;
 }
 
+/* The name sits on the tile itself, under the character. */
+.card__name {
+  justify-self: stretch;
+  margin: 0;
+  padding: 0 16px 16px;
+  font-size: clamp(1.1rem, 1.7vw, 1.6rem);
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* Top corner, opposite the badges, so it never covers the name. */
 .card__play {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  inset-inline-end: 12px;
+  top: 12px;
   width: 48px;
   height: 48px;
   display: grid;
   place-items: center;
-  border: var(--line);
+  border: 2px solid var(--orange);
   border-radius: var(--radius-sm);
-  background: var(--cream);
+  background: var(--orange);
+  color: var(--bg);
 }
 
 .card__play svg {
@@ -131,23 +204,35 @@
 }
 
 .card__meta {
-  padding-top: 12px;
+  padding-top: 16px;
 }
 
 .card__meta .mono {
-  margin: 0 0 6px;
-  opacity: 0.7;
-}
-
-.card__meta h3 {
   margin: 0;
-  font-size: clamp(1.1rem, 1.7vw, 1.6rem);
-  line-height: 0.95;
+  color: var(--muted);
 }
 
 /* ---------- Promo ---------- */
+.grid__item--promo {
+  position: relative;
+}
+
+/* Cyan dots under the promo plate, like a selected option. */
+.grid__item--promo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 2px solid var(--cyan);
+  border-radius: var(--radius);
+  background: radial-gradient(var(--cyan) 30%, transparent 32%) 0 0 / 6px 6px var(--bg);
+}
+
+/* Deep purple, lit from the top corner, over a faint pixel grid (the same
+   pixels the Commit Mountain is built from). */
 .promo {
   position: relative;
+  isolation: isolate;
   height: 100%;
   min-height: 320px;
   padding: clamp(20px, 2.5vw, 36px);
@@ -155,37 +240,87 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 14px;
-  background: var(--ink);
-  color: var(--cream);
-  border: var(--line);
+  background:
+    radial-gradient(circle, rgb(255 255 255 / 0.09) 1.5px, transparent 2px) 0 0 / 16px 16px,
+    radial-gradient(30rem 20rem at 100% 0%, rgb(163 128 255 / 0.45), transparent 70%),
+    linear-gradient(160deg, #5a31d0, var(--purple) 55%, #34198f);
+  color: #fff;
+  border: 2px solid var(--cyan);
   border-radius: var(--radius);
   overflow: hidden;
+  translate: 4px -4px;
 }
 
-.promo .mono {
+/* The step number, huge and hollow, behind everything. */
+.promo__step {
+  position: absolute;
+  top: -0.12em;
+  inset-inline-end: 0.06em;
+  z-index: -1;
+  color: transparent;
+  -webkit-text-stroke: 2px rgb(255 255 255 / 0.2);
+  font-size: clamp(9rem, 17vw, 16rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  pointer-events: none;
+}
+
+.promo__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
-  color: rgba(244, 243, 239, 0.6);
+  padding: 6px 12px 6px 10px;
+  border: 1.5px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  background: rgb(14 11 24 / 0.35);
+  color: #fff;
+}
+
+/* A live dot, pinging like the "up next" step on the journey. */
+.promo__pulse {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+.promo__pulse::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  animation: ping 1.6s ease-out infinite;
 }
 
 .promo__title {
-  margin: 0 0 auto;
-  font-size: clamp(2rem, 4.6vw, 4.6rem);
-  color: var(--cream);
+  max-width: 11ch;
+  margin: 6px 0 0;
+  font-size: clamp(2rem, 4.6vw, 4.4rem);
+  color: #fff;
+  text-shadow: 0 4px 0 rgb(14 11 24 / 0.35);
+}
+
+.promo__note {
+  max-width: 30ch;
+  margin: 0;
+  color: rgb(255 255 255 / 0.78);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* The button sits at the bottom, with or without a note above it. */
+.promo > .pill {
+  margin-top: auto;
 }
 
 .promo__char {
   position: absolute;
-  right: -4%;
-  bottom: -10%;
-  width: 44%;
-}
-
-.promo__burst {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  width: clamp(40px, 5vw, 70px);
-  animation: spin 14s linear infinite;
+  inset-inline-end: -3%;
+  bottom: -9%;
+  width: 38%;
 }
 
 /* ---------- Modal ---------- */
@@ -193,7 +328,8 @@
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgba(26, 26, 26, 0.6);
+  background: rgb(8 6 15 / 0.72);
+  backdrop-filter: blur(4px);
 }
 
 .modal__wrap {
@@ -216,13 +352,20 @@
   gap: 20px;
   padding: clamp(24px, 4vw, 56px);
   border: var(--line);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    0 30px 80px -20px rgb(0 0 0 / 0.7),
+    0 0 60px -10px rgb(79 41 183 / 0.45);
   overflow: hidden;
   pointer-events: auto;
 }
 
 .modal__body {
   min-width: 0;
+}
+
+.modal__body > .mono:first-child {
+  margin: 0;
+  color: var(--violet);
 }
 
 .modal__body h3 {
@@ -239,12 +382,9 @@
 .modal__slot {
   display: inline-block;
   padding: 6px 12px;
-  border: 2px solid currentColor;
-  border-radius: var(--radius-sm);
-}
-
-.modal__actions {
-  margin-top: 24px;
+  border: var(--line);
+  border-radius: 8px;
+  background: var(--raised);
 }
 
 .modal__char {
@@ -256,15 +396,31 @@
 .modal__x {
   position: absolute;
   top: 16px;
-  right: 16px;
+  inset-inline-end: 16px;
   width: 44px;
   height: 44px;
   border: var(--line);
   border-radius: var(--radius-sm);
-  background: var(--cream);
-  color: var(--ink);
+  background: var(--raised);
+  box-shadow: var(--cap);
+  color: var(--fg);
   font-size: 1.1rem;
   cursor: pointer;
+  transition:
+    translate 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .modal__x:hover {
+    border-color: var(--violet);
+  }
+}
+
+.modal__x:active {
+  translate: 0 3px;
+  box-shadow: var(--cap-down);
 }
 
 @media (max-width: 1000px) {
@@ -291,17 +447,31 @@
 }
 
 /* ---------- Member additions ---------- */
-.card__badges {
+/* Top-left corner of the tile: the leader / co-leader title, badges under it. */
+.card__top {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 14px;
+  inset-inline-start: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.card__badges {
   display: flex;
   gap: 4px;
 }
 
+.card__top .lead-title {
+  margin: 0;
+}
+
 .modal {
-  background: var(--paper);
-  color: var(--ink);
+  background:
+    radial-gradient(30rem 20rem at 100% 100%, rgb(244 166 100 / 0.1), transparent 70%),
+    var(--surface);
+  color: var(--fg);
   max-height: calc(100svh - 2 * var(--gutter));
   overflow-y: auto;
 }
@@ -317,23 +487,84 @@
 }
 
 .modal__label {
-  margin: 24px 0 10px;
-  opacity: 0.8;
+  margin: 26px 0 14px;
+  color: var(--orange);
 }
 
-.modal__badges {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: var(--ink);
+/* ---------- Leader & co-leader ----------
+   Same dark plate, nudged toward a different hue: turquoise for the
+   leader, warm sunrise for the co-leader. */
+.card.is-leader,
+.modal.is-leader {
+  --hue: 87 227 216;
+  --hue-edge: #2f5a66;
+  --hue-tag: var(--cyan);
 }
 
-.modal__empty {
+.card.is-co-leader,
+.modal.is-co-leader {
+  --hue: 244 166 100;
+  --hue-edge: #6a4a4f;
+  --hue-tag: var(--orange);
+}
+
+.card.is-leader,
+.card.is-co-leader {
+  --dot: rgb(var(--hue) / 0.55);
+}
+
+.card.is-leader .card__tile,
+.card.is-co-leader .card__tile {
+  border-color: var(--hue-edge);
+  background:
+    radial-gradient(circle at 50% 58%, rgb(var(--hue) / 0.22), transparent 70%),
+    radial-gradient(circle at 50% 58%, var(--raised), var(--surface) 70%);
+}
+
+@media (hover: hover) {
+  .card.is-leader:hover .card__tile,
+  .card.is-co-leader:hover .card__tile {
+    border-color: var(--hue-tag);
+  }
+}
+
+.modal.is-leader,
+.modal.is-co-leader {
+  border-color: var(--hue-edge);
+  background:
+    radial-gradient(30rem 20rem at 100% 100%, rgb(var(--hue) / 0.16), transparent 70%),
+    var(--surface);
+}
+
+.modal.is-leader .modal__body > .mono:first-child,
+.modal.is-co-leader .modal__body > .mono:first-child {
+  color: var(--hue-tag);
+}
+
+/* "★ LEADER" / "✦ CO-LEADER": big, bold, in the card's own hue — no box. */
+.lead-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0 0 8px;
+  color: var(--hue-tag);
+  font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 18px rgb(var(--hue) / 0.45);
+}
+
+.lead-title__mark {
+  font-size: 0.85em;
+}
+
+.modal .lead-title {
   margin: 0;
-  padding: 12px 14px;
-  border: 2px dashed currentColor;
-  border-radius: var(--radius);
-  opacity: 0.8;
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
+}
+
+.modal__line--soon {
+  color: var(--muted);
+  font-style: italic;
 }

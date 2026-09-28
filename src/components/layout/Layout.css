@@ -3,8 +3,8 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--cream) 88%, transparent);
-  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(10px);
   border-bottom: var(--line);
 }
 
@@ -16,24 +16,58 @@
   height: 68px;
 }
 
+/* While the splash plays: no bar, no links — just the empty slot the mountain lands in. */
+.header,
+.header__links,
+.logo__word {
+  transition:
+    background-color 0.6s 0.3s,
+    border-color 0.6s 0.3s,
+    backdrop-filter 0.6s 0.3s,
+    opacity 0.6s 0.3s;
+}
+
+.header.is-booting {
+  background-color: transparent;
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+}
+
+.is-booting .header__links,
+.is-booting .logo__word {
+  opacity: 0;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  font-size: 1.05rem;
+  gap: 14px;
   line-height: 1;
 }
 
 .logo__mark {
-  width: 36px;
-  transition: transform 0.25s ease;
+  display: block;
+  width: 58px;
+  aspect-ratio: 150 / 70;
 }
 
-.logo:hover .logo__mark {
-  transform: translateY(-2px);
+.logo:hover .mountain__dot {
+  animation: summit 0.6s var(--spring);
+}
+
+@keyframes summit {
+  40% {
+    transform: translateY(-5px);
+  }
+}
+
+/* The club's own logo, beside the mountain, split off by a hairline. */
+.logo__word {
+  display: block;
+  height: 44px;
+  width: auto;
+  padding-inline-start: 14px;
+  border-inline-start: var(--line);
 }
 
 .header__links {
@@ -45,28 +79,52 @@
   padding: 8px 14px;
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
+  color: var(--muted);
   font-weight: 700;
   transition:
     border-color 0.2s,
-    background-color 0.2s;
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .header__link:hover {
-  border-color: var(--ink);
-  background: var(--paper);
+  border-color: var(--edge);
+  background: var(--surface);
+  color: var(--orange);
 }
 
 @media (max-width: 480px) {
-  .logo__word {
-    font-size: 0.9rem;
-  }
-
   .header__link {
     padding: 8px 10px;
   }
 }
 
 @media (max-width: 560px) {
+  .logo {
+    gap: 10px;
+  }
+
+  .logo__mark {
+    width: 46px;
+  }
+
+  .logo__word {
+    height: 34px;
+    padding-inline-start: 10px;
+  }
+
+  .header__links {
+    gap: 0;
+  }
+
+  .header__link {
+    padding: 8px 7px;
+    font-size: 0.64rem;
+  }
+}
+
+/* Too narrow for both marks next to the nav: keep the mountain. */
+@media (max-width: 359px) {
   .logo__word {
     display: none;
   }
@@ -90,9 +148,17 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
 }
 
 .footer__brand .logo__mark {
-  width: 28px;
+  width: 44px;
+}
+
+.footer .mono {
+  color: var(--muted);
 }

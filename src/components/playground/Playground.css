@@ -1,5 +1,4 @@
 .gang {
-  background: var(--cream);
   border-block: var(--line);
 }
 
@@ -20,20 +19,19 @@
 .gang__head .mono {
   margin: 0;
   max-width: 28ch;
+  color: var(--violet);
 }
 
 .board {
-  --sw: clamp(104px, 13vw, 190px);
+  --sw: clamp(72px, 8.5vw, 132px);
   position: relative;
-  height: clamp(460px, 70svh, 760px);
+  height: clamp(520px, 88svh, 900px);
   border: var(--line);
-  border-radius: var(--radius);
-  background-color: var(--paper);
-  background-image:
-    linear-gradient(rgba(22, 24, 29, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 24, 29, 0.07) 1px, transparent 1px);
-  background-size: 28px 28px;
-  box-shadow: var(--shadow-lg);
+  border-radius: 24px;
+  background:
+    radial-gradient(40rem 22rem at 50% 0%, rgb(79 41 183 / 0.22), transparent 70%),
+    radial-gradient(30rem 18rem at 100% 100%, rgb(244 166 100 / 0.09), transparent 70%),
+    var(--surface);
 }
 
 .gang__sticker {
@@ -49,11 +47,16 @@
   width: max-content;
   margin: -6px auto 0;
   padding: 4px 10px;
-  border: 2px solid var(--ink);
-  border-radius: var(--radius-sm);
-  background: var(--cream);
+  border: var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
   font-weight: 600;
   text-transform: none;
+}
+
+.gang__name::first-letter {
+  color: var(--orange);
 }
 
 .bubble {
@@ -65,10 +68,10 @@
   max-width: 220px;
   margin: 0 0 8px;
   padding: 10px 14px;
-  border: var(--line);
+  border: 2px solid var(--orange);
   border-radius: var(--radius-sm);
-  background: var(--ink);
-  color: var(--cream);
+  background: var(--orange);
+  color: var(--bg);
   font-family: var(--mono);
   font-weight: 500;
   font-size: 0.8rem;
@@ -85,16 +88,17 @@
   top: 100%;
   width: 14px;
   height: 14px;
-  background: var(--ink);
-  border-right: var(--line);
-  border-bottom: var(--line);
+  background: var(--orange);
+  border-right: 2px solid var(--orange);
+  border-bottom: 2px solid var(--orange);
   transform: translate(-50%, -6px) rotate(45deg);
 }
 
 .board__hint {
   position: absolute;
-  right: 20px;
+  inset-inline-end: 20px;
   bottom: 12px;
   margin: 0;
-  opacity: 0.5;
+  color: var(--muted);
+  opacity: 0.6;
 }

@@ -4,6 +4,7 @@ import Character from "../character/Character";
 import SplitHeading from "../ui/SplitHeading";
 import { members } from "../../data/members";
 import { color } from "../../lib/palette";
+import { nameLang } from "../../data/members";
 import "./Playground.css";
 
 // Stable pseudo-random number in [0, 1) for member i, so the layout is the same on every visit.
@@ -76,7 +77,9 @@ export default function Playground() {
               )}
             </AnimatePresence>
             <Character type={g.avatar.char} body={color(g.avatar.body)} blink={i * 0.9} className="sticker" />
-            <span className="gang__name mono">@{g.name.split(" ")[0].toLowerCase()}</span>
+            <span className="gang__name mono" lang={nameLang(g.name)}>
+              @{g.name.split(" ")[0].toLowerCase()}
+            </span>
           </motion.div>
         ))}
         <p className="board__hint mono" aria-hidden="true">

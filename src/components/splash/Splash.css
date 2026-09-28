@@ -1,0 +1,91 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 30; /* under the header, so the mountain can land in it */
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background:
+    radial-gradient(60rem 28rem at 50% -8rem, rgb(79 41 183 / 0.38), transparent 70%),
+    radial-gradient(30rem 20rem at 100% 110%, rgb(244 166 100 / 0.07), transparent 70%),
+    var(--bg);
+  cursor: pointer;
+}
+
+/* A bare terminal: no window, just the session. */
+.splash__term {
+  width: min(520px, 100%);
+}
+
+.splash__body {
+  font-family: var(--mono);
+  font-size: clamp(0.78rem, 2.4vw, 0.9rem);
+  line-height: 1.8;
+  white-space: pre;
+}
+
+.splash__line {
+  margin: 0;
+}
+
+.splash__path {
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.splash__dir {
+  color: var(--orange);
+}
+
+.splash__prompt {
+  color: var(--violet);
+  font-weight: 700;
+}
+
+.splash__out {
+  color: var(--muted);
+}
+
+.splash__ok {
+  color: var(--cyan);
+}
+
+.splash__key {
+  color: var(--fg);
+}
+
+.splash__mountain {
+  width: min(78%, 380px);
+  margin: 30px auto 20px;
+}
+
+.splash__lockup {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+}
+
+.splash__ready {
+  color: var(--muted);
+}
+
+.splash__ready .splash__ok {
+  color: var(--orange);
+}
+
+.splash__ready .cursor {
+  margin-inline-start: 0.4em;
+  background: var(--orange);
+}
+
+.splash__skip {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0.7;
+}

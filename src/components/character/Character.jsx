@@ -63,6 +63,13 @@ function starPath(cx, cy, outer, inner, points = 5) {
 }
 const STAR = starPath(100, 108, 90, 48);
 
+// Eight rounded-off triangles around the sun's face.
+const SUN_RAYS = Array.from({ length: 8 }, (_, i) => {
+  const a = (Math.PI / 4) * i - Math.PI / 2;
+  const pt = (r, da) => `${(100 + Math.cos(a + da) * r).toFixed(1)} ${(100 + Math.sin(a + da) * r).toFixed(1)}`;
+  return `M${pt(58, -0.2)}L${pt(94, 0)}L${pt(58, 0.2)}Z`;
+});
+
 const shapes = {
   blob: (body, d) => (
     <>
@@ -126,7 +133,6 @@ const shapes = {
   ),
   cloud: (body, d) => (
     <>
-      <path d="M70 162L64 182M100 162L94 186M130 162L124 182" stroke={c.sky} strokeWidth="7" strokeLinecap="round" />
       <path
         d="M56 152Q20 152 22 118Q24 88 56 88Q60 48 100 46Q142 46 148 82Q180 82 180 116Q180 152 146 152Z"
         fill={body}
@@ -135,6 +141,77 @@ const shapes = {
       <Eye cx={80} cy={110} r={14} delay={d} />
       <Eye cx={120} cy={110} r={14} delay={d} />
       <path d="M90 134Q100 140 110 134" fill="none" {...S} strokeWidth={4} />
+    </>
+  ),
+  sun: (body, d) => (
+    <>
+      <g className="sun__rays">
+        {SUN_RAYS.map((p, i) => (
+          <path key={i} d={p} fill={body} {...S} strokeWidth={4} />
+        ))}
+      </g>
+      <circle cx="100" cy="100" r="56" fill={body} {...S} />
+      <ellipse cx="68" cy="118" rx="10" ry="6" fill={c.tomato} opacity=".35" />
+      <ellipse cx="132" cy="118" rx="10" ry="6" fill={c.tomato} opacity=".35" />
+      <Eye cx={80} cy={96} r={14} delay={d} />
+      <Eye cx={120} cy={96} r={14} delay={d} />
+      <path d="M84 124Q100 140 116 124" fill="none" {...S} />
+    </>
+  ),
+
+  planet: (body, d) => (
+    <>
+      {/* The ring is drawn twice: its far side behind the planet, its near side in front. */}
+      <g transform="rotate(-14 100 118)">
+        <ellipse cx="100" cy="118" rx="92" ry="26" fill="none" stroke={INK} strokeWidth="14" />
+        <ellipse cx="100" cy="118" rx="92" ry="26" fill="none" stroke={c.butter} strokeWidth="6" />
+      </g>
+      <circle cx="100" cy="96" r="58" fill={body} {...S} />
+      <g transform="rotate(-14 100 118)">
+        <path d="M8 118A92 26 0 0 0 192 118" fill="none" stroke={INK} strokeWidth="14" strokeLinecap="round" />
+        <path d="M8 118A92 26 0 0 0 192 118" fill="none" stroke={c.butter} strokeWidth="6" strokeLinecap="round" />
+      </g>
+      <Eye cx={80} cy={78} r={13} delay={d} />
+      <Eye cx={120} cy={78} r={13} delay={d} />
+      <path d="M90 98Q100 106 110 98" fill="none" {...S} strokeWidth={4} />
+    </>
+  ),
+  mushroom: (body, d) => (
+    <>
+      <rect x="60" y="100" width="80" height="80" rx="26" fill={c.cream} {...S} />
+      <path d="M22 110C22 58 58 26 100 26C142 26 178 58 178 110Q100 124 22 110Z" fill={body} {...S} />
+      <circle cx="68" cy="66" r="10" fill={c.cream} />
+      <circle cx="116" cy="50" r="8" fill={c.cream} />
+      <circle cx="148" cy="84" r="9" fill={c.cream} />
+      <circle cx="100" cy="90" r="6" fill={c.cream} />
+      <Eye cx={86} cy={140} r={11} delay={d} />
+      <Eye cx={114} cy={140} r={11} delay={d} />
+      <path d="M92 162Q100 168 108 162" fill="none" {...S} strokeWidth={4} />
+    </>
+  ),
+  flower: (body, d) => (
+    <>
+      {[0, 1, 2, 3, 4, 5].map((k) => {
+        const a = (Math.PI / 3) * k - Math.PI / 2;
+        return (
+          <circle key={k} cx={100 + Math.cos(a) * 54} cy={100 + Math.sin(a) * 54} r="32" fill={body} {...S} strokeWidth={4} />
+        );
+      })}
+      <circle cx="100" cy="100" r="46" fill={c.butter} {...S} />
+      <Eye cx={84} cy={96} r={12} delay={d} />
+      <Eye cx={116} cy={96} r={12} delay={d} />
+      <path d="M88 118Q100 128 112 118" fill="none" {...S} strokeWidth={4} />
+    </>
+  ),
+  monitor: (body, d) => (
+    <>
+      <path d="M86 150L80 172H120L114 150Z" fill={body} {...S} strokeWidth={4} />
+      <rect x="58" y="168" width="84" height="14" rx="7" fill={body} {...S} strokeWidth={4} />
+      <rect x="24" y="30" width="152" height="122" rx="18" fill={body} {...S} />
+      <rect x="40" y="46" width="120" height="90" rx="8" fill={INK} />
+      <Eye cx={80} cy={86} r={14} delay={d} />
+      <Eye cx={120} cy={86} r={14} delay={d} />
+      <path d="M88 112Q100 122 112 112" fill="none" stroke={c.cream} strokeWidth="4.5" strokeLinecap="round" />
     </>
   ),
 };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion, useSpring } from "motion/react";
 import Character from "../character/Character";
-import Badge, { BadgeMark } from "../badges/Badge";
+import BadgeShelf, { BadgeMark } from "../badges/Badge";
 import Pill from "../ui/Pill";
 import SplitHeading from "../ui/SplitHeading";
-import { members, getMember } from "../../data/members";
+import { members, getMember, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
 import { getBadge } from "../../data/badges";
 import { milestones } from "../../data/milestones";
 import { color } from "../../lib/palette";
@@ -21,10 +21,26 @@ const pop = {
 // Filters are built from the members' `year` values, so they stay in sync with the roster.
 const filters = [
   { id: "all", label: "All" },
-  ...[...new Set(members.map((m) => m.year))].sort().map((y) => ({ id: y, label: y })),
+  ...[...new Set(members.map((m) => m.year))].sort((a, b) => a - b).map((y) => ({ id: y, label: yearLabel(y) })),
 ];
 
 const earnedBadges = (member) => member.badges.map(getBadge).filter(Boolean);
+
+// The leader and co-leader get their own tile hue and a big coloured title (Members.css).
+const isLead = (member) => member.role !== "member";
+const leadClass = (member) => (isLead(member) ? ` is-${member.role}` : "");
+
+function LeadTitle({ member }) {
+  if (!isLead(member)) return null;
+  return (
+    <p className="lead-title display">
+      <span className="lead-title__mark" aria-hidden="true">
+        {member.role === "leader" ? "★" : "✦"}
+      </span>
+      {roleLabel[member.role]}
+    </p>
+  );
+}
 
 function MemberCard({ member, onOpen, index }) {
   const tilt = { stiffness: 220, damping: 18 };
@@ -49,7 +65,7 @@ function MemberCard({ member, onOpen, index }) {
     <motion.li layout {...pop} className="grid__item">
       <motion.button
         type="button"
-        className="card"
+        className={`card${leadClass(member)}`}
         onClick={() => {
           reset();
           onOpen(member.id);
@@ -61,7 +77,7 @@ function MemberCard({ member, onOpen, index }) {
         whileHover="hover"
         whileTap={{ scale: 0.97 }}
         style={{ rotateX: rx, rotateY: ry }}
-        aria-label={`${member.name}, ${member.role}, ${earned.length} ${earned.length === 1 ? "badge" : "badges"}. Open profile`}
+        aria-label={`${member.name}, ${roleLabel[member.role]}, ${earned.length} ${earned.length === 1 ? "badge" : "badges"}. Open profile`}
       >
         <motion.div layoutId={`tile-${member.id}`} className="card__tile">
           <motion.div
@@ -74,12 +90,18 @@ function MemberCard({ member, onOpen, index }) {
           >
             <Character type={char} body={color(body)} blink={index * 0.6} className="sticker" />
           </motion.div>
-          {earned.length > 0 && (
-            <span className="card__badges" aria-hidden="true">
-              {earned.map((b) => (
-                <BadgeMark key={b.id} badge={b} size="2.4rem" />
-              ))}
-            </span>
+          {/* Top-left corner: the leader / co-leader title, then any badges. */}
+          {(isLead(member) || earned.length > 0) && (
+            <div className="card__top">
+              <LeadTitle member={member} />
+              {earned.length > 0 && (
+                <span className="card__badges" aria-hidden="true">
+                  {earned.map((b) => (
+                    <BadgeMark key={b.id} badge={b} size="2.4rem" />
+                  ))}
+                </span>
+              )}
+            </div>
           )}
           <motion.span
             className="card__play"
@@ -91,41 +113,49 @@ function MemberCard({ member, onOpen, index }) {
               <path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </motion.span>
+          <h3 className="card__name display" lang={nameLang(member.name)}>
+            {shortName(member)}
+          </h3>
         </motion.div>
         <div className="card__meta">
           <p className="mono">
-            {member.role} · {member.year}
+            {member.major} · {yearLabel(member.year)}
           </p>
-          <h3 className="display">{member.name}</h3>
         </div>
       </motion.button>
     </motion.li>
   );
 }
 
-/* The dark promo tile in the grid — shows whatever milestone is up next. */
-function PromoCard() {
-  const next = milestones.find((m) => !m.done);
+// The milestone the track is heading for next, or the wrap-up once all are done.
+const nextIndex = milestones.findIndex((m) => !m.done);
+const next = milestones[nextIndex];
+const pad = (n) => String(n).padStart(2, "0");
+
+/* The purple tile in the grid: the next milestone, like the next commit on the
+   track's log, with its step number standing huge behind it. */
+function NextCard() {
   return (
     <motion.li layout {...pop} className="grid__item grid__item--promo">
-      <div className="promo">
-        <p className="mono">{next ? `Up next · ${next.when}` : "Semester complete"}</p>
-        <p className="promo__title display">{next ? next.title : "That's a wrap!"}</p>
+      <section className="promo" aria-labelledby="next-title">
+        <span className="promo__step display" aria-hidden="true">
+          {next ? pad(nextIndex + 1) : "✓"}
+        </span>
+        <p className="promo__eyebrow mono">
+          <span className="promo__pulse" aria-hidden="true" />
+          {next ? `Up next · ${next.when}` : "Semester complete"}
+        </p>
+        <h3 id="next-title" className="promo__title display">
+          {next ? next.title : "That's a wrap!"}
+        </h3>
+        {next && <p className="promo__note">{next.note}</p>}
         <Pill href="#journey" variant="accent">
           See the journey
         </Pill>
         <div className="promo__char">
           <Character type="cloud" body={color("blush")} blink={2} />
         </div>
-        <svg className="promo__burst" viewBox="0 0 40 40" aria-hidden="true">
-          <path
-            d="M20 4v32M4 20h32M8.7 8.7l22.6 22.6M31.3 8.7L8.7 31.3"
-            stroke="var(--accent)"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
+      </section>
     </motion.li>
   );
 }
@@ -160,7 +190,7 @@ function MemberModal({ member, onClose }) {
       <div className="modal__wrap" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <motion.div
           layoutId={`tile-${member.id}`}
-          className="modal"
+          className={`modal${leadClass(member)}`}
           style={{ borderRadius: 12 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -170,36 +200,22 @@ function MemberModal({ member, onClose }) {
             animate={{ opacity: 1, y: 0, transition: { delay: 0.15 } }}
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
-            <p className="mono">
-              {member.role} · {member.year}
-            </p>
-            <h3 id="modal-title" className="display">
+            {isLead(member) ? <LeadTitle member={member} /> : <p className="mono">{roleLabel.member}</p>}
+            <h3 id="modal-title" className="display" lang={nameLang(member.name)}>
               {member.name}
             </h3>
-            {member.bio && <p className="modal__line">{member.bio}</p>}
+            {member.bio ? (
+              <p className="modal__line">{member.bio}</p>
+            ) : (
+              <p className="modal__line modal__line--soon">Bio coming soon.</p>
+            )}
             <div className="modal__facts">
-              <p className="modal__slot mono">Focus: {member.focus}</p>
-              <p className="modal__slot mono">Codes in {member.language}</p>
+              <p className="modal__slot mono">{member.major}</p>
+              <p className="modal__slot mono">{yearLabel(member.year)}</p>
             </div>
 
             <p className="modal__label mono">Badges · {earned.length}</p>
-            {earned.length ? (
-              <ul className="modal__badges">
-                {earned.map((b) => (
-                  <li key={b.id}>
-                    <Badge badge={b} />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="modal__empty">No badges yet — the semester's just getting started.</p>
-            )}
-
-            <div className="modal__actions">
-              <Pill as="button" type="button" variant="accent" onClick={onClose}>
-                Close
-              </Pill>
-            </div>
+            <BadgeShelf earned={earned} />
           </motion.div>
           <motion.div
             className="modal__char"
@@ -264,7 +280,7 @@ export default function Members() {
           <AnimatePresence mode="popLayout">
             {items.map((item, i) =>
               item.promo ? (
-                <PromoCard key="promo" />
+                <NextCard key="promo" />
               ) : (
                 <MemberCard key={item.id} member={item} index={i} onOpen={route.open} />
               )

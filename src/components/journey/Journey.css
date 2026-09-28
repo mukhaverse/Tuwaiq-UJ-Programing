@@ -1,6 +1,5 @@
-.journey {
+﻿.journey {
   border-top: var(--line);
-  background: var(--paper);
 }
 
 .journey__list {
@@ -18,9 +17,10 @@
 .ms__rail {
   position: relative;
   height: var(--node);
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
+/* Nodes are keycaps: raised when up next, pressed in once done. */
 .ms__node {
   position: relative;
   z-index: 1;
@@ -29,91 +29,89 @@
   width: var(--node);
   height: var(--node);
   border: var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--paper);
+  border-radius: 12px;
+  background: var(--raised);
+  box-shadow: var(--cap);
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 0.8rem;
   font-weight: 700;
 }
 
 .ms--done .ms__node {
-  background: var(--ink);
-  color: var(--cream);
+  translate: 0 3px;
+  border-color: var(--cyan);
+  background: var(--purple);
+  box-shadow:
+    0 2px 0 0 #0a0812,
+    0 2px 0 2px var(--cyan);
+  color: #fff;
   font-size: 1.1rem;
-  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .ms--next .ms__node {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  border-color: var(--orange);
+  background: var(--orange);
+  box-shadow:
+    0 5px 0 0 #0a0812,
+    0 5px 0 2px #b9763d;
+  color: var(--bg);
 }
 
 .ms--next .ms__node::after {
   content: "";
   position: absolute;
-  inset: -8px;
-  border: 2px solid var(--accent);
-  border-radius: var(--radius-sm);
-  animation: ping 1.8s ease-out infinite;
-}
-
-@keyframes ping {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(1.35);
-    opacity: 0;
-  }
+  inset: -6px;
+  border: 2px solid var(--orange);
+  border-radius: 14px;
+  animation: ping 1.6s ease-out infinite;
 }
 
 /* Connector from this node to the next one (horizontal by default). */
 .ms__seg {
   position: absolute;
   top: calc(50% - 2px);
-  left: calc(var(--node) / 2);
+  inset-inline-start: calc(var(--node) / 2);
   width: calc(100% + var(--gap));
   height: 4px;
-  background-image: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+  background-image: linear-gradient(90deg, var(--edge) 50%, transparent 50%);
   background-size: 10px 4px;
-  opacity: 1;
 }
 
 .ms__fill {
   position: absolute;
   inset: 0;
-  background: var(--ink);
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--violet), var(--cyan) 60%, var(--orange));
   transform-origin: 0 50%;
   transform: scaleX(var(--p, 0));
 }
 
 .ms__when {
   margin: 0;
-  opacity: 0.65;
+  color: var(--muted);
 }
 
 .ms--done .ms__status {
-  color: var(--ink);
+  color: var(--cyan);
   font-weight: 700;
 }
 
 .ms--next .ms__status {
-  color: var(--accent);
-  font-weight: 600;
+  color: var(--orange);
+  font-weight: 700;
 }
 
 .ms__title {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   font-size: 1.2rem;
   line-height: 1.2;
 }
 
 .ms__note {
   margin: 6px 0 0;
+  color: var(--muted);
   font-size: 0.95rem;
-  opacity: 0.8;
 }
 
 .ms__reward {
@@ -122,14 +120,60 @@
   gap: 8px;
   margin: 12px 0 0;
   padding: 5px 12px 5px 6px;
-  border: var(--line);
+  border: 2px solid rgb(244 166 100 / 0.35);
   border-radius: var(--radius-sm);
-  background: var(--cream);
+  background: var(--surface);
   font-size: 0.85rem;
 }
 
-.ms--upcoming .ms__text {
-  opacity: 0.7;
+/* ---------- Locked: no info at all, just a padlock and redacted bars ---------- */
+.ms--locked .ms__node {
+  border-style: dashed;
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.ms__lock {
+  width: 16px;
+  fill: var(--muted);
+}
+
+.ms__keyhole {
+  fill: var(--surface);
+}
+
+.ms--locked .ms__status {
+  color: var(--muted);
+}
+
+.ms__redact {
+  display: block;
+  width: 78%;
+  height: 14px;
+  margin-top: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--raised), var(--edge), var(--raised));
+  background-size: 200% 100%;
+  filter: blur(1.5px);
+  animation: redact 2.4s ease-in-out infinite;
+}
+
+.ms__redact--short {
+  width: 52%;
+  margin-top: 8px;
+}
+
+@keyframes redact {
+  50% {
+    background-position: 100% 0;
+  }
+}
+
+/* The last step's trail: it keeps going and fades out, so there's no telling
+   whether the journey ends here. */
+.ms__seg--trail {
+  width: calc(100% + var(--gap) * 2);
+  mask-image: linear-gradient(90deg, #000 10%, transparent);
 }
 
 /* Vertical timeline on narrow screens. */
@@ -152,19 +196,26 @@
 
   .ms__seg {
     top: calc(var(--node) / 2);
-    left: calc(var(--node) / 2 - 2px);
+    inset-inline-start: calc(var(--node) / 2 - 2px);
     width: 4px;
     height: calc(100% + var(--gap));
-    background-image: linear-gradient(180deg, var(--ink) 50%, transparent 50%);
+    background-image: linear-gradient(180deg, var(--edge) 50%, transparent 50%);
     background-size: 4px 10px;
   }
 
   .ms__fill {
+    background: linear-gradient(180deg, var(--violet), var(--cyan) 60%, var(--orange));
     transform-origin: 50% 0;
     transform: scaleY(var(--p, 0));
   }
 
   .ms__text {
     padding-top: 8px;
+  }
+
+  .ms__seg--trail {
+    width: 4px;
+    height: calc(100% + var(--gap) * 3);
+    mask-image: linear-gradient(180deg, #000 10%, transparent);
   }
 }

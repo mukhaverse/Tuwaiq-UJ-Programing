@@ -1,4 +1,6 @@
+import { motion } from "motion/react";
 import { track } from "../../data/track";
+import Mountain from "../brand/Mountain";
 import "./Layout.css";
 
 const links = [
@@ -7,29 +9,31 @@ const links = [
   { href: "#journey", label: "Journey" },
 ];
 
-export function LogoMark() {
+/* While the splash plays, the header is bare and its mark is an empty slot; when
+   it ends the mark mounts with the splash mountain's layoutId and flies in. */
+export default function Header({ booting = false }) {
   return (
-    <svg viewBox="0 0 64 64" className="logo__mark" aria-hidden="true">
-      <rect x="3" y="3" width="58" height="58" rx="14" fill="var(--accent)" stroke="var(--ink)" strokeWidth="4" />
-      <path
-        d="M22 22 12 32l10 10M42 22l10 10-10 10M36 18l-8 28"
-        fill="none"
-        stroke="var(--cream)"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export default function Header() {
-  return (
-    <header className="header">
+    <header className={`header ${booting ? "is-booting" : ""}`}>
       <div className="wrap header__inner">
-        <a href="#top" className="logo" aria-label={`${track.name} home`}>
-          <LogoMark />
-          <span className="logo__word">{track.name}</span>
+        <a href="#top" className="logo" aria-label={`${track.name}, ${track.club}: home`}>
+          {booting ? (
+            <span className="logo__mark" />
+          ) : (
+            <motion.span
+              layoutId="brand-mountain"
+              className="logo__mark"
+              transition={{ type: "spring", stiffness: 110, damping: 19 }}
+            >
+              <Mountain />
+            </motion.span>
+          )}
+          <img
+            className="logo__word"
+            src={`${import.meta.env.BASE_URL}brand/tuwaiq-club-mark.png`}
+            alt=""
+            width="248"
+            height="173"
+          />
         </a>
         <nav className="header__links" aria-label="Main">
           {links.map((l) => (

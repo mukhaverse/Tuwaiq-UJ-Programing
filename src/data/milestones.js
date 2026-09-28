@@ -1,5 +1,9 @@
 // The semester journey, in order. Flip `done` to true as the track gets there;
 // the first milestone that isn't done is automatically shown as "up next".
+// Everything after "up next" stays locked on the site: the next two show as
+// blank, locked steps, and the trail fades out after them, so nobody can tell
+// what's coming or how many are left. Fill them in freely — they only reveal
+// themselves once the milestone before them is done.
 //
 //   id     unique key (badges can point at it via `milestone`)
 //   title  short name
@@ -29,6 +33,13 @@ export const milestones = [
     done: false,
   },
   {
+    id: "hack-night",
+    title: "Team hack night",
+    when: "Week 9",
+    note: "One evening, one idea per team, pizza included.",
+    done: false,
+  },
+  {
     id: "showcase",
     title: "End-of-semester showcase",
     when: "Week 12",
@@ -37,8 +48,11 @@ export const milestones = [
   },
 ];
 
+// How many locked steps are shown after "up next" before the trail fades out.
+export const LOCKED_SHOWN = 2;
+
 export function milestoneStatus(index) {
   if (milestones[index].done) return "done";
   const next = milestones.findIndex((m) => !m.done);
-  return index === next ? "next" : "upcoming";
+  return index === next ? "next" : "locked";
 }

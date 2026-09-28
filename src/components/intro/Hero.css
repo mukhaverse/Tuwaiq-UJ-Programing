@@ -1,96 +1,194 @@
 .hero {
   border-bottom: var(--line);
-  background-image:
-    linear-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(26, 26, 26, 0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
+  overflow: hidden;
 }
 
-.hero__inner {
+/* ---------- The stage ----------
+   Centre column: the mountain, standing on the hero's bottom edge, with the
+   title running wide behind it. The four corners hold everything else:
+
+     (empty)    │            │  year + stats
+     ───────────┼── title ───┼──────────────────
+                │  mountain  │
+     whatis     │            │  actions                                */
+.hero__stage {
+  --peak: min(44vw, 720px);
+  position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(28px, 4vw, 56px) clamp(32px, 5vw, 72px);
-  padding-block: clamp(56px, 9vw, 120px);
+  grid-template-columns: minmax(0, 1fr) var(--peak) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: clamp(16px, 2vw, 32px);
+  min-height: calc(100svh - 68px);
+  padding-top: clamp(24px, 3.5vw, 44px);
 }
 
-.hero__head {
-  grid-column: 1 / -1;
+/* ---------- Top right: year and stats ---------- */
+.hero__meta {
+  grid-column: 3;
+  grid-row: 1;
+  z-index: 2;
+  justify-self: end;
+  text-align: end;
 }
 
-/* Sized so the longest word ("PROGRAMMING") always fits the container. */
-.hero__title {
-  margin: 0;
-  font-size: min(10vw, 9.5rem);
-}
-
-.hero__intro {
-  max-width: 46ch;
-  margin: 0;
-  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
-}
-
-.hero__meet {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  margin-top: 32px;
+.hero__semester {
+  margin: 0 0 14px;
+  color: var(--orange);
   font-weight: 700;
 }
 
-.hero__meet .mono {
-  font-weight: 700;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
+.hero__semester::before {
+  content: "// ";
 }
 
-.hero__meet:hover .mono {
-  border-color: currentColor;
-}
-
-.hero__faces {
+.hero__stats {
   display: flex;
+  justify-content: flex-end;
+  gap: clamp(18px, 2.4vw, 36px);
+  margin: 0;
 }
 
-.hero__face {
-  width: 52px;
-  margin-left: -12px;
-  padding: 4px;
-  border: var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--paper);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.hero__stats dt {
+  color: var(--muted);
 }
 
-.hero__face:first-child {
-  margin-left: 0;
+.hero__stats dd {
+  margin: 4px 0 0;
+  color: var(--fg);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-.hero__meet:hover .hero__face:nth-child(odd) {
-  transform: translateY(-5px);
+/* ---------- Centre: the title, behind the mountain ----------
+   Sized so the longest word ("Programming") always fits the stage. */
+.hero__title {
+  grid-column: 1 / -1;
+  grid-row: 2 / 4;
+  z-index: 0;
+  align-self: end;
+  justify-self: center;
+  /* Measured from the ground up by the mountain's own height (peak × 70/150), so
+     the summit always rises the same way in front of the second line. */
+  margin: 0 0 calc(var(--peak) * 0.467 * 0.74);
+  font-size: min(12vw, 12.5rem);
+  letter-spacing: -0.07em;
+  text-align: center;
+  line-height: 1;
+  opacity: 0.8; /* a touch softer, so it sits behind the mountain */
 }
 
-.hero__meet:hover .hero__face:nth-child(even) {
-  transform: translateY(-2px);
+.hero__title-hl {
+  color: var(--violet);
+}
+
+.hero__title-hl::after {
+  content: "";
+  display: inline-block;
+  width: 0.42em;
+  height: 0.12em;
+  margin-inline-start: 0.08em;
+  background: var(--orange);
+  animation: cursor 1.05s steps(1) infinite;
+}
+
+/* ---------- Centre: the climb ---------- */
+.climb {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  z-index: 1;
+  align-self: end;
+  position: relative;
+  padding-top: 48px; /* headroom for the characters on the top rows */
+}
+
+.climb__peak {
+  position: relative;
+  aspect-ratio: 150 / 70;
+}
+
+.climb__char {
+  position: absolute;
+  z-index: 1;
+  width: 10.5%;
+  translate: -50% 0;
+  display: block;
+}
+
+.climb__char:focus-visible {
+  outline-offset: 6px;
+}
+
+/* The leader, a little bigger than the rest. */
+.climb__char--lead {
+  width: 13%;
+}
+
+
+.climb__goal {
+  position: absolute;
+  top: 8.5%;
+  left: calc(56.7% + 14px);
+  translate: 0 -50%;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgb(14 11 24 / 0.7);
+  color: var(--orange);
+  white-space: nowrap;
+}
+
+.climb .mountain__dot {
+  filter: drop-shadow(0 0 8px rgb(244 166 100 / 0.8));
+}
+
+/* ---------- Bottom left: what is this? ---------- */
+.hero__about {
+  grid-column: 1;
+  grid-row: 3;
+  z-index: 2;
+  align-self: end;
+  margin-bottom: clamp(28px, 4vw, 52px);
+}
+
+/* ---------- Bottom right: actions ---------- */
+.hero__cta {
+  grid-column: 3;
+  grid-row: 3;
+  z-index: 2;
+  align-self: end;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 22px;
+  margin-bottom: clamp(28px, 4vw, 52px);
+}
+
+.hero__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 14px;
 }
 
 /* ---------- Shell session ---------- */
 .sh {
-  align-self: end;
-  padding-left: clamp(16px, 2vw, 28px);
-  border-left: var(--line);
+  padding-inline-start: clamp(14px, 1.6vw, 20px);
+  border-inline-start: var(--line);
+  color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   line-height: 1.75;
 }
 
-.sh p,
-.sh ul,
-.sh ol {
+.sh p {
   margin: 0;
-  padding: 0;
-  list-style: none;
+}
+
+.sh__cmd {
+  color: var(--fg);
 }
 
 .sh__path {
@@ -98,62 +196,79 @@
 }
 
 .sh__branch {
-  color: var(--accent);
+  color: var(--cyan);
 }
 
-.sh__block + .sh__block,
+.sh__block,
 .sh__idle {
-  margin-top: 14px !important;
+  margin-top: 8px !important;
 }
 
 .sh__prompt {
-  color: var(--accent);
-  font-weight: 600;
+  color: var(--violet);
+  font-weight: 700;
 }
 
-.sh__ls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 18px;
-}
-
-.sh__entry {
-  color: var(--accent);
-  font-weight: 500;
-  border-radius: 3px;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
-}
-
-.sh__entry:hover {
-  background: var(--accent);
-  color: #fff;
-}
-
-.sh__hash {
-  color: var(--muted);
-}
-
-.sh__head {
-  color: var(--accent);
-}
-
-.sh__note {
-  color: var(--muted);
+.sh__about {
+  max-width: 36ch;
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 0.98rem;
+  line-height: 1.6;
 }
 
 .sh__idle .cursor {
-  margin-left: 0.5em;
-  background: var(--ink);
+  margin-inline-start: 0.5em;
+  background: var(--cyan);
 }
 
-@media (max-width: 820px) {
-  .hero__inner {
-    grid-template-columns: 1fr;
+/* ---------- Narrow screens: stack, keeping the title behind the mountain ---------- */
+@media (max-width: 900px) {
+  .hero__stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto;
+    min-height: 0;
   }
 
-  .sh {
-    font-size: 0.82rem;
+  .hero__meta {
+    grid-column: 2;
+  }
+
+  .hero__title {
+    grid-row: 2;
+    margin: 36px 0 0;
+    font-size: 13vw;
+  }
+
+  .climb {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: min(100%, 560px);
+    justify-self: center;
+    margin-top: -19vw; /* rise in front of the title's second line */
+  }
+
+  .hero__about {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin: 36px 0 0;
+  }
+
+  .hero__cta {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    justify-self: start;
+    align-items: flex-start;
+    margin: 28px 0 40px;
+  }
+
+  .hero__pills {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .climb__goal {
+    display: none;
   }
 }

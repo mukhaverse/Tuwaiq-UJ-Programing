@@ -1,5 +1,5 @@
 import { track } from "../../data/track";
-import { LogoMark } from "./Header";
+import Mountain from "../brand/Mountain";
 import "./Layout.css";
 
 export default function Footer() {
@@ -7,7 +7,9 @@ export default function Footer() {
     <footer className="footer">
       <div className="wrap footer__inner">
         <span className="footer__brand">
-          <LogoMark />
+          <span className="logo__mark">
+            <Mountain />
+          </span>
           {track.name}
         </span>
         <span className="mono">

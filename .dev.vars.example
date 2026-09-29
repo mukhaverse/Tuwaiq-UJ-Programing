@@ -1,0 +1,7 @@
+# Local settings for `npm run dev`. Copy to .dev.vars (git-ignored) and fill in.
+BETTER_AUTH_URL=http://localhost:5173
+BETTER_AUTH_SECRET=any-long-random-string-for-local-use
+GITHUB_CLIENT_SECRET=not-used-locally
+# Turns on email + password sign-in, locally only, since GitHub can only send
+# people back to the live site. Never set this on Cloudflare.
+DEV_LOGIN=true

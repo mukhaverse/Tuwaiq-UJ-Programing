@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig } from "motion/react";
 import { ScrollTrigger } from "./lib/gsap";
 import Header from "./components/layout/Header";
@@ -8,6 +8,10 @@ import Hero from "./components/intro/Hero";
 import Members from "./components/members/Members";
 import Playground from "./components/playground/Playground";
 import Journey from "./components/journey/Journey";
+import useAdminRoute from "./admin/useAdminRoute";
+
+// The admin panel (#admin) is its own bundle, downloaded only when opened.
+const AdminApp = lazy(() => import("./admin/AdminApp"));
 
 const BOOTED_KEY = "pt:booted";
 
@@ -26,6 +30,7 @@ function needsSplash() {
 // Page sections, top to bottom. New sections go here.
 export default function App() {
   const [booted, setBooted] = useState(() => !needsSplash());
+  const adminSection = useAdminRoute();
 
   const finishBoot = useCallback(() => {
     try {
@@ -67,6 +72,14 @@ export default function App() {
       clearTimeout(timer);
     };
   }, []);
+
+  if (adminSection !== null) {
+    return (
+      <Suspense fallback={null}>
+        <AdminApp section={adminSection} />
+      </Suspense>
+    );
+  }
 
   return (
     <MotionConfig reducedMotion="user">

@@ -217,6 +217,10 @@ const shapes = {
 };
 
 
+// Every character shape, for pickers (the admin panel).
+// oxlint-disable-next-line react/only-export-components
+export const CHARACTERS = Object.keys(shapes);
+
 export default function Character({ type, body = c.butter, blink = 0, className = "", style }) {
   const draw = shapes[type] ?? shapes.blob;
   return (

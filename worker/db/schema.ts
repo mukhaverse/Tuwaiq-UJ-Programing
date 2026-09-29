@@ -72,3 +72,5 @@ export const settings = sqliteTable("settings", {
   value: text("value", { mode: "json" }).notNull(),
   updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
+
+export * from "./auth-schema";

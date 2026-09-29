@@ -6,6 +6,7 @@ Built with React + Vite, Motion (`motion/react`) for interaction, and GSAP (Scro
 
 ```bash
 npm install
+cp .dev.vars.example .dev.vars                      # first time only: local settings
 npm run db:migrate:local && npm run db:seed:local   # first time only: a local copy of the database
 npm run dev        # site + API + local database at http://localhost:5173
 npm run build      # production build into dist/
@@ -17,6 +18,7 @@ npm run typecheck  # the Worker (TypeScript)
 
 - **Content is data, not code.** Members, the journey, badges, the "Up next" tile and the site text live in D1. The site fetches them all from `GET /api/content` once at startup (`src/data/content.js`), then components read them as plain imports (`members`, `track`, …).
 - **One Worker, one deploy.** Requests to `/api/*` go to `worker/index.ts`; everything else is the built site, served as static files (`wrangler.jsonc` → `assets`).
+- **Admin panel** at `/#admin` (`src/admin/`): sign in with GitHub, then edit everything above from forms. It's a separate bundle that only loads when opened. Every `/api/admin/*` route checks, on the server, that the signed-in user has the `admin` role.
 - **Growing it:** a new feature is usually a table in `worker/db/schema.ts` (+ `npm run db:generate`), a route file in `worker/routes/`, and a component.
 
 ## Where things live
@@ -25,12 +27,19 @@ npm run typecheck  # the Worker (TypeScript)
 wrangler.jsonc          Cloudflare config: Worker name, D1 + R2 bindings, static assets
 worker/                 the API (TypeScript)
   index.ts              mounts every route under /api
+  auth.ts               login (Better Auth + GitHub) and the requireRole() check
   routes/content.ts     GET /api/content: everything the public site shows
-  db/schema.ts          the database tables (Drizzle)
+  routes/media.ts       GET /api/media/<key>: uploaded files
+  routes/admin/         one file per thing the admin panel edits (members, milestones, badges,
+                        settings, uploads); index.ts puts all of them behind requireRole("admin")
+  db/schema.ts          the site's tables (Drizzle)
+  db/auth-schema.ts     login tables (users, sessions, accounts)
   db/client.ts          database helper + binding types
 migrations/             SQL migrations generated from schema.ts (applied with wrangler)
 db/seed.sql             starting content, for filling a fresh (e.g. local) database
 src/
+  admin/                the admin panel (#admin): AdminApp.jsx (sign-in + layout), sections/ (one per
+                        tab), ui.jsx + hooks.js (shared form pieces), api.js
   data/                 content modules, filled from the API at startup (+ helpers like milestoneStatus)
     content.js          loads /api/content and hands it out
     track.js            track name, club, semester, intro text
@@ -63,18 +72,21 @@ src/
 
 ## Common changes
 
-**Content** (members, badges, the journey, the "Up next" tile, site text) is edited in the database. The admin panel for this is the next step; until it lands, run SQL against the live database, e.g.:
+**Content** (members, badges, the journey, the "Up next" tile, site text, files) is edited in the admin panel at `/#admin`. Changes are live within about 10 seconds. Things to know:
+
+- **Members**: the link id (`#member/<id>`) is set when a member is added and can't change afterwards. Names are written exactly as they spell them (Arabic names get an Arabic font automatically); "Card name" overrides the first + last name on cards. Leader / Co-leader gives a card its own hue. Order matters: the first three stand on the Commit Mountain in the hero.
+- **Badges** are created in Badges and awarded to people from their page in Members. A badge linked to a milestone also shows on that journey step.
+- **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
+- **Up next tile**: hide it when there's nothing to announce.
+
+**Admin access**: anyone can sign in with GitHub, but new accounts are plain members and can't reach the admin panel. To give someone admin (or take it away), change their role:
 
 ```bash
-npx wrangler d1 execute pt-db --remote --command "UPDATE milestones SET done = 1 WHERE id = 'setup-workshop'"
+npx wrangler d1 execute pt-db --remote --command "UPDATE user SET role = 'admin' WHERE email = 'them@example.com'"
+npx wrangler d1 execute pt-db --remote --command "SELECT name, email, role FROM user"
 ```
 
-Add `--local` instead of `--remote` to try it on your local copy first. Things to know about the data:
-
-- **Members** — `id` is the URL slug (`#member/<id>`); `name` is written exactly as they spell it (Arabic names get an Arabic font automatically); `short` overrides the card name when first + last word comes out wrong. `role` `leader` / `co-leader` gives a card its own hue and a big coloured title. `position` sets roster order; the first three stand on the Commit Mountain in the hero. Character = `avatar_char` + `avatar_body` (a palette key).
-- **Badges** — awarded through `member_badges` (member id + badge id). A badge with a `milestone_id` also shows on that journey step. Every badge is drawn in the Tuwaiq orange.
-- **Journey** — ordered by `position`. The first milestone that isn't `done` is marked "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
-- **"Up next" tile** — the `announcement` row in `settings` (JSON: `eyebrow`, `big`, `title`, `body`, `ctaLabel`, `ctaUrl`). Delete the row to hide the tile.
+The change applies on their next click. **Locally**, the sign-in page also has an email + password form (on only when `DEV_LOGIN=true` in `.dev.vars`), because GitHub only sends people back to the live site; promote that account with the same command using `--local`.
 
 **New character** — add a key to `shapes` in `src/components/character/Character.jsx` (drawn on a 200×200 canvas; use `<Eye>` for eyes that follow the cursor), then use that key as a member's `avatar.char`.
 
@@ -89,6 +101,10 @@ Add `--local` instead of `--remote` to try it on your local copy first. Things t
 ## Deploying
 
 Cloudflare (Workers Builds) is connected to this repo: every push to `main` runs `npm run build` then `npx wrangler deploy`. Progress shows in the Cloudflare dashboard under the Worker **tuwaiq-uj-programing**.
+
+## Secrets
+
+Set once on Cloudflare with `npx wrangler secret put <NAME>`: `BETTER_AUTH_SECRET` (signs login sessions; any long random string) and `GITHUB_CLIENT_SECRET` (from the GitHub OAuth App, whose callback URL is `https://tuwaiq-uj-programing.shumokhalsharif.workers.dev/api/auth/callback/github`). Public settings (`BETTER_AUTH_URL`, `GITHUB_CLIENT_ID`) are in `wrangler.jsonc`.
 
 ## Database
 

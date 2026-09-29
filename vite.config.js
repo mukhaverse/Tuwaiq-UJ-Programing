@@ -1,11 +1,9 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import react from "@vitejs/plugin-react";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { defineConfig } from "vite";
 
-// https://vite.dev/config/
+// The Cloudflare plugin runs the Worker (worker/index.ts) and a local D1
+// alongside the site in `npm run dev`, and builds both for `wrangler deploy`.
 export default defineConfig({
-  plugins: [react()],
-  // Relative asset paths, so the build works from any sub-path —
-  // e.g. GitHub Pages serves this site at /ptmain/, not at the domain root.
-  // (Safe because the site only uses #hash links, never real routes.)
-  base: './',
-})
+  plugins: [react(), cloudflare()],
+});

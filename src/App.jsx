@@ -79,8 +79,8 @@ export default function App() {
             <main>
               <Hero />
               <Members />
-              <Playground />
               <Journey />
+              <Playground />
             </main>
             <Footer />
           </>

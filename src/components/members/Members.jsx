@@ -6,7 +6,7 @@ import Pill from "../ui/Pill";
 import SplitHeading from "../ui/SplitHeading";
 import { members, getMember, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
 import { getBadge } from "../../data/badges";
-import { milestones } from "../../data/milestones";
+import { announcement } from "../../data/announcement";
 import { color } from "../../lib/palette";
 import useMemberRoute from "./useMemberRoute";
 import "./Members.css";
@@ -19,7 +19,7 @@ const pop = {
 };
 
 // Filters are built from the members' `year` values, so they stay in sync with the roster.
-const filters = [
+const yearFilters = () => [
   { id: "all", label: "All" },
   ...[...new Set(members.map((m) => m.year))].sort((a, b) => a - b).map((y) => ({ id: y, label: yearLabel(y) })),
 ];
@@ -127,34 +127,36 @@ function MemberCard({ member, onOpen, index }) {
   );
 }
 
-// The milestone the track is heading for next, or the wrap-up once all are done.
-const nextIndex = milestones.findIndex((m) => !m.done);
-const next = milestones[nextIndex];
-const pad = (n) => String(n).padStart(2, "0");
+// Links to other sites open in a new tab; in-page links (#journey) don't.
+const external = (url) => (/^https?:/.test(url) ? { target: "_blank", rel: "noopener noreferrer" } : {});
 
-/* The purple tile in the grid: the next milestone, like the next commit on the
-   track's log, with its step number standing huge behind it. */
+/* The purple tile in the grid: the current announcement (edited in the admin
+   panel), with a big label standing huge behind it. */
 function NextCard() {
+  const a = announcement;
   return (
     <motion.li layout {...pop} className="grid__item grid__item--promo">
       <section className="promo" aria-labelledby="next-title">
-        <span className="promo__step display" aria-hidden="true">
-          {next ? pad(nextIndex + 1) : "✓"}
-        </span>
-        <p className="promo__eyebrow mono">
-          <span className="promo__pulse" aria-hidden="true" />
-          {next ? `Up next · ${next.when}` : "Semester complete"}
-        </p>
+        {a.big && (
+          <span className="promo__step display" aria-hidden="true">
+            {a.big}
+          </span>
+        )}
+        {a.eyebrow && (
+          <p className="promo__eyebrow mono">
+            <span className="promo__pulse" aria-hidden="true" />
+            {a.eyebrow}
+          </p>
+        )}
         <h3 id="next-title" className="promo__title display">
-          {next ? next.title : "That's a wrap!"}
+          {a.title}
         </h3>
-        {next && <p className="promo__note">{next.note}</p>}
-        <Pill href="#journey" variant="accent">
-          See the journey
-        </Pill>
-        <div className="promo__char">
-          <Character type="cloud" body={color("blush")} blink={2} />
-        </div>
+        {a.body && <p className="promo__note">{a.body}</p>}
+        {a.ctaUrl && (
+          <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant="accent">
+            {a.ctaLabel || "Open"}
+          </Pill>
+        )}
       </section>
     </motion.li>
   );
@@ -240,7 +242,8 @@ export default function Members() {
 
   const list = members.filter((m) => year === "all" || m.year === year);
   const items = [...list];
-  items.splice(Math.min(2, items.length), 0, { promo: true, id: "promo" });
+  if (announcement) items.splice(Math.min(2, items.length), 0, { promo: true, id: "promo" });
+  const filters = yearFilters();
   const open = route.id ? getMember(route.id) : null;
 
   return (

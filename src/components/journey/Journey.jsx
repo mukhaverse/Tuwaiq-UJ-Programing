@@ -11,13 +11,15 @@ import "./Journey.css";
 const LABEL = { done: "Done", next: "Up next", locked: "Locked" };
 
 // Done milestones, "up next", then a couple of locked steps; the rest aren't rendered at all.
-const nextIndex = milestones.findIndex((m) => !m.done);
-const shown = nextIndex === -1 ? milestones : milestones.slice(0, nextIndex + 1 + LOCKED_SHOWN);
 // Until the semester is over, the trail fades out after the last step instead of ending.
-const openEnded = nextIndex !== -1;
+function visibleSteps() {
+  const nextIndex = milestones.findIndex((m) => !m.done);
+  const shown = nextIndex === -1 ? milestones : milestones.slice(0, nextIndex + 1 + LOCKED_SHOWN);
+  return { shown, openEnded: nextIndex !== -1 };
+}
 
 // How much of the connector to the next milestone is filled in.
-function fillTo(i) {
+function fillTo(shown, i) {
   if (i === shown.length - 1) return 0;
   if (shown[i + 1].done) return 1;
   return shown[i].done ? 0.5 : 0;
@@ -40,6 +42,7 @@ function Lock() {
 export default function Journey() {
   const root = useRef(null);
   const done = milestones.filter((m) => m.done).length;
+  const { shown, openEnded } = visibleSteps();
 
   useGSAP(
     () => {
@@ -91,7 +94,7 @@ export default function Journey() {
             const status = milestoneStatus(i);
             const last = i === shown.length - 1;
             const trail = last && openEnded;
-            const to = fillTo(i);
+            const to = fillTo(shown, i);
 
             if (status === "locked") {
               return (

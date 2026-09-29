@@ -350,3 +350,19 @@ button {
 :lang(ar) {
   letter-spacing: 0 !important;
 }
+
+/* Shown instead of the site when /api/content can't be reached. */
+.load-error {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  min-height: 100vh;
+  padding: 0 var(--gutter);
+  text-align: center;
+  color: var(--muted);
+}
+
+.load-error .mono {
+  color: var(--fg);
+  font-weight: 700;
+}

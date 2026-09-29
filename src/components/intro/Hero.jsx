@@ -13,9 +13,11 @@ import { CELLS, assemblyTime } from "../../lib/mountain";
 import "./Hero.css";
 
 // The title's last word is highlighted, like the "INIT" in TUWAIQ INIT.
-const titleWords = track.name.split(" ");
-const titleTail = titleWords.pop();
-const titleHead = titleWords.join(" ");
+function splitTitle(name) {
+  const words = name.split(" ");
+  const tail = words.pop();
+  return [words.join(" "), tail];
+}
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -36,11 +38,12 @@ const perches = [...new Set(CELLS.map(([c]) => c))]
 // leader is up the left slope, the co-leader one step below her, and the next
 // member across on the right slope so the mountain isn't lopsided.
 const SPOTS = [6, 5, 11];
-const climbers = members.slice(0, SPOTS.length).map((m, i) => ({
-  member: m,
-  ...perches.find((p) => p.c === SPOTS[i]),
-  lead: i === 0,
-}));
+const getClimbers = () =>
+  members.slice(0, SPOTS.length).map((m, i) => ({
+    member: m,
+    ...perches.find((p) => p.c === SPOTS[i]),
+    lead: i === 0,
+  }));
 
 // Cell coordinates → % of the 150 × 70 mountain box.
 const leftOf = (c) => `${((c * 10 + 5) / 150) * 100}%`;
@@ -48,6 +51,7 @@ const bottomOf = (r) => `${((70 - (r * 10 + 1)) / 70) * 100}%`;
 
 function Climb() {
   const land = MOUNTAIN_DELAY + assemblyTime(MOUNTAIN_STEP);
+  const climbers = getClimbers();
   return (
     <div className="climb">
       <div className="climb__peak">
@@ -122,6 +126,7 @@ export default function Hero() {
   );
 
   const done = milestones.filter((m) => m.done).length;
+  const [titleHead, titleTail] = splitTitle(track.name);
 
   /* A stage: the mountain in the middle with the title rising behind it, and
      everything else pinned to the corners around it. */

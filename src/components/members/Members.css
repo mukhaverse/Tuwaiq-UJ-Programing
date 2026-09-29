@@ -316,13 +316,6 @@
   margin-top: auto;
 }
 
-.promo__char {
-  position: absolute;
-  inset-inline-end: -3%;
-  bottom: -9%;
-  width: 38%;
-}
-
 /* ---------- Modal ---------- */
 .modal__backdrop {
   position: fixed;

@@ -5,8 +5,8 @@ import "./Layout.css";
 
 const links = [
   { href: "#members", label: "Members" },
-  { href: "#playground", label: "Playground" },
   { href: "#journey", label: "Journey" },
+  { href: "#playground", label: "Playground" },
 ];
 
 /* While the splash plays, the header is bare and its mark is an empty slot; when

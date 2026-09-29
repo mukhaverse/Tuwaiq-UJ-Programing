@@ -1,28 +1,18 @@
-// Every badge a member can earn. Members reference badges by `id`.
+// Every badge a member can earn, loaded from the database at startup (see content.js).
 //
-//   id          unique key, used in members.js
+//   id          unique key, referenced from members' `badges`
 //   name        label shown on cards and profiles
 //   description one line explaining how it's earned
 //   glyph       1–3 characters printed in the middle of the badge
 //   milestone   (optional) the journey milestone this badge belongs to
 // Every badge is drawn in the Tuwaiq orange.
-export const badges = [
-  {
-    id: "first-meeting",
-    name: "First Meeting",
-    description: "Showed up to the very first Programming Track meeting.",
-    glyph: "01",
-    milestone: "first-meeting",
-  },
-  {
-    id: "helping-hand",
-    name: "Helping Hand",
-    description: "Helped another member get unstuck.",
-    glyph: "+1",
-  },
-];
+export let badges = [];
+let byId = {};
 
-const byId = Object.fromEntries(badges.map((b) => [b.id, b]));
+export function setBadges(list) {
+  badges = list;
+  byId = Object.fromEntries(list.map((b) => [b.id, b]));
+}
 
 export function getBadge(id) {
   return byId[id];

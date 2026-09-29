@@ -44,7 +44,7 @@ function Cmd({ text, at }) {
   );
 }
 
-const checks = [
+const getChecks = () => [
   ["club", track.club.toLowerCase()],
   ["track", "programming"],
   ["members", `${members.length} loaded`],
@@ -54,6 +54,7 @@ const checks = [
    draws the Commit Mountain. Once it's done (or on any key / tap) the mountain
    flies up into the header, where the header's mark shares its layoutId. */
 export default function Splash({ onDone }) {
+  const checks = getChecks();
   useEffect(() => {
     const timer = setTimeout(onDone, T.done * 1000);
     const skip = () => onDone();

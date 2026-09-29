@@ -26,9 +26,8 @@ function place(i, n) {
   };
 }
 
-const stickers = members.map((m, i) => ({ ...m, ...place(i, members.length) }));
-
 export default function Playground() {
+  const stickers = members.map((m, i) => ({ ...m, ...place(i, members.length) }));
   const board = useRef(null);
   const zTop = useRef(stickers.length);
   const [z, setZ] = useState({});

@@ -1,7 +1,7 @@
 // The database tables. After changing this file, run `npm run db:generate` to
 // write a migration into migrations/, then apply it (see README → Database).
 import { sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const timestamps = {
   createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
@@ -72,5 +72,26 @@ export const settings = sqliteTable("settings", {
   value: text("value", { mode: "json" }).notNull(),
   updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
+
+// Answers to the members survey, imported from its spreadsheet export in the
+// admin panel. Private: only the admin API reads this table, never /api/content.
+export const surveyResponses = sqliteTable(
+  "survey_responses",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    // The respondent's name, normalized, so repeat submissions group together.
+    respondent: text("respondent").notNull(),
+    // Their name exactly as they typed it.
+    name: text("name").notNull(),
+    // The roster member this person is, once linked (automatically on import, or by hand).
+    memberId: text("member_id").references(() => members.id, { onDelete: "set null" }),
+    submittedAt: text("submitted_at").notNull(),
+    // Every non-empty cell of their row, keyed by the spreadsheet's column header.
+    answers: text("answers", { mode: "json" }).$type<Record<string, string>>().notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  // Re-importing a newer export of the same sheet only adds the rows that are new.
+  (t) => [uniqueIndex("survey_responses_unique").on(t.respondent, t.submittedAt), index("survey_responses_member").on(t.memberId)]
+);
 
 export * from "./auth-schema";

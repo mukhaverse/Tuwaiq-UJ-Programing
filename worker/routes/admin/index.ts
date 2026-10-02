@@ -7,6 +7,7 @@ import badges from "./badges";
 import members from "./members";
 import milestones from "./milestones";
 import settings from "./settings";
+import survey from "./survey";
 import uploads from "./uploads";
 
 const admin = new Hono<AppEnv>();
@@ -19,5 +20,6 @@ admin.route("/milestones", milestones);
 admin.route("/badges", badges);
 admin.route("/settings", settings);
 admin.route("/uploads", uploads);
+admin.route("/survey", survey);
 
 export default admin;

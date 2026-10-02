@@ -31,7 +31,7 @@ worker/                 the API (TypeScript)
   routes/content.ts     GET /api/content: everything the public site shows
   routes/media.ts       GET /api/media/<key>: uploaded files
   routes/admin/         one file per thing the admin panel edits (members, milestones, badges,
-                        settings, uploads); index.ts puts all of them behind requireRole("admin")
+                        settings, uploads, survey); index.ts puts all of them behind requireRole("admin")
   db/schema.ts          the site's tables (Drizzle)
   db/auth-schema.ts     login tables (users, sessions, accounts)
   db/client.ts          database helper + binding types
@@ -40,6 +40,8 @@ db/seed.sql             starting content, for filling a fresh (e.g. local) datab
 src/
   admin/                the admin panel (#admin): AdminApp.jsx (sign-in + layout), sections/ (one per
                         tab), ui.jsx + hooks.js (shared form pieces), api.js
+    survey/             the Survey tab: model.js (questions, scoring, name matching, stats),
+                        sheet.js (reads .xlsx/.csv), and its views (Overview, People, Teams, Data)
   data/                 content modules, filled from the API at startup (+ helpers like milestoneStatus)
     content.js          loads /api/content and hands it out
     track.js            track name, club, semester, intro text
@@ -78,6 +80,8 @@ src/
 - **Badges** are created in Badges and awarded to people from their page in Members. A badge linked to a milestone also shows on that journey step.
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.
+
+**Survey** (`#admin/survey`, admin only): stats and a profile for each member, built from the members survey. Import the survey's spreadsheet export (.xlsx or .csv) under **Import & data**. It's read in the browser and saved to the `survey_responses` table. Re-uploading a newer export only adds new responses. Each response is linked to a roster member by name (Arabic or English spelling), and wrong or missing links can be fixed on the same page. Only each person's latest submission counts. The answers never appear in `/api/content` or anywhere on the public site, and the Members tab links to each member's survey profile. The question wording lives in `src/admin/survey/model.js`: if a future survey changes its columns or answers, update it there. **Never commit the spreadsheet**: the repo is public, and `*.xlsx` / `*.csv` are git-ignored for that reason.
 
 **Admin access**: anyone can sign in with GitHub, but new accounts are plain members and can't reach the admin panel. To give someone admin (or take it away), change their role:
 

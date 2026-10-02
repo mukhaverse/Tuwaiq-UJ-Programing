@@ -9,11 +9,13 @@ import BadgesSection from "./sections/Badges";
 import AnnouncementSection from "./sections/Announcement";
 import SiteTextSection from "./sections/SiteText";
 import FilesSection from "./sections/Files";
+import SurveySection from "./sections/Survey";
 import "./admin.css";
 
 // A new section is one entry here plus its file in sections/.
 const SECTIONS = [
   { id: "members", label: "Members", Component: MembersSection },
+  { id: "survey", label: "Survey", Component: SurveySection },
   { id: "journey", label: "Journey", Component: JourneySection },
   { id: "badges", label: "Badges", Component: BadgesSection },
   { id: "announcement", label: "Up next tile", Component: AnnouncementSection },
@@ -132,7 +134,9 @@ function SignOutButton({ onDone }) {
 }
 
 function Shell({ me, section, onSignedOut }) {
-  const current = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0];
+  // "#admin/survey/people/x" → section "survey", path "people/x" (for sections with their own pages).
+  const [sectionId, ...rest] = (section ?? "").split("/");
+  const current = SECTIONS.find((s) => s.id === sectionId) ?? SECTIONS[0];
   const site = useSiteData();
   const { Component } = current;
 
@@ -162,7 +166,11 @@ function Shell({ me, section, onSignedOut }) {
       <main className="adm-main">
         <h1 className="adm-title">{current.label}</h1>
         {site.error && <p className="adm-error">Couldn't load the content: {site.error}</p>}
-        {site.data ? <Component data={site.data} reload={site.reload} /> : !site.error && <p className="adm-muted">Loading…</p>}
+        {site.data ? (
+          <Component data={site.data} reload={site.reload} path={rest.join("/")} />
+        ) : (
+          !site.error && <p className="adm-muted">Loading…</p>
+        )}
       </main>
     </div>
   );

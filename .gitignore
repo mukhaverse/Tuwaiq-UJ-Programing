@@ -23,6 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Survey exports and member lists hold personal data. Never commit them: the repo is public.
+*.xlsx
+*.xls
+*.csv
+
 # Cloudflare local state (local D1, R2) and build output
 .wrangler
 .dev.vars*

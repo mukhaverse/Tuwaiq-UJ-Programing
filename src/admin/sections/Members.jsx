@@ -122,9 +122,15 @@ function MemberForm({ member, badges, onSaved, onDeleted }) {
         <div>
           <h2>{isNew ? "New member" : member.name}</h2>
           {!isNew && (
-            <a className="adm-link adm-small" href={`/#member/${member.id}`} target="_blank" rel="noopener">
-              Open their profile ↗
-            </a>
+            <p className="adm-form__links adm-small">
+              <a className="adm-link" href={`/#member/${member.id}`} target="_blank" rel="noopener">
+                Open their profile ↗
+              </a>
+              {/* Admin only: their answers and stats from the members survey. */}
+              <a className="adm-link" href={`#admin/survey/people/${encodeURIComponent(member.id)}`}>
+                Survey answers & stats →
+              </a>
+            </p>
           )}
         </div>
       </div>

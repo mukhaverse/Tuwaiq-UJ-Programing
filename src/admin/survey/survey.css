@@ -1,0 +1,974 @@
+/* Survey section (admin only). Charts are plain HTML. Single-series bars use one
+   violet (--srv-bar); skill levels use a 4-step violet ramp (LEVEL_COLORS in
+   charts.jsx). Both were checked for contrast against the dark panels. */
+.srv {
+  --srv-bar: #8f6cf0;
+  display: grid;
+  gap: 16px;
+}
+
+.srv-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.srv-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.srv-tab {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  font: 700 0.8rem var(--mono);
+  text-decoration: none;
+}
+
+.srv-tab:hover {
+  color: var(--fg);
+}
+
+.srv-tab[aria-current="page"] {
+  background: var(--purple);
+  color: #fff;
+}
+
+.srv-tab:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+.srv-private {
+  margin: 0;
+  color: var(--muted);
+}
+
+.srv-empty {
+  justify-items: start;
+}
+
+.srv-empty h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.2rem;
+}
+
+.srv-empty p {
+  margin: 0;
+}
+
+.srv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .srv-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.srv-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+  padding: 16px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+/* Arabic names and answers keep their own direction but line up with the
+   English layout around them; only the long quotes sit on the right. */
+.srv [dir="auto"] {
+  text-align: left;
+}
+
+.srv blockquote[dir="auto"] {
+  text-align: start;
+}
+
+.srv-card--wide {
+  grid-column: 1 / -1;
+}
+
+.srv-card--alert {
+  border-color: rgb(244 166 100 / 0.45);
+}
+
+.srv-card p {
+  margin: 0;
+}
+
+.srv-card__head {
+  display: grid;
+  gap: 2px;
+}
+
+.srv-card__head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ---------- KPI row ---------- */
+.srv-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.srv-stat {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  padding: 14px 16px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.srv-stat__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.srv-stat__value {
+  font-family: var(--body);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.srv-headlines {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-inline-start: 18px;
+}
+
+/* ---------- Bar list ---------- */
+.srv-bars {
+  display: grid;
+  gap: 2px;
+}
+
+.srv-bar__row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.srv-bar__row:hover,
+.srv-bar.is-open .srv-bar__row {
+  background: var(--raised);
+}
+
+.srv-bar__row:focus-visible,
+.srv-scale__row:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: -2px;
+}
+
+.srv-bar__label {
+  overflow-wrap: anywhere;
+}
+
+.srv-bar__track {
+  height: 12px;
+}
+
+.srv-bar__fill {
+  display: block;
+  min-width: 2px;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--srv-bar);
+}
+
+.srv-bar__value {
+  min-width: 64px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: end;
+}
+
+.srv-bar .srv-chips {
+  padding: 6px 8px 10px;
+}
+
+.srv-more {
+  justify-self: start;
+  padding: 6px 8px;
+  border: 0;
+  background: none;
+  color: var(--cyan);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .srv-bar__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .srv-bar__track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* ---------- People chips ---------- */
+.srv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-chips__empty {
+  margin: 0;
+}
+
+.srv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.srv-chip:hover,
+.srv-chip:focus-visible {
+  border-color: var(--violet);
+}
+
+.srv-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+}
+
+.srv-avatar svg {
+  width: 100%;
+  height: 100%;
+}
+
+.srv-avatar__blank {
+  width: 70%;
+  height: 70%;
+  border: 2px dashed var(--edge);
+  border-radius: 50%;
+}
+
+/* ---------- Skill stacks ---------- */
+.srv-scales {
+  display: grid;
+  gap: 4px;
+}
+
+.srv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.srv-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.srv-legend__key {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-inline-end: 6px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.srv-legend li .srv-legend__key {
+  margin: 0;
+}
+
+.srv-scale__row {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.35fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.srv-scale__row:hover,
+.srv-scale.is-open .srv-scale__row {
+  background: var(--raised);
+}
+
+.srv-scale__label {
+  display: grid;
+}
+
+.srv-stack {
+  display: flex;
+  gap: 2px;
+  height: 24px;
+}
+
+.srv-stack__seg {
+  display: grid;
+  place-items: center;
+  min-width: 4px;
+  font: 700 0.75rem var(--mono);
+}
+
+.srv-stack__seg:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.srv-stack__seg:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.srv-stack__seg:only-child {
+  border-radius: 4px;
+}
+
+@media (max-width: 560px) {
+  .srv-scale__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Tables ---------- */
+.srv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.srv-table th,
+.srv-table td {
+  padding: 8px;
+  border-top: 1px solid var(--edge);
+  text-align: start;
+  vertical-align: top;
+}
+
+.srv-table th {
+  font-weight: 600;
+}
+
+.srv-table thead th {
+  border-top: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.srv-table__num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.srv-scale .srv-table {
+  margin: 4px 0 10px;
+}
+
+/* ---------- Meters and scores ---------- */
+.srv-meter {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.srv-meter__step {
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--edge);
+}
+
+.srv-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.srv-score__track {
+  width: 64px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--edge);
+}
+
+.srv-score__fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--srv-bar);
+}
+
+.srv-score__num {
+  min-width: 2ch;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.srv-tier {
+  margin: 0;
+}
+
+.srv-tier--beginner {
+  background: rgb(90 72 168 / 0.35);
+  color: #cdbdff;
+}
+
+.srv-tier--intermediate {
+  background: rgb(163 140 255 / 0.25);
+  color: #d4c7ff;
+}
+
+.srv-tier--advanced {
+  background: #d4c7ff;
+  color: #16181d;
+}
+
+/* ---------- Ranking ---------- */
+.srv-rank {
+  display: grid;
+  gap: 2px;
+  max-height: 340px;
+  margin: 0;
+  padding-inline-start: 26px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+
+.srv-rank li::marker {
+  color: var(--muted);
+}
+
+.srv-rank a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.srv-rank a:hover {
+  color: var(--cyan);
+}
+
+.srv-rank__score {
+  float: inline-end;
+  padding-inline-end: 8px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* ---------- Insights ---------- */
+.srv-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.srv-insight {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+}
+
+.srv-insight p {
+  margin: 0;
+}
+
+.srv-insight__title {
+  font-weight: 700;
+}
+
+.srv-insight__count {
+  margin-inline-start: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--edge);
+  font: 700 0.75rem var(--mono);
+}
+
+/* ---------- Quotes ---------- */
+.srv-quotes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-quotes li {
+  display: grid;
+  gap: 6px;
+  align-content: space-between;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+}
+
+.srv-quotes blockquote,
+.srv-bigquote {
+  margin: 0;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.srv-bigquote {
+  font-size: 1.05rem;
+}
+
+/* ---------- Colors ---------- */
+.srv-colors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.srv-colors li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.srv-colors li .adm-muted {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.srv-colors__swatch {
+  display: inline-block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--edge);
+  vertical-align: middle;
+}
+
+/* ---------- People list ---------- */
+.srv-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.srv .srv-filters input {
+  flex: 2 1 200px;
+  width: auto;
+}
+
+.srv .srv-filters select {
+  flex: 1 1 150px;
+  width: auto;
+}
+
+.srv-plist {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-prow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.srv-prow:hover,
+.srv-prow:focus-visible {
+  background: var(--raised);
+}
+
+.srv-prow:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: -2px;
+}
+
+.srv-prow__name {
+  display: grid;
+  min-width: 0;
+}
+
+.srv-prow__skills {
+  display: flex;
+  gap: 8px;
+}
+
+/* A fixed width, so the skill meters line up from row to row. */
+.srv-prow__score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 210px;
+}
+
+@media (max-width: 760px) {
+  .srv-prow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .srv-prow__skills,
+  .srv-prow__score {
+    grid-column: 2;
+    width: auto;
+  }
+}
+
+.srv-subhead {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+}
+
+/* ---------- Profile ---------- */
+.srv-profile {
+  display: grid;
+  gap: 16px;
+}
+
+.srv-profile__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.srv-profile__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.srv-profile__step .adm-btn {
+  padding: 6px 12px;
+  text-decoration: none;
+}
+
+.srv-profile__head {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.srv-profile__who {
+  display: grid;
+  gap: 4px;
+}
+
+.srv-profile__who h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.4rem;
+}
+
+.srv-profile__who p {
+  margin: 0;
+}
+
+.srv-profile__score {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  text-align: end;
+}
+
+@media (max-width: 640px) {
+  .srv-profile__head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .srv-profile__score {
+    grid-column: 1 / -1;
+    justify-items: start;
+    text-align: start;
+  }
+}
+
+.srv-skills {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-skills li {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.25fr) minmax(140px, 0.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.srv-skills__label {
+  font-weight: 600;
+}
+
+.srv-skills__bar {
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.srv-skills__steps {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+}
+
+.srv-skills__steps span {
+  flex: 1;
+  background: var(--edge);
+}
+
+.srv-skills__steps span:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.srv-skills__steps span:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+/* The track average: a small tick under the bar. */
+.srv-skills__avg {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 7px;
+  margin-inline-start: -1px;
+  background: var(--fg);
+}
+
+.srv-skills__answer {
+  display: grid;
+  gap: 2px;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .srv-skills li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+}
+
+.srv-facts {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.srv-facts dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.srv-facts dd {
+  margin: 2px 0 0;
+}
+
+.srv-facts__raw {
+  display: block;
+}
+
+.srv-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.srv-tagpill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  font-size: 0.8rem;
+}
+
+.srv-raw summary {
+  color: var(--cyan);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.srv-raw .srv-table {
+  margin-top: 10px;
+}
+
+.srv-raw th {
+  width: 32%;
+  color: var(--muted);
+}
+
+/* ---------- Teams ---------- */
+.srv-teams {
+  display: grid;
+  gap: 16px;
+}
+
+.srv-teams__controls {
+  grid-template-columns: 180px minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 16px;
+}
+
+@media (max-width: 760px) {
+  .srv-teams__controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.srv-teams__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+
+.srv-team__list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-team__list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.srv-team__list a:hover {
+  background: var(--raised);
+}
+
+.srv-team__list .srv-score__track {
+  width: 36px;
+}
+
+.srv-team__name {
+  display: grid;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+/* ---------- Import & data ---------- */
+.srv-card > .adm-upload {
+  justify-self: start;
+}
+
+.srv-preview {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--violet);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+}
+
+.srv-links {
+  display: block;
+  overflow-x: auto;
+}
+
+.srv-links td {
+  vertical-align: middle;
+}
+
+.srv-links td:nth-child(2) {
+  min-width: 220px;
+}
+
+.srv-links .adm-error {
+  display: block;
+  margin-top: 4px;
+}
+
+.srv-links tr.is-unlinked td:first-child {
+  box-shadow: inset 3px 0 0 var(--orange);
+}
+
+.srv-notes {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-inline-start: 18px;
+  color: var(--muted);
+}
+
+.srv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

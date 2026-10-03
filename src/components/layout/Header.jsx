@@ -3,10 +3,12 @@ import { track } from "../../data/track";
 import Mountain from "../brand/Mountain";
 import "./Layout.css";
 
+// `minor` links are dropped on phones, where all of them don't fit next to the logo.
 const links = [
   { href: "#members", label: "Members" },
   { href: "#journey", label: "Journey" },
-  { href: "#playground", label: "Playground" },
+  { href: "#workshop", label: "Workshop" },
+  { href: "#playground", label: "Playground", minor: true },
 ];
 
 /* While the splash plays, the header is bare and its mark is an empty slot; when
@@ -37,7 +39,7 @@ export default function Header({ booting = false }) {
         </a>
         <nav className="header__links" aria-label="Main">
           {links.map((l) => (
-            <a key={l.href} href={l.href} className="header__link mono">
+            <a key={l.href} href={l.href} className={`header__link mono${l.minor ? " header__link--minor" : ""}`}>
               {l.label}
             </a>
           ))}

@@ -1,4 +1,4 @@
-// Small pieces shared by the admin routes.
+// Small pieces shared by the API routes (admin and public).
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { ValidationTargets } from "hono";
@@ -19,6 +19,9 @@ export const optionalText = (max: number) =>
     .transform((v) => v || null);
 
 export const requiredText = (max: number) => z.string().trim().min(1, "Required").max(max);
+
+/** A project's kind, like "survey" or "website". The choices live in src/data/projects.js. */
+export const kind = z.string().trim().regex(/^[a-z0-9-]{1,30}$/, "Pick what kind of thing it is");
 
 /** A new order for a list: every id, first to last. */
 export const orderInput = z.object({ ids: z.array(z.string()).min(1) });

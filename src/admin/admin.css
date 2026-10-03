@@ -281,6 +281,148 @@
   color: var(--orange);
 }
 
+/* Project statuses */
+.adm-tag--new {
+  background: rgb(87 227 216 / 0.16);
+  color: var(--cyan);
+}
+
+.adm-tag--in-progress {
+  background: rgb(163 128 255 / 0.2);
+  color: var(--violet);
+}
+
+/* ---------- Projects ---------- */
+.adm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adm-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 2px solid var(--edge);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 700 0.75rem var(--mono);
+  cursor: pointer;
+}
+
+.adm-filter[aria-pressed="true"] {
+  border-color: var(--violet);
+  background: var(--raised);
+  color: var(--fg);
+}
+
+.adm-filter__count {
+  color: var(--orange);
+}
+
+.adm-filter:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+/* What the requester sent, read-only. */
+.adm-request {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 2px dashed var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.adm-request__details {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.adm-request__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.adm-request__facts dt {
+  color: var(--muted);
+}
+
+.adm-request__facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Status picker: one segmented row, coloured like the tags. */
+.adm-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adm-status__opt {
+  position: relative;
+  padding: 7px 12px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font: 700 0.8rem var(--mono);
+  cursor: pointer;
+}
+
+.adm-status__opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.adm-status__opt:has(input:focus-visible) {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+.adm-status__opt.is-on {
+  border-color: currentColor;
+  color: var(--fg);
+}
+
+.adm-status__opt--new.is-on {
+  color: var(--cyan);
+}
+
+.adm-status__opt--in-progress.is-on {
+  color: var(--violet);
+}
+
+.adm-status__opt--done.is-on {
+  color: #7dcfa3;
+}
+
+.adm-status__opt--declined.is-on {
+  color: #ff8a8e;
+}
+
+.adm-chip--member svg {
+  width: 24px;
+}
+
+.adm-private summary {
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adm-private[open] summary {
+  margin-bottom: 4px;
+}
+
 /* ---------- Forms ---------- */
 .adm-form {
   display: grid;

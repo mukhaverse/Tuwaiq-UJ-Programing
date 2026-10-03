@@ -1,0 +1,569 @@
+.workshop {
+  border-top: var(--line);
+}
+
+/* Room above each row for the crew peeking over the cards. */
+.workshop__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 56px clamp(18px, 2.2vw, 32px);
+  margin: 0;
+  padding: 44px 0 0;
+  list-style: none;
+}
+
+/* ---------- Build card: a plate lifted off a dotted pixel shadow ---------- */
+.build {
+  --lift: 5px;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 230px;
+  padding: 22px 22px 30px;
+  translate: var(--lift) calc(var(--lift) * -1);
+  transition: translate 0.25s var(--spring);
+}
+
+.build::before,
+.build::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: var(--line);
+  border-radius: var(--radius);
+  transition: border-color 0.2s;
+}
+
+.build::before {
+  translate: calc(var(--lift) * -1) var(--lift);
+  background: radial-gradient(var(--dot) 30%, transparent 32%) 0 0 / 6px 6px var(--bg);
+}
+
+.build::after {
+  background: var(--surface);
+}
+
+@media (hover: hover) {
+  .build:hover {
+    --lift: 8px;
+  }
+
+  .build:hover::after {
+    border-color: var(--violet);
+  }
+}
+
+.build__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.build__for {
+  color: var(--muted);
+}
+
+.build__dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+}
+
+.build__dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  animation: ping 1.6s ease-out infinite;
+}
+
+.build__title {
+  margin: 0;
+  max-width: 18ch;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  letter-spacing: -0.04em;
+}
+
+/* Reads like the latest line in a terminal. */
+.build__note {
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.build__prompt {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.build__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.build__kind {
+  color: var(--violet);
+}
+
+.build__ago {
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+/* Never quite finished: a striped bar that keeps on building. */
+.build__bar {
+  position: absolute;
+  inset: auto 14px 12px;
+  height: 6px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(-45deg, var(--violet) 0 8px, var(--purple) 8px 16px);
+  box-shadow: 0 0 12px rgb(163 128 255 / 0.35);
+  animation: build-bar 1.4s linear infinite;
+}
+
+/* One stripe period: 16px across the 45° stripes is 16 / sin 45° wide. */
+@keyframes build-bar {
+  to {
+    background-position: 22.63px 0;
+  }
+}
+
+/* The crew: members' characters peeking over the card's top edge. */
+.build__crew {
+  position: absolute;
+  top: -42px;
+  inset-inline-end: 18px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.build__mate {
+  display: block;
+  width: 58px;
+  margin-inline-start: -14px;
+}
+
+.build__mate:last-child {
+  margin-inline-start: 0;
+}
+
+.build__mate:focus-visible {
+  border-radius: 50%;
+}
+
+/* ---------- Nothing in progress ---------- */
+.build--idle {
+  justify-content: center;
+  color: var(--muted);
+}
+
+.build--idle p {
+  margin: 0;
+  text-transform: none; /* it's a shell session */
+}
+
+.build__idle {
+  color: var(--fg);
+  font-size: 0.9rem;
+}
+
+/* ---------- The "your idea here" tile ---------- */
+.build--ask {
+  padding: 0;
+}
+
+.build--ask::after {
+  border-style: dashed;
+  background: rgb(22 18 37 / 0.6);
+}
+
+.ask {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 22px;
+  border-radius: var(--radius);
+}
+
+.ask__plus {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 6px;
+  border: var(--line);
+  border-radius: 12px;
+  background: var(--orange);
+  box-shadow: var(--cap);
+  color: var(--bg);
+  font: 800 1.6rem/1 var(--mono);
+  transition:
+    rotate 0.35s var(--spring),
+    translate 0.12s;
+}
+
+.ask__title {
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  letter-spacing: -0.04em;
+}
+
+.ask__body {
+  max-width: 30ch;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.ask__cta {
+  margin-top: auto;
+  color: var(--orange);
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  .build--ask:hover::after {
+    border-color: var(--orange);
+  }
+
+  .build--ask:hover .ask__plus {
+    rotate: 90deg;
+  }
+}
+
+.ask:active .ask__plus {
+  translate: 0 3px;
+  box-shadow: var(--cap-down);
+}
+
+/* ---------- Request form: a ticket ---------- */
+.req__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(8 6 15 / 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.req__wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 71;
+  display: grid;
+  justify-items: center;
+  overflow-y: auto;
+  padding: var(--gutter);
+  pointer-events: none;
+}
+
+.req {
+  position: relative;
+  width: min(640px, 100%);
+  margin-block: auto; /* centred, but scrolls from the top when taller than the screen */
+  overflow: hidden;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow:
+    0 30px 80px -20px rgb(0 0 0 / 0.7),
+    0 0 60px -10px rgb(79 41 183 / 0.45);
+  pointer-events: auto;
+}
+
+.req__strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 70px 12px 24px;
+  background: var(--purple);
+  color: #fff;
+  font-weight: 700;
+}
+
+.req__form,
+.req__sent {
+  display: grid;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 32px);
+}
+
+.req__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.req__label {
+  display: block;
+  margin-bottom: 8px;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--violet);
+}
+
+.req__optional {
+  color: var(--muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.req__field {
+  display: block;
+  min-width: 0;
+}
+
+.req__field input,
+.req__field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.15s;
+}
+
+.req__field textarea {
+  resize: vertical;
+}
+
+.req__field input::placeholder,
+.req__field textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.req__field input:focus-visible,
+.req__field textarea:focus-visible {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.req__hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.req__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* Kind picker: a row of keycaps; the picked one is pressed in. */
+.req__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.req__kind {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.6em 1em;
+  border: var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  box-shadow: var(--cap);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    translate 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.req__kind input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.req__glyph {
+  color: var(--orange);
+}
+
+@media (hover: hover) {
+  .req__kind:hover {
+    border-color: var(--violet);
+  }
+}
+
+.req__kind:has(input:checked) {
+  translate: 0 3px;
+  border-color: var(--cyan);
+  background: var(--cyan);
+  box-shadow:
+    0 2px 0 0 #0a0812,
+    0 2px 0 2px #2a9e96;
+  color: var(--bg);
+}
+
+.req__kind:has(input:checked) .req__glyph {
+  color: var(--purple);
+}
+
+.req__kind:has(input:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+/* Tear here: the part about the request above, the part about you below. */
+.req__cut {
+  position: relative;
+  height: 2px;
+  margin: 4px 0;
+  background-image: linear-gradient(90deg, var(--edge) 50%, transparent 50%);
+  background-size: 12px 2px;
+}
+
+.req__cut span {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: -4px;
+  translate: 0 -55%;
+  padding-inline-end: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.req__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.req__error {
+  margin: 0;
+  padding: 10px 14px;
+  border: 2px solid rgb(229 72 77 / 0.5);
+  border-radius: var(--radius-sm);
+  color: #ff8a8e;
+}
+
+.req__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.req .pill:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.req__x {
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 8px;
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.req__x:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* ---------- Sent: the ticket gets stamped ---------- */
+.req__sent {
+  position: relative;
+  justify-items: start;
+}
+
+.req__stamp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+}
+
+.req__number {
+  margin: 0;
+  color: var(--cyan);
+  font-size: clamp(2.6rem, 9vw, 4.4rem);
+}
+
+.req__stamp {
+  margin: 0;
+  padding: 6px 14px;
+  border: 3px solid var(--orange);
+  border-radius: 8px;
+  color: var(--orange);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  mix-blend-mode: screen;
+}
+
+.req__body {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.req__body strong {
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.req__cheer {
+  position: absolute;
+  inset-inline-end: clamp(16px, 4vw, 32px);
+  bottom: 22px;
+  width: 92px;
+}
+
+@media (max-width: 560px) {
+  .req__row {
+    grid-template-columns: 1fr;
+  }
+
+  .req__cheer {
+    width: 64px;
+  }
+}

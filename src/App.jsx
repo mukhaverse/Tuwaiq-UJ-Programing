@@ -8,6 +8,7 @@ import Hero from "./components/intro/Hero";
 import Members from "./components/members/Members";
 import Playground from "./components/playground/Playground";
 import Journey from "./components/journey/Journey";
+import Workshop from "./components/workshop/Workshop";
 import useAdminRoute from "./admin/useAdminRoute";
 
 // The admin panel (#admin) is its own bundle, downloaded only when opened.
@@ -16,7 +17,7 @@ const AdminApp = lazy(() => import("./admin/AdminApp"));
 const BOOTED_KEY = "pt:booted";
 
 // The boot splash plays once per browser session. It's skipped for deep links
-// (#members, #member/<id>) and for people who prefer reduced motion.
+// (#members, #member/<id>, #request) and for people who prefer reduced motion.
 function needsSplash() {
   if (window.location.hash) return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
@@ -94,6 +95,7 @@ export default function App() {
               <Hero />
               <Members />
               <Journey />
+              <Workshop />
               <Playground />
             </main>
             <Footer />

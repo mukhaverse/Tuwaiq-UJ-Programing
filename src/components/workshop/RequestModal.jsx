@@ -1,0 +1,195 @@
+import { useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { KINDS, ticket } from "../../data/projects";
+import { members } from "../../data/members";
+import { color } from "../../lib/palette";
+import Character from "../character/Character";
+import Pill from "../ui/Pill";
+
+const EMPTY = { kind: "", title: "", details: "", deadline: "", name: "", track: "", contact: "", website: "" };
+
+async function send(values) {
+  const res = await fetch("/api/requests", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(values),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Couldn't send it. Try again in a moment.");
+  return data.id;
+}
+
+/* The request form, printed as a ticket. Once sent, it gets stamped with its number. */
+export default function RequestModal({ onClose }) {
+  const [v, setV] = useState(EMPTY);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState(null);
+  const [sentId, setSentId] = useState(null);
+  const [returnTo] = useState(() => document.activeElement);
+  const set = (field) => (e) => setV((prev) => ({ ...prev, [field]: e.target.value }));
+
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+      returnTo?.focus?.({ preventScroll: true });
+    };
+  }, [onClose, returnTo]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    setError(null);
+    try {
+      setSentId(await send(v));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <>
+      <motion.div className="req__backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <div className="req__wrap" role="dialog" aria-modal="true" aria-labelledby="req-title">
+        <motion.div
+          className="req"
+          initial={{ opacity: 0, y: 60, rotate: -2 }}
+          animate={{ opacity: 1, y: 0, rotate: 0 }}
+          exit={{ opacity: 0, y: 40, rotate: 1.5, transition: { duration: 0.18 } }}
+          transition={{ type: "spring", stiffness: 260, damping: 24 }}
+        >
+          <header className="req__strip mono">
+            <span>// build request</span>
+            <span>{sentId ? `#${ticket(sentId)}` : "#PT-???"}</span>
+          </header>
+          {sentId !== null ? <Sent id={sentId} contact={v.contact} onClose={onClose} /> : (
+            <form className="req__form" onSubmit={submit}>
+              <h2 id="req-title" className="req__title display">
+                What should we build?
+              </h2>
+
+              <fieldset className="req__kinds">
+                <legend className="req__label">It's a…</legend>
+                {KINDS.map((k, i) => (
+                  <label key={k.id} className="req__kind">
+                    <input type="radio" name="kind" value={k.id} checked={v.kind === k.id} onChange={set("kind")} required={i === 0} />
+                    <span className="req__glyph" aria-hidden="true">
+                      {k.glyph}
+                    </span>
+                    {k.label}
+                  </label>
+                ))}
+              </fieldset>
+
+              <label className="req__field">
+                <span className="req__label">Give it a name</span>
+                <input id="req-name-it" value={v.title} onChange={set("title")} required maxLength={80} placeholder="Feedback survey for the design workshop" />
+              </label>
+              <label className="req__field">
+                <span className="req__label">Tell us more</span>
+                <textarea
+                  id="req-details"
+                  value={v.details}
+                  onChange={set("details")}
+                  required
+                  maxLength={3000}
+                  rows={4}
+                  placeholder="What it should do, who will use it, anything you've already got (links welcome)."
+                />
+              </label>
+              <label className="req__field">
+                <span className="req__label">
+                  When do you need it? <span className="req__optional">optional</span>
+                </span>
+                <input id="req-deadline" value={v.deadline} onChange={set("deadline")} maxLength={60} placeholder="Before week 8, ASAP, whenever…" />
+              </label>
+
+              <div className="req__cut" aria-hidden="true">
+                <span>✂</span>
+              </div>
+
+              <div className="req__row">
+                <label className="req__field">
+                  <span className="req__label">Your name</span>
+                  <input id="req-person" value={v.name} onChange={set("name")} required maxLength={80} autoComplete="name" />
+                </label>
+                <label className="req__field">
+                  <span className="req__label">Your track</span>
+                  <input id="req-track" value={v.track} onChange={set("track")} required maxLength={60} placeholder="Media, Design, Events…" />
+                </label>
+              </div>
+              <label className="req__field">
+                <span className="req__label">How do we reach you?</span>
+                <input id="req-contact" value={v.contact} onChange={set("contact")} required maxLength={120} placeholder="Email, phone or @handle" />
+                <span className="req__hint">Only the track's admins see this.</span>
+              </label>
+
+              {/* Honeypot: hidden from people, so only bots fill it in. */}
+              <input className="req__trap" name="website" value={v.website} onChange={set("website")} tabIndex={-1} autoComplete="off" aria-hidden="true" />
+
+              {error && (
+                <p className="req__error" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="req__actions">
+                <Pill as="button" type="submit" variant="solid" disabled={sending}>
+                  {sending ? "Sending…" : "Send request"}
+                </Pill>
+              </div>
+            </form>
+          )}
+          <button type="button" className="req__x" onClick={onClose} aria-label="Close" autoFocus>
+            ✕
+          </button>
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
+/* After sending: the ticket number gets stamped, and someone from the track cheers. */
+function Sent({ id, contact, onClose }) {
+  const [cheer] = useState(() => members[Math.floor(Math.random() * members.length)]);
+  return (
+    <div className="req__sent" role="status">
+      <div className="req__stamp-row">
+        <p className="req__number display">#{ticket(id)}</p>
+        <motion.p
+          className="req__stamp mono"
+          initial={{ scale: 2.6, opacity: 0, rotate: -24 }}
+          animate={{ scale: 1, opacity: 1, rotate: -12 }}
+          transition={{ type: "spring", stiffness: 420, damping: 16, delay: 0.15 }}
+        >
+          Received
+        </motion.p>
+      </div>
+      <h2 id="req-title" className="req__title display">
+        It's on our desk.
+      </h2>
+      <p className="req__body">
+        We'll look it over and reach out through <strong>{contact}</strong>. Once we start building, it shows up in the Workshop. Keep the
+        number in case you need to ask about it.
+      </p>
+      {cheer && (
+        <motion.div
+          className="req__cheer"
+          animate={{ y: [0, -18, 0] }}
+          transition={{ duration: 0.5, repeat: 2, repeatDelay: 0.25, delay: 0.5 }}
+          aria-hidden="true"
+        >
+          <Character type={cheer.avatar.char} body={color(cheer.avatar.body)} className="sticker" />
+        </motion.div>
+      )}
+      <Pill as="button" type="button" variant="accent" onClick={onClose}>
+        Back to the site
+      </Pill>
+    </div>
+  );
+}

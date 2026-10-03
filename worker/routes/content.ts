@@ -1,26 +1,35 @@
 // GET /api/content: everything the public site renders, in one request.
 import { Hono } from "hono";
-import { asc } from "drizzle-orm";
+import { asc, desc, inArray } from "drizzle-orm";
 import { getDb, type AppEnv } from "../db/client";
-import { badges, memberBadges, members, milestones, settings } from "../db/schema";
+import { badges, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings } from "../db/schema";
 
 const content = new Hono<AppEnv>();
 
 content.get("/", async (c) => {
   const db = getDb(c.env);
-  // One round trip to D1 for all five queries.
-  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows] = await db.batch([
+  // One round trip to D1 for every query.
+  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, projectRows, teamRows] = await db.batch([
     db.select().from(members).orderBy(asc(members.position), asc(members.createdAt)),
     db.select().from(memberBadges).orderBy(asc(memberBadges.awardedAt)),
     db.select().from(milestones).orderBy(asc(milestones.position)),
     db.select().from(badges).orderBy(asc(badges.position)),
     db.select().from(settings),
+    // Only the public columns: a request's contact and details never leave the admin API.
+    db
+      .select({ id: projects.id, title: projects.title, track: projects.track, kind: projects.kind, status: projects.status, note: projects.note, updatedAt: projects.updatedAt })
+      .from(projects)
+      .where(inArray(projects.status, [...PUBLIC_PROJECT_STATUSES]))
+      .orderBy(desc(projects.updatedAt)),
+    db.select().from(projectMembers),
   ]);
 
   const awarded = new Map<string, string[]>();
   for (const a of awardRows) {
     awarded.set(a.memberId, [...(awarded.get(a.memberId) ?? []), a.badgeId]);
   }
+  const team = new Map<number, string[]>();
+  for (const t of teamRows) team.set(t.projectId, [...(team.get(t.projectId) ?? []), t.memberId]);
   const setting = Object.fromEntries(settingRows.map((s) => [s.key, s.value]));
 
   // Short browser cache: edits show up within seconds, repeat visits stay fast.
@@ -54,6 +63,7 @@ content.get("/", async (c) => {
       glyph: b.glyph,
       milestone: b.milestoneId ?? undefined,
     })),
+    projects: projectRows.map((p) => ({ ...p, track: p.track ?? undefined, members: team.get(p.id) ?? [] })),
   });
 });
 

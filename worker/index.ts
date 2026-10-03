@@ -8,12 +8,14 @@ import type { AppEnv } from "./db/client";
 import admin from "./routes/admin";
 import content from "./routes/content";
 import media from "./routes/media";
+import requests from "./routes/requests";
 
 const app = new Hono<AppEnv>().basePath("/api");
 
 // Public
 app.route("/content", content);
 app.route("/media", media);
+app.route("/requests", requests);
 app.get("/health", (c) => c.json({ ok: true }));
 
 // Login: sign in with GitHub, sign out, sessions (handled by Better Auth).

@@ -94,4 +94,47 @@ export const surveyResponses = sqliteTable(
   (t) => [uniqueIndex("survey_responses_unique").on(t.respondent, t.submittedAt), index("survey_responses_member").on(t.memberId)]
 );
 
+// Work the track is doing: requests from other tracks (submitted on the site)
+// and the track's own projects (added in the admin panel). A new status only
+// needs adding here; which ones the public site shows is PUBLIC_PROJECT_STATUSES.
+export const PROJECT_STATUSES = ["new", "in_progress", "done", "declined"] as const;
+export const PUBLIC_PROJECT_STATUSES = ["in_progress"] as const;
+
+export const projects = sqliteTable(
+  "projects",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+    // The track it's for, as the requester wrote it. Null for the track's own projects.
+    track: text("track"),
+    // What kind of thing it is: "survey", "website"… (the list lives in src/data/projects.js).
+    kind: text("kind").notNull().default("other"),
+    status: text("status", { enum: PROJECT_STATUSES }).notNull().default("new"),
+    // One public line under the title on the site, e.g. "Draft ready for review".
+    note: text("note").notNull().default(""),
+    // Private: what the requester asked for, who they are and how to reach them.
+    details: text("details").notNull().default(""),
+    requester: text("requester"),
+    contact: text("contact"),
+    // Free-form, as they wrote it: "before week 8", "ASAP"…
+    deadline: text("deadline"),
+    ...timestamps,
+  },
+  (t) => [index("projects_status").on(t.status)]
+);
+
+// Who's working on what: roster members assigned to a project.
+export const projectMembers = sqliteTable(
+  "project_members",
+  {
+    projectId: integer("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.projectId, t.memberId] })]
+);
+
 export * from "./auth-schema";

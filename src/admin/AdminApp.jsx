@@ -4,6 +4,7 @@ import { api, signInWithGitHub, signOut } from "./api";
 import { Button, ToastProvider } from "./ui";
 import { useSiteData } from "./hooks";
 import MembersSection from "./sections/Members";
+import ProjectsSection from "./sections/Projects";
 import JourneySection from "./sections/Journey";
 import BadgesSection from "./sections/Badges";
 import AnnouncementSection from "./sections/Announcement";
@@ -15,6 +16,7 @@ import "./admin.css";
 // A new section is one entry here plus its file in sections/.
 const SECTIONS = [
   { id: "members", label: "Members", Component: MembersSection },
+  { id: "projects", label: "Projects", Component: ProjectsSection },
   { id: "survey", label: "Survey", Component: SurveySection },
   { id: "journey", label: "Journey", Component: JourneySection },
   { id: "badges", label: "Badges", Component: BadgesSection },

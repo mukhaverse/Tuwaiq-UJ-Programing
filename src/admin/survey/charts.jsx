@@ -4,7 +4,7 @@ import { useState } from "react";
 import Character from "../../components/character/Character";
 import { color } from "../../lib/palette";
 import { isArabic } from "./model";
-import { LEVEL_COLORS, LEVEL_NAMES, displayName, pct, personHref } from "./format";
+import { LEVEL_COLORS, LEVEL_NAMES, REST_COLOR, SPLIT_COLORS, displayName, pct, personHref } from "./format";
 
 /** Text that may be Arabic: right-to-left and in the Arabic font when it is. */
 export function Txt({ children, as: Tag = "span", className }) {
@@ -26,11 +26,13 @@ export function Avatar({ person, size = 28 }) {
 }
 
 /** Links to people's survey profiles. */
-export function PeopleChips({ people, empty = "Nobody" }) {
+export function PeopleChips({ people, empty = "Nobody", limit }) {
+  const [all, setAll] = useState(false);
   if (!people.length) return <p className="adm-muted adm-small srv-chips__empty">{empty}</p>;
+  const shown = limit && !all ? people.slice(0, limit) : people;
   return (
     <ul className="srv-chips">
-      {people.map((p) => (
+      {shown.map((p) => (
         <li key={p.key}>
           <a className="srv-chip" href={personHref(p)}>
             <Avatar person={p} size={20} />
@@ -38,20 +40,240 @@ export function PeopleChips({ people, empty = "Nobody" }) {
           </a>
         </li>
       ))}
+      {limit && people.length > limit && (
+        <li>
+          <button type="button" className="srv-chip srv-chip--more" onClick={() => setAll(!all)}>
+            {all ? "Show fewer" : `+${people.length - limit} more`}
+          </button>
+        </li>
+      )}
     </ul>
   );
 }
 
-/** A card with a heading. */
-export function Card({ title, note, children, wide = false, className = "" }) {
+/** A card. `eyebrow` names the question; `title` says what the answers show. */
+export function Card({ eyebrow, title, note, children, wide = false, className = "" }) {
   return (
     <section className={`srv-card${wide ? " srv-card--wide" : ""} ${className}`}>
       <header className="srv-card__head">
+        {eyebrow && <p className="srv-card__eyebrow">{eyebrow}</p>}
         <h3>{title}</h3>
         {note && <p className="adm-muted adm-small">{note}</p>}
       </header>
       {children}
     </section>
+  );
+}
+
+/** A titled group of cards on the overview. */
+export function Chapter({ id, title, lead, children }) {
+  return (
+    <section className="srv-chapter" id={`srv-${id}`} aria-labelledby={`srv-${id}-title`}>
+      <header className="srv-chapter__head">
+        <h2 id={`srv-${id}-title`}>{title}</h2>
+        {lead && <p className="adm-muted">{lead}</p>}
+      </header>
+      <div className="srv-grid">{children}</div>
+    </section>
+  );
+}
+
+/** One big number with what it means: for answers where one option dominates. */
+export function BigStat({ value, label, note, people }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="srv-bigstat">
+      <span className="srv-bigstat__value">{value}</span>
+      <span className="srv-bigstat__label">{label}</span>
+      {note && <span className="adm-muted adm-small">{note}</span>}
+      {people && (
+        <>
+          <button type="button" className="srv-more" onClick={() => setOpen(!open)} aria-expanded={open}>
+            {open ? "Hide names" : "Show names"}
+          </button>
+          {open && <PeopleChips people={people} />}
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Part-to-whole for a one-answer question: a single bar split by answer, with a
+ * legend that carries the names, counts and percentages. Click a legend row for who.
+ */
+export function SplitBar({ items, total }) {
+  const [open, setOpen] = useState(null);
+  const shown = items.filter((i) => i.count);
+  const main = shown.slice(0, SPLIT_COLORS.length);
+  const rest = shown.slice(SPLIT_COLORS.length);
+  const parts = [
+    ...main.map((i, n) => ({ ...i, color: SPLIT_COLORS[n] })),
+    ...(rest.length ? [{ label: "Other answers", count: rest.reduce((s, i) => s + i.count, 0), people: rest.flatMap((i) => i.people), color: REST_COLOR }] : []),
+  ];
+  const sum = parts.reduce((s, p) => s + p.count, 0);
+  if (!sum) return <p className="adm-muted adm-small">No answers yet.</p>;
+  return (
+    <div className="srv-split">
+      <div className="srv-split__bar" role="img" aria-label={parts.map((p) => `${p.label}: ${p.count}`).join(", ")}>
+        {parts.map((p) => (
+          <span key={p.label} style={{ flexGrow: p.count, background: p.color }} title={`${p.label}: ${p.count}`} />
+        ))}
+      </div>
+      <ul className="srv-split__legend">
+        {parts.map((p) => {
+          const isOpen = open === p.label;
+          return (
+            <li key={p.label}>
+              <button type="button" onClick={() => setOpen(isOpen ? null : p.label)} aria-expanded={isOpen}>
+                <span className="srv-legend__key" style={{ background: p.color }} />
+                <Txt className="srv-split__label">{p.label}</Txt>
+                <span className="srv-split__num">
+                  {pct(p.count, total)}%<span className="adm-muted"> · {p.count}</span>
+                </span>
+              </button>
+              {isOpen && <PeopleChips people={p.people} />}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/** Ranked answers as pills, each shaded by how many picked it: compact for long lists. */
+export function ChipCloud({ items, total }) {
+  const [open, setOpen] = useState(null);
+  const max = Math.max(1, ...items.map((i) => i.count));
+  const current = items.find((i) => i.label === open);
+  return (
+    <div className="srv-cloud">
+      <ul className="srv-cloud__list">
+        {items.map((i) => (
+          <li key={i.label}>
+            <button
+              type="button"
+              className={`srv-cloud__chip${open === i.label ? " is-open" : ""}`}
+              style={{ "--fill": `${(i.count / max) * 100}%` }}
+              onClick={() => setOpen(open === i.label ? null : i.label)}
+              aria-expanded={open === i.label}
+              title={`${i.count} of ${total} (${pct(i.count, total)}%)`}
+            >
+              <Txt>{i.label}</Txt>
+              <span className="srv-cloud__count">{i.count}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {current && <PeopleChips people={current.people} />}
+    </div>
+  );
+}
+
+/** Time slots as tiles: how many of everyone can make each one. */
+export function SlotTiles({ items, total }) {
+  const [open, setOpen] = useState(null);
+  const current = items.find((i) => i.label === open);
+  return (
+    <div className="srv-slots">
+      <ul className="srv-slots__list">
+        {items.map((i, n) => (
+          <li key={i.label}>
+            <button type="button" className={`srv-slot${n === 0 ? " is-best" : ""}${open === i.label ? " is-open" : ""}`} onClick={() => setOpen(open === i.label ? null : i.label)} aria-expanded={open === i.label}>
+              {n === 0 && <span className="srv-slot__best">Best</span>}
+              <span className="srv-slot__value">
+                {i.count}
+                <span className="adm-muted">/{total}</span>
+              </span>
+              <span className="srv-slot__label">{i.label}</span>
+              <span className="srv-slot__track">
+                <span style={{ width: `${pct(i.count, total)}%` }} />
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {current && <PeopleChips people={current.people} />}
+    </div>
+  );
+}
+
+/** Vertical columns for an ordered scale (like academic year). */
+export function Columns({ items, total }) {
+  const [open, setOpen] = useState(null);
+  const max = Math.max(1, ...items.map((i) => i.count));
+  const current = items.find((i) => i.label === open);
+  return (
+    <div className="srv-cols">
+      <div className="srv-cols__plot">
+        {items.map((i) => (
+          <button key={i.label} type="button" className={`srv-col${open === i.label ? " is-open" : ""}`} onClick={() => setOpen(open === i.label ? null : i.label)} aria-expanded={open === i.label} aria-label={`${i.label}: ${i.count}`}>
+            <span className="srv-col__value">{i.count}</span>
+            <span className="srv-col__bar" style={{ height: `${(i.count / max) * 100}%` }} />
+            <span className="srv-col__label">{i.label}</span>
+          </button>
+        ))}
+      </div>
+      {current && (
+        <>
+          <p className="adm-muted adm-small">
+            {current.label}: {current.count} ({pct(current.count, total)}%)
+          </p>
+          <PeopleChips people={current.people} />
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Favorite colors as one strip in the colors themselves. */
+export function ColorStrip({ items }) {
+  return (
+    <div className="srv-split">
+      <div className="srv-split__bar srv-split__bar--colors" role="img" aria-label={items.map((c) => `${c.label}: ${c.count}`).join(", ")}>
+        {items.map((c) => (
+          <span key={c.label} style={{ flexGrow: c.count, background: c.hex ?? REST_COLOR }} title={`${c.label}: ${c.count}`} />
+        ))}
+      </div>
+      <ul className="srv-colors">
+        {items.map((c) => (
+          <li key={c.label} title={c.people.map(displayName).join(", ")}>
+            <span className="srv-colors__swatch" style={{ background: c.hex ?? "transparent" }} />
+            <span>{c.label}</span>
+            <span className="adm-muted">{c.count}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Groups of people shown as a row of their characters, with a count. */
+export function TierTiles({ tiers, total }) {
+  const [open, setOpen] = useState(null);
+  const current = tiers.find((t) => t.id === open);
+  return (
+    <div className="srv-tiers">
+      <ul className="srv-tiers__list">
+        {tiers.map((t, n) => (
+          <li key={t.id}>
+            <button type="button" className={`srv-tiertile${open === t.id ? " is-open" : ""}`} onClick={() => setOpen(open === t.id ? null : t.id)} aria-expanded={open === t.id}>
+              <span className="srv-tiertile__key" style={{ background: LEVEL_COLORS[[0, 2, 3][n] ?? 3] }} />
+              <span className="srv-tiertile__value">{t.count}</span>
+              <span className="srv-tiertile__label">{t.label}</span>
+              <span className="adm-muted adm-small">{pct(t.count, total)}% of people</span>
+              <span className="srv-tiertile__faces" aria-hidden="true">
+                {t.people.slice(0, 8).map((p) => (
+                  <Avatar key={p.key} person={p} size={22} />
+                ))}
+                {t.people.length > 8 && <span className="adm-muted adm-small">+{t.people.length - 8}</span>}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {current && <PeopleChips people={current.people} />}
+    </div>
   );
 }
 

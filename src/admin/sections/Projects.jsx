@@ -65,7 +65,8 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
       <section className="adm-panel" aria-label="Projects">
         <div className="adm-panel__head">
           <p className="adm-muted adm-small">
-            Requests from other tracks land in <strong>New request</strong>. Anything <strong>In progress</strong> shows under Builds on the site.
+            Requests land in <strong>New request</strong>. <strong>In progress</strong> is on the TV on the site; <strong>Done</strong> is in
+            the drawer.
           </p>
           <Button variant="primary" onClick={() => setSelected("new")}>
             + Add
@@ -90,7 +91,7 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
                 {p.title} {filter === "all" && <span className={tagClass(p.status)}>{STATUS[p.status]}</span>}
               </span>
               <span className="adm-muted adm-small">
-                #{ticket(p.id)} · {forWhom(p, tracks)} · {kindOf(p.kind).label} · {when(p.createdAt)}
+                {[`#${ticket(p.id)}`, forWhom(p, tracks), kindOf(p.kind)?.label, when(p.createdAt)].filter(Boolean).join(" · ")}
               </span>
             </span>
           )}
@@ -160,7 +161,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
     trackId: project?.trackId ?? "",
     forLabel: project?.forLabel ?? "",
     requesterTrack: project?.requesterTrack ?? "",
-    kind: project?.kind ?? "other",
+    kind: kindOf(project?.kind) ? project.kind : "",
     status: project?.status ?? "in_progress",
     note: project?.note ?? "",
     details: project?.details ?? "",
@@ -229,7 +230,10 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
             </label>
           ))}
         </div>
-        <p className="adm-field__hint">In progress shows it on the site. Done and Declined take it off again.</p>
+        <p className="adm-field__hint">
+          In progress puts it on the TV on the site. Done files it in the “shipped” drawer, stamped with today's date. Declined keeps it off
+          the site.
+        </p>
       </fieldset>
 
       <div className="adm-grid">
@@ -278,8 +282,9 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
             </p>
           )}
         </fieldset>
-        <Field label="Kind">
+        <Field label="Kind" hint="Optional. Shown on the TV when set.">
           <select id="pj-kind" value={v.kind} onChange={(e) => set("kind", e.target.value)}>
+            <option value="">None</option>
             {KINDS.map((k) => (
               <option key={k.id} value={k.id}>
                 {k.label}

@@ -111,7 +111,8 @@ export const tracks = sqliteTable("tracks", {
 // request submitted on the site) and its own projects (added in the admin panel).
 // A new status only needs adding here; which ones the site shows is PUBLIC_PROJECT_STATUSES.
 export const PROJECT_STATUSES = ["new", "in_progress", "done", "declined"] as const;
-export const PUBLIC_PROJECT_STATUSES = ["in_progress"] as const;
+// In progress: on the TV. Done: filed in the "shipped" drawer.
+export const PUBLIC_PROJECT_STATUSES = ["in_progress", "done"] as const;
 
 export const projects = sqliteTable(
   "projects",
@@ -122,7 +123,8 @@ export const projects = sqliteTable(
     trackId: text("track_id").references(() => tracks.id, { onDelete: "set null" }),
     // Projects only, optional: who it's for, e.g. "the whole club".
     forLabel: text("for_label"),
-    // What kind of thing it is: "survey", "website"… (the list lives in src/data/projects.js).
+    // Optional: what kind of thing it is, "survey", "website"… (the list lives in
+    // src/data/projects.js). "", "other" or any id that's not in the list means none.
     kind: text("kind").notNull().default("other"),
     status: text("status", { enum: PROJECT_STATUSES }).notNull().default("new"),
     // One public line on the site, e.g. "Draft ready for review".
@@ -135,6 +137,8 @@ export const projects = sqliteTable(
     contact: text("contact"),
     // Free-form, as they wrote it: "before week 8", "ASAP"…
     deadline: text("deadline"),
+    // When it was marked done (cleared if it's reopened). Shown on its folder in the drawer.
+    finishedAt: text("finished_at"),
     ...timestamps,
   },
   (t) => [index("projects_status").on(t.status)]

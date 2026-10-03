@@ -44,11 +44,21 @@ route.get("/", async (c) => {
   return c.json({ projects: rows.map((p) => ({ ...p, members: team.get(p.id) ?? [] })) });
 });
 
+// Marking a project done stamps when; reopening it clears the stamp.
+const finished = (status: Input["status"], before?: { status: string; finishedAt: string | null }) => {
+  if (status !== "done") return { finishedAt: null };
+  if (before?.status === "done" && before.finishedAt) return {};
+  return { finishedAt: sql`(datetime('now'))` };
+};
+
 route.post("/", body(input), async (c) => {
   const { members: team, ...p } = c.req.valid("json");
   if (p.trackId && !(await trackExists(c.env, p.trackId))) return c.json({ error: "That track doesn't exist anymore" }, 400);
   const db = getDb(c.env);
-  const [created] = await db.insert(projects).values(p).returning({ id: projects.id });
+  const [created] = await db
+    .insert(projects)
+    .values({ ...p, ...finished(p.status) })
+    .returning({ id: projects.id });
   await setTeam(c.env, created.id, team);
   return c.json({ ok: true, id: created.id }, 201);
 });
@@ -57,9 +67,12 @@ route.put("/:id", body(input), async (c) => {
   const id = Number(c.req.param("id"));
   const { members: team, ...p } = c.req.valid("json");
   if (p.trackId && !(await trackExists(c.env, p.trackId))) return c.json({ error: "That track doesn't exist anymore" }, 400);
-  const [updated] = await getDb(c.env)
+  const db = getDb(c.env);
+  const [before] = await db.select({ status: projects.status, finishedAt: projects.finishedAt }).from(projects).where(eq(projects.id, id));
+  if (!before) return c.json({ error: "Project not found" }, 404);
+  const [updated] = await db
     .update(projects)
-    .set({ ...p, updatedAt: sql`(datetime('now'))` })
+    .set({ ...p, ...finished(p.status, before), updatedAt: sql`(datetime('now'))` })
     .where(eq(projects.id, id))
     .returning({ id: projects.id });
   if (!updated) return c.json({ error: "Project not found" }, 404);

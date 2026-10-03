@@ -27,6 +27,7 @@ content.get("/", async (c) => {
         status: projects.status,
         note: projects.note,
         updatedAt: projects.updatedAt,
+        finishedAt: projects.finishedAt,
       })
       .from(projects)
       .where(inArray(projects.status, [...PUBLIC_PROJECT_STATUSES]))
@@ -79,6 +80,7 @@ content.get("/", async (c) => {
       ...p,
       trackId: p.trackId ?? undefined,
       forLabel: p.forLabel ?? undefined,
+      finishedAt: p.finishedAt ?? undefined,
       members: team.get(p.id) ?? [],
     })),
   });

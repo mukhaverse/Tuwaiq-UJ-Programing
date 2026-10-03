@@ -2,88 +2,195 @@
   border-top: var(--line);
 }
 
-/* Room above each row for the crew peeking out from behind the monitors. */
-.builds__grid {
+/* The TV on the left, the drawer on the right; stacked on narrow screens. */
+.builds__stage {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
-  gap: 64px clamp(20px, 2.6vw, 40px);
-  margin: 0;
-  padding: 48px 0 0;
-  list-style: none;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(36px, 5vw, 72px);
+  align-items: start;
 }
 
-/* ---------- A monitor (rig): bezel, screen, chin, stand ----------
-   --hue is the project's colour (a collaboration's track colour, violet for
-   our own projects); --hue-ink is the text colour that reads on it. */
-.rig {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-}
-
-.rig__monitor {
-  position: relative;
-  padding: 12px 12px 0;
-  border: 2px solid color-mix(in srgb, var(--hue) 45%, var(--edge));
-  border-radius: 18px;
-  background: linear-gradient(180deg, var(--raised), var(--surface));
-  box-shadow:
-    0 6px 0 0 #0a0812,
-    0 6px 0 2px color-mix(in srgb, var(--hue) 30%, var(--edge)),
-    0 18px 50px -20px color-mix(in srgb, var(--hue) 55%, transparent);
-  transition:
-    translate 0.3s var(--spring),
-    box-shadow 0.3s;
-}
-
-@media (hover: hover) {
-  .rig:hover .rig__monitor {
-    translate: 0 -4px;
-    box-shadow:
-      0 10px 0 0 #0a0812,
-      0 10px 0 2px color-mix(in srgb, var(--hue) 50%, var(--edge)),
-      0 24px 60px -18px color-mix(in srgb, var(--hue) 75%, transparent);
+@media (max-width: 900px) {
+  .builds__stage {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* The screen: dark glass lit by the hue, with scanlines and a reflection. */
-.rig__screen {
-  --power: 1;
-  position: relative;
+.builds__col {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.builds__label {
+  margin: 0;
+  color: var(--muted);
+}
+
+.builds__label::before {
+  content: "// ";
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.builds__ask {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 190px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  margin-top: 8px;
+  padding: 16px 18px;
+  border: 2px dashed rgb(244 166 100 / 0.45);
+  border-radius: var(--radius);
+}
+
+.builds__ask p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.builds__ask strong {
+  color: var(--fg);
+}
+
+/* ---------- The TV ----------
+   --hue is the channel's colour (a collaboration's track colour, violet for our
+   own projects); --hue-ink is the text colour that reads on it. */
+.tv {
+  position: relative;
+  isolation: isolate;
+  padding-top: 70px; /* room for the antenna and the crew */
+}
+
+.tv__antenna {
+  position: absolute;
+  z-index: -2;
+  top: 0;
+  left: calc(50% - 60px);
+  width: 120px;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.tv__antenna circle {
+  fill: var(--hue);
+  stroke: none;
+  filter: drop-shadow(0 0 6px var(--hue));
+}
+
+.tv__dome {
+  fill: var(--raised);
+  stroke: var(--edge);
+  stroke-width: 3;
+}
+
+/* The crew stands behind the set and peeks over the top. */
+.tv__crew {
+  position: absolute;
+  z-index: -1;
+  top: 22px;
+  inset-inline-end: 34px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.tv__mate {
+  display: block;
+  width: 70px;
+  margin-inline-start: -18px;
+}
+
+.tv__mate:last-child {
+  margin-inline-start: 0;
+}
+
+/* Hovering the TV: the crew peeks further, one after another. */
+.tv__mate > svg {
+  transition: translate 0.35s var(--spring);
+}
+
+@media (hover: hover) {
+  .tv:hover .tv__mate > svg {
+    translate: 0 -14px;
+  }
+
+  .tv:hover .tv__mate:nth-last-child(2) > svg {
+    transition-delay: 0.05s;
+  }
+
+  .tv:hover .tv__mate:nth-last-child(3) > svg {
+    transition-delay: 0.1s;
+  }
+}
+
+.tv__set {
+  position: relative;
+  padding: 16px 16px 0;
+  border: 2px solid color-mix(in srgb, var(--hue) 45%, var(--edge));
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--raised), var(--surface));
+  box-shadow:
+    0 7px 0 0 #0a0812,
+    0 7px 0 2px color-mix(in srgb, var(--hue) 30%, var(--edge)),
+    0 24px 70px -24px color-mix(in srgb, var(--hue) 60%, transparent);
+  transition:
+    border-color 0.4s,
+    box-shadow 0.4s;
+}
+
+/* A label stuck on the set: what's on and who it's for. */
+.tv__sticker {
+  position: absolute;
+  z-index: 2;
+  top: -14px;
+  inset-inline-start: 22px;
+  max-width: calc(100% - 44px);
   overflow: hidden;
-  padding: 16px 16px 26px;
-  border: 2px solid #07060d;
-  border-radius: 10px;
+  padding: 5px 11px;
+  border-radius: 6px;
+  background: var(--hue);
+  box-shadow: 2px 3px 0 rgb(0 0 0 / 0.55);
+  color: var(--hue-ink);
+  font-weight: 800;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  rotate: -3deg;
+}
+
+/* The screen: dark glass lit by the hue, with scanlines and a reflection. */
+.tv__screen {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid #07060d;
+  border-radius: 16px / 20px;
   background:
-    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 24%, transparent), transparent 70%),
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 26%, transparent), transparent 70%),
     #09080f;
-  box-shadow: inset 0 0 24px rgb(0 0 0 / 0.8);
+  box-shadow: inset 0 0 40px rgb(0 0 0 / 0.85);
 }
 
-.rig__screen > * {
-  opacity: var(--power);
-}
-
-.rig__screen::before,
-.rig__screen::after {
+.tv__screen::before,
+.tv__screen::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
 }
 
-.rig__screen::before {
+.tv__screen::before {
   background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px);
   animation: scan 7s linear infinite;
 }
 
-.rig__screen::after {
-  background: linear-gradient(115deg, rgb(255 255 255 / 0.07) 0 22%, transparent 22.5%);
+.tv__screen::after {
+  background: linear-gradient(115deg, rgb(255 255 255 / 0.07) 0 20%, transparent 20.5%);
 }
 
 @keyframes scan {
@@ -92,53 +199,73 @@
   }
 }
 
-/* A label stuck on the bezel: what it is and who it's for. */
-.rig__sticker {
-  position: absolute;
-  z-index: 2;
-  top: -13px;
-  inset-inline-start: 18px;
-  max-width: calc(100% - 36px);
-  overflow: hidden;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: var(--hue);
-  box-shadow: 2px 3px 0 rgb(0 0 0 / 0.55);
-  color: var(--hue-ink);
-  font-weight: 800;
-  font-size: 0.66rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  rotate: -3deg;
-  transition: rotate 0.3s var(--spring);
+.tv__picture {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: clamp(250px, 26vw, 320px);
+  padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 40px;
 }
 
-@media (hover: hover) {
-  .rig:hover .rig__sticker {
-    rotate: 1deg;
+/* Static between channels: noise, jumping around. */
+.tv__static {
+  position: absolute;
+  inset: -50%;
+  z-index: 1;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.9;
+  animation: static 0.2s steps(4) infinite;
+}
+
+@keyframes static {
+  25% {
+    translate: -12% 8%;
+  }
+  50% {
+    translate: 9% -14%;
+  }
+  75% {
+    translate: -6% -4%;
+  }
+  100% {
+    translate: 14% 10%;
   }
 }
 
-.rig__status {
+/* The channel number that flashes up after switching, in the empty bottom corner. */
+.tv__osd {
+  position: absolute;
+  z-index: 3;
+  bottom: 34px;
+  inset-inline-end: 24px;
+  color: #6dff8f;
+  font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 0 10px rgb(109 255 143 / 0.8),
+    2px 2px 0 #000;
+}
+
+.tv__status {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   margin: 0;
   color: var(--hue);
   font-weight: 700;
 }
 
-.rig__ago {
+.tv__ago {
   color: var(--muted);
   font-weight: 400;
-  font-size: 0.62rem;
-  white-space: nowrap;
 }
 
-.rig__dot {
+.tv__dot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   margin-inline-end: 4px;
   border-radius: 50%;
   background: var(--hue);
@@ -152,63 +279,146 @@
   }
 }
 
-.rig__title {
-  margin: 0;
-  max-width: 18ch;
+.tv__title {
+  margin: 4px 0 0;
+  max-width: 16ch;
   color: #fff;
-  font-size: clamp(1.3rem, 2vw, 1.6rem);
-  letter-spacing: -0.04em;
-  text-shadow: 0 0 18px color-mix(in srgb, var(--hue) 55%, transparent);
+  font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--hue) 55%, transparent);
 }
 
-.rig__note {
+.tv__note {
   margin: 0;
+  max-width: 46ch;
   color: var(--fg);
   font-family: var(--mono);
-  font-size: 0.82rem;
-  opacity: calc(var(--power) * 0.85);
+  font-size: 0.9rem;
+  opacity: 0.85;
 }
 
-.rig__prompt {
+.tv__prompt {
   color: var(--hue);
   font-weight: 700;
 }
 
+.tv__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: auto 0 0;
+  color: var(--muted);
+}
+
+.tv__kind {
+  color: var(--hue);
+}
+
 /* Loading bar along the bottom of the screen: it never quite finishes. */
-.rig__load {
+.tv__load {
   position: absolute;
-  inset: auto 16px 12px;
-  height: 5px;
+  inset: auto 20px 16px;
+  height: 6px;
   border-radius: 3px;
-  background: repeating-linear-gradient(-45deg, var(--hue) 0 7px, color-mix(in srgb, var(--hue) 35%, #09080f) 7px 14px);
+  background: repeating-linear-gradient(-45deg, var(--hue) 0 8px, color-mix(in srgb, var(--hue) 35%, #09080f) 8px 16px);
   box-shadow: 0 0 10px color-mix(in srgb, var(--hue) 50%, transparent);
   animation: load 1.3s linear infinite;
 }
 
-/* One stripe period: 14px across the 45° stripes is 14 / sin 45° wide. */
+/* One stripe period: 16px across the 45° stripes is 16 / sin 45° wide. */
 @keyframes load {
   to {
-    background-position: 19.8px 0;
+    background-position: 22.63px 0;
   }
 }
 
-.rig__chin {
+.tv__nosignal {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  flex: 1;
+  text-align: center;
+}
+
+.tv__nosignal p {
+  margin: 0;
+}
+
+.tv__nosignal .mono {
+  padding: 8px 18px;
+  border: 2px solid var(--muted);
+  color: var(--fg);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  animation: drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0% {
+    translate: -14px -10px;
+  }
+  100% {
+    translate: 14px 10px;
+  }
+}
+
+.tv__chin {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 9px 6px 10px;
+  padding: 12px 6px 14px;
 }
 
-.rig__brand {
+.tv__brand {
   color: var(--muted);
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
-.rig__led {
-  width: 8px;
-  height: 8px;
+.tv__count {
+  margin-inline-start: 8px;
+  color: var(--hue);
+}
+
+.tv__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Channel buttons are keycaps that press in. */
+.tv__btn {
+  padding: 8px 12px;
+  border: var(--line);
+  border-radius: 10px;
+  background: var(--raised);
+  box-shadow: var(--cap);
+  color: var(--fg);
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    translate 0.1s ease-out,
+    box-shadow 0.1s ease-out,
+    border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .tv__btn:hover {
+    border-color: var(--hue);
+  }
+}
+
+.tv__btn:active {
+  translate: 0 3px;
+  box-shadow: var(--cap-down);
+}
+
+.tv__led {
+  width: 9px;
+  height: 9px;
+  margin-inline-start: 4px;
   border-radius: 50%;
   background: var(--hue);
   box-shadow: 0 0 10px var(--hue);
@@ -222,123 +432,207 @@
   }
 }
 
-.rig__stand {
-  display: grid;
-  justify-items: center;
-}
-
-.rig__neck {
-  width: 46px;
-  height: 22px;
-  border-inline: 2px solid var(--edge);
-  background: linear-gradient(90deg, var(--surface), var(--raised), var(--surface));
-}
-
-.rig__base {
-  width: 140px;
-  height: 12px;
-  border: 2px solid var(--edge);
-  border-radius: 8px 8px 4px 4px;
-  background: var(--raised);
-  box-shadow: 0 4px 0 #0a0812;
-}
-
-/* The crew stands behind the monitor and peeks over the top. */
-.rig__crew {
-  position: absolute;
-  z-index: -1;
-  top: -44px;
-  inset-inline-end: 26px;
+.tv__feet {
   display: flex;
-  flex-direction: row-reverse;
+  justify-content: space-between;
+  padding: 0 14%;
 }
 
-.rig__mate {
-  display: block;
-  width: 60px;
-  margin-inline-start: -16px;
+.tv__feet span {
+  width: 44px;
+  height: 14px;
+  border: var(--line);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: var(--raised);
 }
 
-.rig__mate:last-child {
-  margin-inline-start: 0;
+/* ---------- The drawer of shipped builds ---------- */
+.cabinet {
+  position: relative;
+  padding-top: 40px; /* room for the back folders' tabs */
 }
 
-/* ---------- "Your idea here" (only while requests are open) ---------- */
-.rig__link {
+/* The inside of the open drawer: folders stand in it, the front hides their bottoms. */
+.cabinet__inside {
   display: flex;
   flex-direction: column;
-  border-radius: 18px;
+  margin: 0;
+  padding: 0 14px 30px;
+  border: var(--line);
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(180deg, #08070e, var(--surface));
+  list-style: none;
 }
 
-.rig--ask .rig__monitor {
-  border-style: dashed;
+.cabinet__empty {
+  padding: 46px 8px 18px;
+  color: var(--muted);
+  text-align: center;
+  text-transform: none;
 }
 
-.rig__plus {
+.cabinet__front {
+  position: relative;
+  z-index: 1;
   display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--hue);
-  border-radius: 10px;
-  color: var(--hue);
-  font: 800 1.5rem/1 var(--mono);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--hue) 45%, transparent);
-  transition: rotate 0.35s var(--spring);
+  justify-items: center;
+  gap: 10px;
+  margin-top: -26px;
+  padding: 14px 16px 18px;
+  border: var(--line);
+  border-radius: 6px 6px 16px 16px;
+  background: linear-gradient(180deg, var(--raised), var(--surface));
+  box-shadow: var(--cap);
 }
 
-.rig--ask .rig__brand {
-  color: var(--hue);
+/* A paper label in a metal frame. */
+.cabinet__label {
+  padding: 4px 12px;
+  border: 2px solid var(--edge);
+  border-radius: 4px;
+  background: #ede6d6;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.cabinet__handle {
+  width: 96px;
+  height: 14px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.5);
+}
+
+/* A folder: a tab at a staggered spot, and a body that the next folder overlaps.
+   Opening one pulls it up and unfolds what's inside. */
+.folder {
+  --paper: color-mix(in srgb, var(--hue) 26%, var(--raised));
+  position: relative;
+  margin-top: -14px;
+  transition: translate 0.3s var(--spring);
+}
+
+.folder:first-child {
+  margin-top: 0;
+}
+
+.folder__tab {
+  position: relative;
+  display: block;
+  max-width: min(58%, 100% - var(--tab));
+  margin-inline-start: var(--tab);
+  padding: 7px 14px 6px;
+  border: 2px solid color-mix(in srgb, var(--hue) 55%, var(--edge));
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--paper);
+  color: var(--fg);
+  font: 700 0.82rem/1.2 var(--body);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.folder__name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder__tab:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.folder__body {
+  margin-top: -2px;
+  border: 2px solid color-mix(in srgb, var(--hue) 55%, var(--edge));
+  border-radius: 0 8px 4px 4px;
+  background: var(--paper);
+  box-shadow: 0 -3px 10px rgb(0 0 0 / 0.35);
 }
 
 @media (hover: hover) {
-  .rig--ask:hover .rig__plus {
-    rotate: 90deg;
+  .folder:hover {
+    translate: 0 -5px;
+  }
+
+  .folder:hover .folder__tab {
+    background: color-mix(in srgb, var(--hue) 40%, var(--raised));
   }
 }
 
-/* ---------- Nothing building: no signal ---------- */
-.rig--idle .rig__monitor {
-  box-shadow:
-    0 6px 0 0 #0a0812,
-    0 6px 0 2px var(--edge);
+.folder.is-open {
+  z-index: 1;
+  translate: 0 -10px;
 }
 
-.rig__nosignal {
+/* Closed: a sliver of folder. Open: the sheet inside unfolds. */
+.folder__more {
   display: grid;
-  place-content: center;
-  gap: 6px;
-  flex: 1;
-  text-align: center;
+  grid-template-rows: 0fr;
+  min-height: 22px;
+  transition: grid-template-rows 0.4s var(--spring);
 }
 
-.rig__nosignal p {
+.folder.is-open .folder__more {
+  grid-template-rows: 1fr;
+}
+
+.folder__sheet {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 16px;
+  transition: padding 0.3s;
+}
+
+.folder.is-open .folder__sheet {
+  padding: 16px;
+}
+
+.folder__sticker {
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: var(--hue);
+  color: var(--hue-ink);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.folder__title {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  letter-spacing: -0.04em;
+}
+
+.folder__crew {
+  display: flex;
   margin: 0;
 }
 
-.rig__nosignal .mono {
-  padding: 6px 14px;
-  border: 2px solid var(--muted);
-  color: var(--fg);
-  font-size: 0.9rem;
+.folder__mate {
+  width: 34px;
+  margin-inline-end: -6px;
+}
+
+/* A rubber stamp. */
+.folder__stamp {
+  margin: 4px 0 0;
+  padding: 4px 10px;
+  border: 2px solid var(--cyan);
+  border-radius: 6px;
+  color: var(--cyan);
   font-weight: 800;
-  letter-spacing: 0.2em;
-  animation: drift 9s ease-in-out infinite alternate;
-}
-
-.rig--idle .rig__led {
-  background: var(--orange);
-  box-shadow: 0 0 8px var(--orange);
-  animation: blink-dot 2s steps(1) infinite;
-}
-
-@keyframes drift {
-  0% {
-    translate: -10px -8px;
-  }
-  100% {
-    translate: 10px 8px;
-  }
+  letter-spacing: 0.12em;
+  rotate: -4deg;
 }
 
 /* ---------- Request form: a ticket ---------- */

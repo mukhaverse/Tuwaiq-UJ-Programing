@@ -23,8 +23,12 @@ export const optionalText = (max: number) =>
 
 export const requiredText = (max: number) => z.string().trim().min(1, "Required").max(max);
 
-/** A project's kind, like "survey" or "website". The choices live in src/data/projects.js. */
-export const kind = z.string().trim().regex(/^[a-z0-9-]{1,30}$/, "Pick what kind of thing it is");
+/** A project's kind, like "survey" or "website", or "" for none. The choices live in src/data/projects.js. */
+export const kind = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9-]{0,30}$/, "Unknown kind")
+  .default("");
 
 /** A new order for a list: every id, first to last. */
 export const orderInput = z.object({ ids: z.array(z.string()).min(1) });

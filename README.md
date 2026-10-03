@@ -50,7 +50,7 @@ src/
     badges.js           every badge that can be earned
     milestones.js       the semester journey
     announcement.js     the purple "Up next" tile in the members grid
-    projects.js         what's being built (in progress only), the other tracks and their colours,
+    projects.js         builds (in progress and done), the other tracks and their colours,
                         whether requests are open, plus the request kinds and statuses
   components/
     splash/             boot screen: terminal opens, `git log --graph` draws the mountain,
@@ -61,7 +61,7 @@ src/
     members/            filters, card grid, profile modal, #member/<id> link handling
     playground/         draggable sticker board of every member
     journey/            milestone timeline
-    builds/             the Builds monitors, the "your idea here" monitor, and the request form (#request)
+    builds/             Builds: the TV (Tv.jsx), the shipped drawer (Drawer.jsx), and the request form (#request)
     character/          the cartoon characters (blob, star, ghost, robot, cat, cloud, mushroom,
                         flower, monitor; sun and planet for the leader and co-leader)
     badges/             Badge + BadgeMark (the medal graphic)
@@ -85,14 +85,16 @@ src/
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.
 
-**Builds** (the section after the journey): everything the track is working on, each on its own little monitor, with the assigned members' characters peeking over the top (each links to their profile). Two kinds:
+**Builds** (the section after the journey) has two halves:
 
-- **Collaborations** are linked to another track and glow in that track's colour, with a "collab × Media" sticker. Tracks and their colours are set in **Tracks** in the admin panel.
-- **Projects** are the track's own work, in violet, with an optional "for …" label ("for the whole club").
+- **On air:** a TV with one channel per build in progress. CH −/+ (or the arrow keys) flips between them with a burst of static and a "CH 02" flash. The assigned members' characters peek over the set (each links to their profile), and the whole set takes the build's colour.
+- **Shipped:** a drawer of folders, one per finished build. Pick one to pull it up: what it was, who it was for, who built it, and a "shipped" stamp with the month.
 
-Manage them in **Projects** in the admin panel. A build shows on the site while it's **In progress**; **Done** or **Declined** takes it off again (nothing is deleted, so a "shipped" list can be built from Done later). **+ Add** creates one directly.
+Each build is either a **collaboration** (linked to another track: it glows in that track's colour, with a "collab × Media" sticker; tracks and colours are set in **Tracks** in the admin panel) or a **project** (the track's own work, in violet, with an optional "for …" label). The kind (survey, website…) is optional; leave it empty and nothing is shown.
 
-**Requests** are off until you switch them on with the bar at the top of **Projects**. While they're open, Builds ends with a "Your idea here" monitor that opens the request form, also reachable at `/#request` (a link to send other tracks; while requests are closed it says so instead, and the API refuses submissions). No sign-in: people say what they need, pick their track (or type one under "Other"), leave a contact, and get a ticket number like `#PT-007`. Requests land under **New request**; set one to In progress to start it. The requester's name, contact, typed-in track and details stay private (admin API only, never in `/api/content`).
+Manage them in **Projects** in the admin panel: **In progress** puts a build on the TV, **Done** files it in the drawer (stamped with the date it was marked done; reopening it clears the stamp), **Declined** keeps it off the site. **+ Add** creates one directly.
+
+**Requests** are off until you switch them on with the bar at the top of **Projects**. While they're open, a "Request a build" button under the TV opens the request form, also reachable at `/#request` (a link to send other tracks; while requests are closed it says so instead, and the API refuses submissions). No sign-in: people say what they need, pick their track (or type one under "Other"), leave a contact, and get a ticket number like `#PT-007`. Requests land under **New request**; set one to In progress to start it. The requester's name, contact, typed-in track and details stay private (admin API only, never in `/api/content`).
 
 Where to change things: request kinds are `KINDS` in `src/data/projects.js`; statuses are `PROJECT_STATUSES` in `worker/db/schema.ts` (+ labels in `STATUS`), and which of them the site shows is `PUBLIC_PROJECT_STATUSES`. Spam protection is light: a hidden honeypot field, length limits, and the form stops taking requests once 100 are waiting in New.
 

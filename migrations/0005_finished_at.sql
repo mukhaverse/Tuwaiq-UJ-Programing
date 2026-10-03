@@ -1,0 +1,1 @@
+ALTER TABLE `projects` ADD `finished_at` text;

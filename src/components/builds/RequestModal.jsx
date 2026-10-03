@@ -83,10 +83,20 @@ export default function RequestModal({ onClose }) {
               </h2>
 
               <fieldset className="req__kinds">
-                <legend className="req__label">It's a…</legend>
-                {KINDS.map((k, i) => (
+                <legend className="req__label">
+                  It's a… <span className="req__optional">optional</span>
+                </legend>
+                {KINDS.map((k) => (
                   <label key={k.id} className="req__kind">
-                    <input type="radio" name="kind" value={k.id} checked={v.kind === k.id} onChange={set("kind")} required={i === 0} />
+                    {/* Clicking the picked one again un-picks it. */}
+                    <input
+                      type="radio"
+                      name="kind"
+                      value={k.id}
+                      checked={v.kind === k.id}
+                      onChange={set("kind")}
+                      onClick={() => v.kind === k.id && setV((prev) => ({ ...prev, kind: "" }))}
+                    />
                     <span className="req__glyph" aria-hidden="true">
                       {k.glyph}
                     </span>

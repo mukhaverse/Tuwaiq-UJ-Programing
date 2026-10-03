@@ -10,16 +10,24 @@
 //   title      short name
 //   trackId    the track it's a collaboration with (undefined for projects)
 //   forLabel   projects only, optional: who it's for, e.g. "the whole club"
-//   kind       one of KINDS below
-//   status     see STATUS below; the site only gets the ones the API makes public
+//   kind       optional: one of KINDS below
+//   status     "in_progress" (on the TV) or "done" (in the shipped drawer)
 //   note       one public line about where it's at
 //   updatedAt  "YYYY-MM-DD HH:MM:SS", UTC
+//   finishedAt same format, for done ones: when it was marked done
 //   members    ids of the members working on it
 export let projects = [];
 
 export function setProjects(list) {
   projects = list;
 }
+
+/** In progress, most recently updated first: the TV's channels. */
+export const onAir = () => projects.filter((p) => p.status === "in_progress");
+
+/** Done, most recently finished first: the folders in the drawer. */
+export const shipped = () =>
+  projects.filter((p) => p.status === "done").sort((a, b) => (b.finishedAt ?? b.updatedAt).localeCompare(a.finishedAt ?? a.updatedAt));
 
 // The club's other tracks: { id, name, color: "#rrggbb" }, edited in the admin panel.
 export let tracks = [];
@@ -41,17 +49,18 @@ export function setRequests(value) {
   requests = value ?? { open: false };
 }
 
-// What people can ask for. A new kind is one line here: the API accepts any id.
+// What kind of thing a build is. Optional everywhere: leave it out and nothing
+// is shown. A new kind is one line here (the API accepts any id).
 export const KINDS = [
   { id: "survey", label: "Survey / form", glyph: "?" },
   { id: "website", label: "Website / page", glyph: "</>" },
   { id: "tool", label: "Tool / bot", glyph: "⚙" },
   { id: "data", label: "Data / sheets", glyph: "▦" },
-  { id: "other", label: "Something else", glyph: "✦" },
 ];
 
+/** The kind, or undefined when there's none (older builds may say "other": also none). */
 export function kindOf(id) {
-  return KINDS.find((k) => k.id === id) ?? KINDS.at(-1);
+  return KINDS.find((k) => k.id === id);
 }
 
 // Every status a project can have (the API's list is PROJECT_STATUSES in worker/db/schema.ts).
@@ -65,6 +74,11 @@ export const STATUS = {
 /** The number a requester gets back: PT-007. */
 export function ticket(id) {
   return `PT-${String(id).padStart(3, "0")}`;
+}
+
+/** "Oct 2026" from a database timestamp. */
+export function monthOf(timestamp) {
+  return new Date(`${timestamp.replace(" ", "T")}Z`).toLocaleDateString("en", { month: "short", year: "numeric" });
 }
 
 /** "just now", "5 hr ago", "3 days ago"… from a database timestamp. */

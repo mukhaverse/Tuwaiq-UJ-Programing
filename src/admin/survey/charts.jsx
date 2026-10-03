@@ -2,6 +2,8 @@
 // with its count and opens to show who's behind it, so nothing hides in a tooltip.
 import { useState } from "react";
 import Character from "../../components/character/Character";
+import { useToast } from "../hooks";
+import { Button } from "../ui";
 import { color } from "../../lib/palette";
 import { isArabic } from "./model";
 import { LEVEL_COLORS, LEVEL_NAMES, REST_COLOR, SPLIT_COLORS, displayName, pct, personHref } from "./format";
@@ -397,6 +399,11 @@ export function ScaleStack({ scales }) {
                 </tbody>
               </table>
             )}
+            {isOpen && (
+              <a className="adm-link adm-small srv-scale__more" href={`#admin/survey/questions/${s.id}`}>
+                Full stats and breakdown for {s.label} →
+              </a>
+            )}
           </div>
         );
       })}
@@ -431,4 +438,185 @@ export function ScoreBar({ score }) {
 export function TierTag({ tier }) {
   if (!tier) return null;
   return <span className={`adm-tag srv-tier srv-tier--${tier.id}`}>{tier.label}</span>;
+}
+
+/** Copies people's names, one per line (to paste into a group chat or a message). */
+export function CopyNames({ people, label = "Copy names" }) {
+  const toast = useToast();
+  const copy = () =>
+    navigator.clipboard.writeText(people.map(displayName).join("\n")).then(
+      () => toast(`Copied ${people.length} ${people.length === 1 ? "name" : "names"}`),
+      () => toast("Couldn't copy", "error")
+    );
+  return (
+    <Button className="srv-copy" onClick={copy} disabled={!people.length}>
+      {label}
+    </Button>
+  );
+}
+
+/** Every answer to one question: count, share, who, and a button to copy their names. */
+export function AnswerTable({ items, total, levels = false }) {
+  if (!items.length) return <p className="adm-muted adm-small">No answers yet.</p>;
+  const max = Math.max(1, ...items.map((i) => i.count));
+  return (
+    <div className="srv-answers">
+      <table className="srv-table">
+        <thead>
+          <tr>
+            <th scope="col">Answer</th>
+            <th scope="col">People</th>
+            <th scope="col">Who</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item, n) => (
+            <tr key={item.label}>
+              <th scope="row">
+                {levels && <span className="srv-legend__key" style={{ background: LEVEL_COLORS[n] }} />}
+                {levels && `${n + 1}. `}
+                <Txt>{item.label}</Txt>
+              </th>
+              <td className="srv-table__num">
+                <strong>{item.count}</strong> <span className="adm-muted">· {pct(item.count, total)}%</span>
+                <span className="srv-answers__bar">
+                  <span style={{ width: `${(item.count / max) * 100}%` }} />
+                </span>
+              </td>
+              <td>
+                <div className="srv-answers__who">
+                  <PeopleChips people={item.people} limit={6} empty="—" />
+                  {item.people.length > 0 && <CopyNames people={item.people} label="Copy" />}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** A skill question's levels as one bar, lowest to highest, in the level ramp. */
+export function LevelSplit({ items, total }) {
+  return (
+    <div className="srv-split">
+      <div className="srv-split__bar" role="img" aria-label={items.map((i) => `${i.label}: ${i.count}`).join(", ")}>
+        {items.map((i, n) =>
+          i.count ? <span key={i.label} style={{ flexGrow: i.count, background: LEVEL_COLORS[n] }} title={`${n + 1}. ${i.label}: ${i.count}`} /> : null
+        )}
+      </div>
+      <ul className="srv-split__legend srv-split__legend--static">
+        {items.map((i, n) => (
+          <li key={i.label}>
+            <span className="srv-legend__key" style={{ background: LEVEL_COLORS[n] }} />
+            <span className="srv-split__label">
+              {n + 1}. {i.label}
+            </span>
+            <span className="srv-split__num">
+              {pct(i.count, total)}%<span className="adm-muted"> · {i.count}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * A question's answers split by a kind of person (rows: answers, columns: groups).
+ * Cells show what share of that group gave the answer, shaded darker for more, so
+ * groups of different sizes compare fairly. Click a cell for who.
+ */
+export function Heatmap({ data, multi }) {
+  const [open, setOpen] = useState(null);
+  const current = open && data.rows[open.r]?.cells[open.c];
+  if (!data.columns.length) return <p className="adm-muted adm-small">Not enough answers to compare.</p>;
+  return (
+    <div className="srv-heat">
+      <div className="srv-heat__scroll">
+        <table className="srv-heat__table">
+          <thead>
+            <tr>
+              <th scope="col">
+                <span className="srv-sr">Answer</span>
+              </th>
+              {data.columns.map((c) => (
+                <th scope="col" key={c.label}>
+                  <Txt>{c.label}</Txt>
+                  <span className="adm-muted"> ({c.size})</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.rows.map((row, r) => (
+              <tr key={row.label}>
+                <th scope="row">
+                  <Txt>{row.label}</Txt>
+                </th>
+                {row.cells.map((cell, c) => {
+                  const share = pct(cell.length, data.columns[c].size);
+                  const isOpen = open?.r === r && open?.c === c;
+                  return (
+                    <td key={c}>
+                      <button
+                        type="button"
+                        className={`srv-heat__cell${isOpen ? " is-open" : ""}`}
+                        style={{ "--share": `${share}%` }}
+                        onClick={() => setOpen(isOpen ? null : { r, c })}
+                        aria-label={`${row.label}, ${data.columns[c].label}: ${cell.length} of ${data.columns[c].size}`}
+                        aria-expanded={isOpen}
+                        disabled={!cell.length}
+                      >
+                        <span className="srv-heat__pct">{cell.length ? `${share}%` : "–"}</span>
+                        {cell.length > 0 && <span className="srv-heat__n">{cell.length}</span>}
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="adm-muted adm-small">
+        Each cell: the share of that column's people who {multi ? "picked" : "gave"} the answer (count underneath). Darker means more.
+        {multi && " People could pick several, so columns add up to more than 100%."}
+      </p>
+      {current && (
+        <div className="srv-heat__who">
+          <p className="adm-small">
+            <strong>
+              <Txt>{data.rows[open.r].label}</Txt>
+            </strong>{" "}
+            · <Txt>{data.columns[open.c].label}</Txt>
+          </p>
+          <PeopleChips people={current} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Responses per day as columns, with the running total under each day. */
+export function Timeline({ days, total }) {
+  const max = Math.max(1, ...days.map((d) => d.count));
+  const label = (day) => new Date(`${day}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  return (
+    <div className="srv-cols">
+      <div className="srv-cols__plot">
+        {days.map((d) => (
+          <div key={d.day} className="srv-col" title={d.people.map(displayName).join(", ")}>
+            <span className="srv-col__value">+{d.count}</span>
+            <span className="srv-col__bar" style={{ height: `${(d.count / max) * 100}%` }} />
+            <span className="srv-col__label">{label(d.day)}</span>
+          </div>
+        ))}
+      </div>
+      <p className="adm-muted adm-small">
+        Running total: {days.map((d) => `${d.total}/${total}`).join(" → ")}
+      </p>
+    </div>
+  );
 }

@@ -4,15 +4,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import { useToast } from "../hooks";
-import { analyze, buildPeople } from "../survey/model";
+import { analyze, buildPeople, buildQuestions } from "../survey/model";
 import Overview from "../survey/Overview";
+import Questions from "../survey/Questions";
 import { PeopleList, Profile } from "../survey/People";
 import Teams from "../survey/Teams";
 import DataPanel from "../survey/Data";
 import "../survey/survey.css";
 
 const VIEWS = [
-  { id: "", label: "Overview" },
+  { id: "", label: "Overall" },
+  { id: "questions", label: "Questions" },
   { id: "people", label: "People" },
   { id: "teams", label: "Teams" },
   { id: "data", label: "Import & data" },
@@ -35,9 +37,11 @@ export default function SurveySection({ data, path = "" }) {
 
   const { people, missing } = useMemo(() => buildPeople(responses ?? [], data.members), [responses, data.members]);
   const stats = useMemo(() => analyze(people), [people]);
+  const questions = useMemo(() => buildQuestions(people), [people]);
 
   const [view, ...rest] = path.split("/");
   const personId = view === "people" && rest.length ? decodeURIComponent(rest.join("/")) : null;
+  const questionId = view === "questions" ? rest[0] ?? null : null;
   const current = VIEWS.find((v) => v.id === view) ?? VIEWS[0];
 
   let body;
@@ -53,10 +57,11 @@ export default function SurveySection({ data, path = "" }) {
       </div>
     );
   else if (personId) body = <Profile id={personId} people={people} missing={missing} stats={stats} />;
+  else if (current.id === "questions") body = <Questions questions={questions} people={people} stats={stats} id={questionId} />;
   else if (current.id === "people") body = <PeopleList people={people} missing={missing} />;
   else if (current.id === "teams") body = <Teams people={people} />;
   else if (current.id === "data") body = <DataPanel responses={responses} people={people} members={data.members} reload={load} />;
-  else body = <Overview stats={stats} people={people} missing={missing} members={data.members} />;
+  else body = <Overview stats={stats} people={people} missing={missing} members={data.members} questions={questions} />;
 
   return (
     <div className="srv">

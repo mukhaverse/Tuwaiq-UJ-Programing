@@ -1014,7 +1014,7 @@
   list-style: none;
 }
 
-.srv-takeaways button {
+.srv-takeaways a {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr) auto;
   align-items: center;
@@ -1026,14 +1026,12 @@
   border-radius: var(--radius-sm);
   background: var(--raised);
   color: var(--fg);
-  font: inherit;
   font-size: 0.875rem;
-  text-align: start;
-  cursor: pointer;
+  text-decoration: none;
 }
 
-.srv-takeaways button:hover,
-.srv-takeaways button:focus-visible {
+.srv-takeaways a:hover,
+.srv-takeaways a:focus-visible {
   border-color: var(--violet);
 }
 
@@ -1453,4 +1451,455 @@
   font: inherit;
   font-size: 0.8rem;
   cursor: pointer;
+}
+
+.srv-scale__more {
+  display: inline-block;
+  margin: 0 8px 10px;
+}
+
+/* ---------- Questions tab ---------- */
+.srv-qs {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.srv-qnav {
+  position: sticky;
+  top: 74px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  padding: 12px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.srv .srv-qnav__select {
+  display: none;
+}
+
+.srv-qnav__group + .srv-qnav__group {
+  margin-top: 12px;
+}
+
+.srv-qnav__title {
+  margin: 0 0 4px;
+  padding: 0 8px;
+  color: var(--cyan);
+  font: 700 0.68rem var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.srv-qnav ol {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-qnav a {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.srv-qnav a:hover {
+  background: var(--raised);
+  color: var(--fg);
+}
+
+.srv-qnav a[aria-current="page"] {
+  background: var(--raised);
+  color: var(--fg);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--violet);
+}
+
+.srv-qnav__n {
+  min-width: 18px;
+  color: var(--muted);
+  font: 700 0.72rem var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .srv-qs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .srv-qnav {
+    position: static;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .srv .srv-qnav__select {
+    display: block;
+  }
+
+  .srv-qnav__list {
+    display: none;
+  }
+}
+
+.srv-q {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.srv-q__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.srv-q__head h2 {
+  margin: 4px 0;
+  font-family: var(--display);
+  font-size: 1.5rem;
+}
+
+.srv-q__head p {
+  margin: 0;
+}
+
+.srv-q__step {
+  display: flex;
+  gap: 8px;
+}
+
+.srv-q__step .adm-btn {
+  text-decoration: none;
+}
+
+.adm-btn.is-disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.srv-q__dominant {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .srv-q__dominant {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.srv-q__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.srv .srv-q__tools input {
+  flex: 1 1 220px;
+  width: auto;
+}
+
+.srv-q__next {
+  display: grid;
+  gap: 2px;
+  justify-self: end;
+  padding: 12px 16px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  font-weight: 700;
+  text-align: end;
+  text-decoration: none;
+}
+
+.srv-q__next:hover,
+.srv-q__next:focus-visible {
+  border-color: var(--violet);
+}
+
+.srv-split__legend--static li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  font-size: 0.875rem;
+}
+
+/* ---------- Answer table ---------- */
+.srv-answers {
+  overflow-x: auto;
+}
+
+.srv-answers .srv-table {
+  min-width: 560px;
+}
+
+.srv-answers th[scope="row"] {
+  width: 32%;
+}
+
+.srv-answers td.srv-table__num {
+  width: 130px;
+}
+
+.srv-answers__bar {
+  display: block;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--edge);
+}
+
+.srv-answers__bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--srv-bar);
+}
+
+.srv-answers__who {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Phones: each answer becomes a block (answer, count, who) instead of a wide row. */
+@media (max-width: 640px) {
+  .srv-answers .srv-table {
+    min-width: 0;
+  }
+
+  .srv-answers thead {
+    display: none;
+  }
+
+  .srv-answers tr,
+  .srv-answers th[scope="row"],
+  .srv-answers td,
+  .srv-answers td.srv-table__num {
+    display: block;
+    width: auto;
+  }
+
+  .srv-answers tr {
+    padding: 10px 0;
+    border-top: 1px solid var(--edge);
+  }
+
+  .srv-answers th,
+  .srv-answers td {
+    padding: 4px 0;
+    border-top: 0;
+  }
+}
+
+.srv .srv-copy {
+  flex: none;
+  padding: 5px 10px;
+  font-size: 0.72rem;
+}
+
+/* ---------- Breakdown ---------- */
+.srv-dims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.srv-dim {
+  padding: 6px 12px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.srv-dim[aria-checked="true"] {
+  border-color: var(--violet);
+  background: var(--raised);
+  color: var(--fg);
+}
+
+.srv-heat {
+  display: grid;
+  gap: 10px;
+}
+
+.srv-heat__scroll {
+  overflow-x: auto;
+}
+
+.srv-heat__table {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: 0.85rem;
+}
+
+.srv-heat__table th {
+  padding: 6px 8px;
+  font-weight: 600;
+  text-align: start;
+  vertical-align: middle;
+}
+
+.srv-heat__table thead th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.srv-heat__table tbody th {
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.srv-heat__table td {
+  padding: 0;
+}
+
+/* The cell's shade follows the share of its column: a sequential violet. */
+.srv-heat__cell {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 88px;
+  height: 46px;
+  border: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, #8f6cf0 calc(var(--share) * 0.85), var(--raised));
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.srv-heat__cell:disabled {
+  background: var(--raised);
+  color: var(--muted);
+  cursor: default;
+}
+
+.srv-heat__cell.is-open,
+.srv-heat__cell:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+
+.srv-heat__pct {
+  font-weight: 700;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+.srv-heat__n {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.srv-heat__who {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+}
+
+/* ---------- Question index (Overall tab) ---------- */
+.srv-index {
+  display: grid;
+  gap: 8px;
+}
+
+.srv-index__title {
+  margin: 0;
+  color: var(--cyan);
+  font: 700 0.72rem var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.srv-index__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.srv-qtile {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  height: 100%;
+  padding: 14px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.srv-qtile:hover,
+.srv-qtile:focus-visible {
+  border-color: var(--violet);
+}
+
+.srv-qtile__n {
+  position: absolute;
+  top: 12px;
+  inset-inline-end: 14px;
+  color: var(--muted);
+  font: 700 0.72rem var(--mono);
+}
+
+.srv-qtile__label {
+  padding-inline-end: 24px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.srv-qtile__answer {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.srv-qtile__meter {
+  height: 6px;
+  margin-top: 4px;
+  border-radius: 3px;
+  background: var(--edge);
+}
+
+.srv-qtile__meter span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--srv-bar);
 }

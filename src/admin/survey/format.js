@@ -10,5 +10,6 @@ export const SPLIT_COLORS = ["#8f6cf0", "#1f9e93", "#c9741f", "#d55181", "#4f8fe
 export const REST_COLOR = "#4a4366";
 
 export const pct = (n, total) => (total ? Math.round((n / total) * 100) : 0);
+export const questionHref = (id) => `#admin/survey/questions/${id}`;
 export const personHref = (p) => `#admin/survey/people/${encodeURIComponent(p.id)}`;
 export const displayName = (p) => p.member?.name ?? p.name;

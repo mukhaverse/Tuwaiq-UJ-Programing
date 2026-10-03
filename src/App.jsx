@@ -41,14 +41,15 @@ export default function App() {
     setBooted(true);
   }, []);
 
-  // Hold the page at the top while the splash plays.
+  // Hold the page at the top while the splash plays. Never in the admin panel:
+  // opening #admin mid-splash would otherwise leave the page unable to scroll.
   useEffect(() => {
-    if (booted) return;
+    if (booted || adminSection !== null) return;
     window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     document.body.classList.add("is-locked");
     return () => document.body.classList.remove("is-locked");
-  }, [booted]);
+  }, [booted, adminSection]);
 
   // Trigger positions go stale whenever the page height changes without a resize
   // (web fonts landing, the member filter shrinking the grid), so re-measure then.

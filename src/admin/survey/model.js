@@ -514,6 +514,117 @@ export function analyze(people) {
   };
 }
 
+/* ---------- Questions, one at a time ---------- */
+
+// Sections of the question list, in the order the Questions tab shows them.
+export const QUESTION_GROUPS = ["About them", "Skills", "How they like to work", "Interests & activities", "In their words"];
+
+/**
+ * Every question as one list, each with `answersOf(person)` (the answer labels a
+ * person gave) and its tallied `items`. Kinds: "scale" (skill, 4 ordered levels),
+ * "single" (one answer), "multi" (pick several), "text" (written).
+ */
+export function buildQuestions(people) {
+  const n = (q) => ({ ...q, answered: people.filter((p) => q.answersOf(p).length).length });
+  const labels = (list) => list.filter(Boolean);
+  const qs = [
+    { id: "major", group: "About them", label: "Major", kind: "single", answersOf: (p) => labels([p.major]) },
+    {
+      id: "year",
+      group: "About them",
+      label: "Academic year",
+      kind: "single",
+      ordered: true,
+      order: [1, 2, 3, 4, 5, 6].map((y) => `Year ${y}`),
+      answersOf: (p) => (p.year ? [`Year ${p.year}`] : []),
+    },
+    { id: "color", group: "About them", label: "Favorite color", kind: "single", answersOf: (p) => labels([p.color?.name]) },
+    ...SCALES.map((q) => ({
+      id: q.id,
+      group: "Skills",
+      label: q.label,
+      kind: "scale",
+      ordered: true,
+      order: q.levels.map((l) => l.label),
+      levels: q.levels,
+      answersOf: (p) => (p.levels[q.id].level != null ? [p.levels[q.id].label] : []),
+      rawOf: (p) => p.levels[q.id].raw,
+    })),
+    ...SINGLES.map((q) => ({
+      id: q.id,
+      group: "How they like to work",
+      label: q.label,
+      kind: "single",
+      answersOf: (p) => labels([p.singles[q.id]?.label]),
+      othersOf: (p) => (p.singles[q.id]?.other ? [p.singles[q.id].other] : []),
+    })),
+    ...MULTIS.map((q) => ({
+      id: q.id,
+      group: "Interests & activities",
+      label: q.label,
+      kind: "multi",
+      ...(q.id === "times" ? { ordered: true, order: q.options.map((o) => o.label) } : {}),
+      answersOf: (p) => [...new Set(p.multis[q.id].map((a) => a.label))],
+      othersOf: (p) => p.multis[q.id].filter((a) => a.other).map((a) => a.other),
+    })),
+    ...TEXTS.map((q) => ({ id: q.id, group: "In their words", label: q.label, kind: "text", answersOf: (p) => labels([p.texts[q.id]]), textOf: (p) => p.texts[q.id] })),
+  ];
+  // The "learning preference" follow-up is only asked of some people: drop it when nobody answered.
+  return qs
+    .map(n)
+    .filter((q) => q.answered > 0 || q.kind !== "text")
+    .map((q) => ({
+      ...q,
+      // Skill levels nobody picked still show (as 0); other unpicked answers don't.
+      items: q.kind === "text" ? [] : tally(people, q.answersOf, q.order).filter((i) => i.count || q.kind === "scale"),
+      others: q.othersOf ? people.flatMap((p) => q.othersOf(p).map((text) => ({ person: p, text }))) : [],
+    }));
+}
+
+// Groups to split a question's answers by, to compare kinds of people.
+export const DIMENSIONS = [
+  { id: "tier", label: "Overall level", groupOf: (p) => p.tier?.label, order: TIERS.map((t) => t.label) },
+  { id: "year", label: "Academic year", groupOf: (p) => (p.year ? `Year ${p.year}` : null), order: [1, 2, 3, 4, 5, 6].map((y) => `Year ${y}`) },
+  { id: "role", label: "Preferred team role", groupOf: (p) => p.singles.role?.label },
+  { id: "format", label: "Online or in person", groupOf: (p) => p.singles.format?.label },
+  { id: "major", label: "Major", groupOf: (p) => p.major, top: 3 },
+];
+
+/**
+ * A question's answers split by a group of people: rows are answers, columns are
+ * groups. Each cell has the people who gave that answer and are in that group;
+ * `columns[].size` is how many people are in the group (for column percentages).
+ */
+export function breakdown(question, people, dim) {
+  let groups = tally(people, (p) => [dim.groupOf(p)], dim.order).filter((g) => g.count);
+  if (dim.top && groups.length > dim.top + 1) {
+    const keep = groups.slice(0, dim.top);
+    const rest = groups.slice(dim.top);
+    groups = [...keep, { label: "Others", count: rest.reduce((s, g) => s + g.count, 0), people: rest.flatMap((g) => g.people) }];
+  }
+  const columns = groups.map((g) => ({ label: g.label, size: g.count, members: new Set(g.people) }));
+  const rows = question.items.map((item) => ({
+    label: item.label,
+    total: item.count,
+    cells: columns.map((c) => item.people.filter((p) => c.members.has(p))),
+  }));
+  return { columns, rows };
+}
+
+/** Responses per day (latest submission per person), oldest first, with a running total. */
+export function timeline(people) {
+  const days = new Map();
+  for (const p of people) {
+    const day = p.firstSubmittedAt?.slice(0, 10);
+    if (!day || day === "unknown") continue;
+    days.set(day, [...(days.get(day) ?? []), p]);
+  }
+  let running = 0;
+  return [...days.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, list]) => ({ day, count: list.length, people: list, total: (running += list.length) }));
+}
+
 /* ---------- Teams ---------- */
 
 /**

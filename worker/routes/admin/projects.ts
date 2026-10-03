@@ -1,21 +1,25 @@
-// Admin: requests from other tracks and the track's own projects. Triage new
-// requests, assign members, move them through the statuses, or add projects directly.
+// Admin: collaborations with other tracks (often from requests) and the track's
+// own projects. Triage new requests, assign members, move them through the
+// statuses, or add projects directly.
 // The list here includes private fields (contact, details), so it's never cached.
 import { Hono } from "hono";
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type AppEnv } from "../../db/client";
 import { members, PROJECT_STATUSES, projectMembers, projects } from "../../db/schema";
-import { body, kind, optionalText, requiredText } from "./shared";
+import { body, kind, optionalText, requiredText, trackExists } from "./shared";
 
 const input = z.object({
   title: requiredText(80),
-  track: optionalText(60),
+  // Set for a collaboration; null for one of the track's own projects.
+  trackId: optionalText(60),
+  forLabel: optionalText(60),
   kind,
   status: z.enum(PROJECT_STATUSES),
   note: z.string().trim().max(160).default(""),
   details: z.string().trim().max(3000).default(""),
   requester: optionalText(80),
+  requesterTrack: optionalText(60),
   contact: optionalText(120),
   deadline: optionalText(60),
   members: z.array(z.string()).max(30).default([]),
@@ -42,6 +46,7 @@ route.get("/", async (c) => {
 
 route.post("/", body(input), async (c) => {
   const { members: team, ...p } = c.req.valid("json");
+  if (p.trackId && !(await trackExists(c.env, p.trackId))) return c.json({ error: "That track doesn't exist anymore" }, 400);
   const db = getDb(c.env);
   const [created] = await db.insert(projects).values(p).returning({ id: projects.id });
   await setTeam(c.env, created.id, team);
@@ -51,6 +56,7 @@ route.post("/", body(input), async (c) => {
 route.put("/:id", body(input), async (c) => {
   const id = Number(c.req.param("id"));
   const { members: team, ...p } = c.req.valid("json");
+  if (p.trackId && !(await trackExists(c.env, p.trackId))) return c.json({ error: "That track doesn't exist anymore" }, 400);
   const [updated] = await getDb(c.env)
     .update(projects)
     .set({ ...p, updatedAt: sql`(datetime('now'))` })

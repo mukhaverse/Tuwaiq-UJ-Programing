@@ -409,6 +409,105 @@
   color: #ff8a8e;
 }
 
+/* Requests open / closed */
+.adm-switchbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 12px 16px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.adm-switchbar p {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.adm-switchbar__light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.adm-switchbar.is-open {
+  border-color: rgb(125 207 163 / 0.5);
+}
+
+.adm-switchbar.is-open .adm-switchbar__light {
+  background: #7dcfa3;
+  box-shadow: 0 0 10px #7dcfa3;
+}
+
+/* Tracks */
+.adm-track-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-track-dot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
+.adm-color {
+  display: flex;
+  gap: 8px;
+}
+
+.adm-color input[type="color"] {
+  flex: none;
+  width: 46px;
+  height: 42px;
+  padding: 2px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+/* A tiny monitor screen with the track's sticker, as it'll look on the site. */
+.adm-track-preview {
+  position: relative;
+  width: min(100%, 320px);
+  padding: 22px 10px 10px;
+  border: 2px solid color-mix(in srgb, var(--hue) 45%, var(--edge));
+  border-radius: 14px;
+  background: var(--raised);
+}
+
+.adm-track-preview__sticker {
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--hue);
+  box-shadow: 2px 3px 0 rgb(0 0 0 / 0.55);
+  font: 800 0.65rem var(--mono);
+  text-transform: uppercase;
+  rotate: -3deg;
+}
+
+.adm-track-preview__screen {
+  display: block;
+  padding: 18px 14px;
+  border-radius: 8px;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 24%, transparent), transparent 70%), #09080f;
+  color: var(--hue);
+  font: 700 0.75rem var(--mono);
+  text-transform: uppercase;
+}
+
 .adm-chip--member svg {
   width: 24px;
 }
@@ -493,7 +592,7 @@
   color: var(--muted);
 }
 
-.adm input:not([type="checkbox"]):not([type="file"]),
+.adm input:not([type="checkbox"]):not([type="file"]):not([type="color"]),
 .adm select,
 .adm textarea,
 .adm-gate input {

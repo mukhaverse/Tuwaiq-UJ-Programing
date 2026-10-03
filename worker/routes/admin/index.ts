@@ -9,6 +9,7 @@ import milestones from "./milestones";
 import projects from "./projects";
 import settings from "./settings";
 import survey from "./survey";
+import tracks from "./tracks";
 import uploads from "./uploads";
 
 const admin = new Hono<AppEnv>();
@@ -19,6 +20,7 @@ admin.use("*", requireRole("admin"));
 admin.route("/members", members);
 admin.route("/milestones", milestones);
 admin.route("/projects", projects);
+admin.route("/tracks", tracks);
 admin.route("/badges", badges);
 admin.route("/settings", settings);
 admin.route("/uploads", uploads);

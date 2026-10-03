@@ -8,7 +8,7 @@ import Hero from "./components/intro/Hero";
 import Members from "./components/members/Members";
 import Playground from "./components/playground/Playground";
 import Journey from "./components/journey/Journey";
-import Workshop from "./components/workshop/Workshop";
+import Builds from "./components/builds/Builds";
 import useAdminRoute from "./admin/useAdminRoute";
 
 // The admin panel (#admin) is its own bundle, downloaded only when opened.
@@ -95,7 +95,7 @@ export default function App() {
               <Hero />
               <Members />
               <Journey />
-              <Workshop />
+              <Builds />
               <Playground />
             </main>
             <Footer />

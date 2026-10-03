@@ -11,12 +11,14 @@ import AnnouncementSection from "./sections/Announcement";
 import SiteTextSection from "./sections/SiteText";
 import FilesSection from "./sections/Files";
 import SurveySection from "./sections/Survey";
+import TracksSection from "./sections/Tracks";
 import "./admin.css";
 
 // A new section is one entry here plus its file in sections/.
 const SECTIONS = [
   { id: "members", label: "Members", Component: MembersSection },
   { id: "projects", label: "Projects", Component: ProjectsSection },
+  { id: "tracks", label: "Tracks", Component: TracksSection },
   { id: "survey", label: "Survey", Component: SurveySection },
   { id: "journey", label: "Journey", Component: JourneySection },
   { id: "badges", label: "Badges", Component: BadgesSection },

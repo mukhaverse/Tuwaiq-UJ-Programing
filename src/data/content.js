@@ -5,7 +5,7 @@ import { setAnnouncement } from "./announcement";
 import { setBadges } from "./badges";
 import { setMembers } from "./members";
 import { setMilestones } from "./milestones";
-import { setProjects } from "./projects";
+import { setProjects, setRequests, setTracks } from "./projects";
 import { setTrack } from "./track";
 
 export async function loadContent() {
@@ -18,5 +18,7 @@ export async function loadContent() {
   setMilestones(data.milestones);
   setBadges(data.badges);
   setMembers(data.members);
+  setTracks(data.tracks ?? []);
   setProjects(data.projects ?? []);
+  setRequests(data.requests);
 }

@@ -1,0 +1,677 @@
+.builds {
+  border-top: var(--line);
+}
+
+/* Room above each row for the crew peeking out from behind the monitors. */
+.builds__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
+  gap: 64px clamp(20px, 2.6vw, 40px);
+  margin: 0;
+  padding: 48px 0 0;
+  list-style: none;
+}
+
+/* ---------- A monitor (rig): bezel, screen, chin, stand ----------
+   --hue is the project's colour (a collaboration's track colour, violet for
+   our own projects); --hue-ink is the text colour that reads on it. */
+.rig {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+}
+
+.rig__monitor {
+  position: relative;
+  padding: 12px 12px 0;
+  border: 2px solid color-mix(in srgb, var(--hue) 45%, var(--edge));
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--raised), var(--surface));
+  box-shadow:
+    0 6px 0 0 #0a0812,
+    0 6px 0 2px color-mix(in srgb, var(--hue) 30%, var(--edge)),
+    0 18px 50px -20px color-mix(in srgb, var(--hue) 55%, transparent);
+  transition:
+    translate 0.3s var(--spring),
+    box-shadow 0.3s;
+}
+
+@media (hover: hover) {
+  .rig:hover .rig__monitor {
+    translate: 0 -4px;
+    box-shadow:
+      0 10px 0 0 #0a0812,
+      0 10px 0 2px color-mix(in srgb, var(--hue) 50%, var(--edge)),
+      0 24px 60px -18px color-mix(in srgb, var(--hue) 75%, transparent);
+  }
+}
+
+/* The screen: dark glass lit by the hue, with scanlines and a reflection. */
+.rig__screen {
+  --power: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 190px;
+  overflow: hidden;
+  padding: 16px 16px 26px;
+  border: 2px solid #07060d;
+  border-radius: 10px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 24%, transparent), transparent 70%),
+    #09080f;
+  box-shadow: inset 0 0 24px rgb(0 0 0 / 0.8);
+}
+
+.rig__screen > * {
+  opacity: var(--power);
+}
+
+.rig__screen::before,
+.rig__screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rig__screen::before {
+  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px);
+  animation: scan 7s linear infinite;
+}
+
+.rig__screen::after {
+  background: linear-gradient(115deg, rgb(255 255 255 / 0.07) 0 22%, transparent 22.5%);
+}
+
+@keyframes scan {
+  to {
+    background-position: 0 60px;
+  }
+}
+
+/* A label stuck on the bezel: what it is and who it's for. */
+.rig__sticker {
+  position: absolute;
+  z-index: 2;
+  top: -13px;
+  inset-inline-start: 18px;
+  max-width: calc(100% - 36px);
+  overflow: hidden;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--hue);
+  box-shadow: 2px 3px 0 rgb(0 0 0 / 0.55);
+  color: var(--hue-ink);
+  font-weight: 800;
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  rotate: -3deg;
+  transition: rotate 0.3s var(--spring);
+}
+
+@media (hover: hover) {
+  .rig:hover .rig__sticker {
+    rotate: 1deg;
+  }
+}
+
+.rig__status {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  color: var(--hue);
+  font-weight: 700;
+}
+
+.rig__ago {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+.rig__dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-inline-end: 4px;
+  border-radius: 50%;
+  background: var(--hue);
+  box-shadow: 0 0 8px var(--hue);
+  animation: blink-dot 1.2s steps(1) infinite;
+}
+
+@keyframes blink-dot {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.rig__title {
+  margin: 0;
+  max-width: 18ch;
+  color: #fff;
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--hue) 55%, transparent);
+}
+
+.rig__note {
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  opacity: calc(var(--power) * 0.85);
+}
+
+.rig__prompt {
+  color: var(--hue);
+  font-weight: 700;
+}
+
+/* Loading bar along the bottom of the screen: it never quite finishes. */
+.rig__load {
+  position: absolute;
+  inset: auto 16px 12px;
+  height: 5px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(-45deg, var(--hue) 0 7px, color-mix(in srgb, var(--hue) 35%, #09080f) 7px 14px);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hue) 50%, transparent);
+  animation: load 1.3s linear infinite;
+}
+
+/* One stripe period: 14px across the 45° stripes is 14 / sin 45° wide. */
+@keyframes load {
+  to {
+    background-position: 19.8px 0;
+  }
+}
+
+.rig__chin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 6px 10px;
+}
+
+.rig__brand {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.rig__led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hue);
+  box-shadow: 0 0 10px var(--hue);
+  animation: led 3s ease-in-out infinite;
+}
+
+@keyframes led {
+  50% {
+    box-shadow: 0 0 2px var(--hue);
+    opacity: 0.6;
+  }
+}
+
+.rig__stand {
+  display: grid;
+  justify-items: center;
+}
+
+.rig__neck {
+  width: 46px;
+  height: 22px;
+  border-inline: 2px solid var(--edge);
+  background: linear-gradient(90deg, var(--surface), var(--raised), var(--surface));
+}
+
+.rig__base {
+  width: 140px;
+  height: 12px;
+  border: 2px solid var(--edge);
+  border-radius: 8px 8px 4px 4px;
+  background: var(--raised);
+  box-shadow: 0 4px 0 #0a0812;
+}
+
+/* The crew stands behind the monitor and peeks over the top. */
+.rig__crew {
+  position: absolute;
+  z-index: -1;
+  top: -44px;
+  inset-inline-end: 26px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.rig__mate {
+  display: block;
+  width: 60px;
+  margin-inline-start: -16px;
+}
+
+.rig__mate:last-child {
+  margin-inline-start: 0;
+}
+
+/* ---------- "Your idea here" (only while requests are open) ---------- */
+.rig__link {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+}
+
+.rig--ask .rig__monitor {
+  border-style: dashed;
+}
+
+.rig__plus {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--hue);
+  border-radius: 10px;
+  color: var(--hue);
+  font: 800 1.5rem/1 var(--mono);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--hue) 45%, transparent);
+  transition: rotate 0.35s var(--spring);
+}
+
+.rig--ask .rig__brand {
+  color: var(--hue);
+}
+
+@media (hover: hover) {
+  .rig--ask:hover .rig__plus {
+    rotate: 90deg;
+  }
+}
+
+/* ---------- Nothing building: no signal ---------- */
+.rig--idle .rig__monitor {
+  box-shadow:
+    0 6px 0 0 #0a0812,
+    0 6px 0 2px var(--edge);
+}
+
+.rig__nosignal {
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  flex: 1;
+  text-align: center;
+}
+
+.rig__nosignal p {
+  margin: 0;
+}
+
+.rig__nosignal .mono {
+  padding: 6px 14px;
+  border: 2px solid var(--muted);
+  color: var(--fg);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  animation: drift 9s ease-in-out infinite alternate;
+}
+
+.rig--idle .rig__led {
+  background: var(--orange);
+  box-shadow: 0 0 8px var(--orange);
+  animation: blink-dot 2s steps(1) infinite;
+}
+
+@keyframes drift {
+  0% {
+    translate: -10px -8px;
+  }
+  100% {
+    translate: 10px 8px;
+  }
+}
+
+/* ---------- Request form: a ticket ---------- */
+.req__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(8 6 15 / 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.req__wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 71;
+  display: grid;
+  justify-items: center;
+  overflow-y: auto;
+  padding: var(--gutter);
+  pointer-events: none;
+}
+
+.req {
+  position: relative;
+  width: min(640px, 100%);
+  margin-block: auto; /* centred, but scrolls from the top when taller than the screen */
+  overflow: hidden;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow:
+    0 30px 80px -20px rgb(0 0 0 / 0.7),
+    0 0 60px -10px rgb(79 41 183 / 0.45);
+  pointer-events: auto;
+}
+
+.req__strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 70px 12px 24px;
+  background: var(--purple);
+  color: #fff;
+  font-weight: 700;
+}
+
+.req__form,
+.req__sent {
+  display: grid;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 32px);
+}
+
+.req__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.req__label {
+  display: block;
+  margin-bottom: 8px;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--violet);
+}
+
+.req__optional {
+  color: var(--muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.req__field {
+  display: block;
+  min-width: 0;
+}
+
+.req__field input,
+.req__field select,
+.req__field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.15s;
+}
+
+.req__field textarea {
+  resize: vertical;
+}
+
+.req__field input::placeholder,
+.req__field textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.req__field select {
+  appearance: none;
+  padding-inline-end: 36px;
+  background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a380ff' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center / 10px;
+  cursor: pointer;
+}
+
+.req__other {
+  margin-top: 8px;
+}
+
+.req__field input:focus-visible,
+.req__field select:focus-visible,
+.req__field textarea:focus-visible {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.req__hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.req__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* Kind picker: a row of keycaps; the picked one is pressed in. */
+.req__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.req__kind {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.6em 1em;
+  border: var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  box-shadow: var(--cap);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    translate 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.req__kind input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.req__glyph {
+  color: var(--orange);
+}
+
+@media (hover: hover) {
+  .req__kind:hover {
+    border-color: var(--violet);
+  }
+}
+
+.req__kind:has(input:checked) {
+  translate: 0 3px;
+  border-color: var(--cyan);
+  background: var(--cyan);
+  box-shadow:
+    0 2px 0 0 #0a0812,
+    0 2px 0 2px #2a9e96;
+  color: var(--bg);
+}
+
+.req__kind:has(input:checked) .req__glyph {
+  color: var(--purple);
+}
+
+.req__kind:has(input:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+/* Tear here: the part about the request above, the part about you below. */
+.req__cut {
+  position: relative;
+  height: 2px;
+  margin: 4px 0;
+  background-image: linear-gradient(90deg, var(--edge) 50%, transparent 50%);
+  background-size: 12px 2px;
+}
+
+.req__cut span {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: -4px;
+  translate: 0 -55%;
+  padding-inline-end: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.req__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.req__error {
+  margin: 0;
+  padding: 10px 14px;
+  border: 2px solid rgb(229 72 77 / 0.5);
+  border-radius: var(--radius-sm);
+  color: #ff8a8e;
+}
+
+.req__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.req .pill:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.req__x {
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 8px;
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.req__x:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* ---------- Sent: the ticket gets stamped ---------- */
+.req__sent {
+  position: relative;
+  justify-items: start;
+}
+
+.req__stamp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+}
+
+.req__number {
+  margin: 0;
+  color: var(--cyan);
+  font-size: clamp(2.6rem, 9vw, 4.4rem);
+}
+
+.req__stamp {
+  margin: 0;
+  padding: 6px 14px;
+  border: 3px solid var(--orange);
+  border-radius: 8px;
+  color: var(--orange);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  mix-blend-mode: screen;
+}
+
+.req__stamp--closed {
+  rotate: -8deg;
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
+.req__body {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.req__body strong {
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.req__cheer {
+  position: absolute;
+  inset-inline-end: clamp(16px, 4vw, 32px);
+  bottom: 22px;
+  width: 92px;
+}
+
+@media (max-width: 560px) {
+  .req__row {
+    grid-template-columns: 1fr;
+  }
+
+  .req__cheer {
+    width: 64px;
+  }
+}

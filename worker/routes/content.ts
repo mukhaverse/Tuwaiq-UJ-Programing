@@ -2,22 +2,32 @@
 import { Hono } from "hono";
 import { asc, desc, inArray } from "drizzle-orm";
 import { getDb, type AppEnv } from "../db/client";
-import { badges, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings } from "../db/schema";
+import { badges, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings, tracks } from "../db/schema";
 
 const content = new Hono<AppEnv>();
 
 content.get("/", async (c) => {
   const db = getDb(c.env);
   // One round trip to D1 for every query.
-  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, projectRows, teamRows] = await db.batch([
+  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, trackRows, projectRows, teamRows] = await db.batch([
     db.select().from(members).orderBy(asc(members.position), asc(members.createdAt)),
     db.select().from(memberBadges).orderBy(asc(memberBadges.awardedAt)),
     db.select().from(milestones).orderBy(asc(milestones.position)),
     db.select().from(badges).orderBy(asc(badges.position)),
     db.select().from(settings),
+    db.select({ id: tracks.id, name: tracks.name, color: tracks.color }).from(tracks).orderBy(asc(tracks.position)),
     // Only the public columns: a request's contact and details never leave the admin API.
     db
-      .select({ id: projects.id, title: projects.title, track: projects.track, kind: projects.kind, status: projects.status, note: projects.note, updatedAt: projects.updatedAt })
+      .select({
+        id: projects.id,
+        title: projects.title,
+        trackId: projects.trackId,
+        forLabel: projects.forLabel,
+        kind: projects.kind,
+        status: projects.status,
+        note: projects.note,
+        updatedAt: projects.updatedAt,
+      })
       .from(projects)
       .where(inArray(projects.status, [...PUBLIC_PROJECT_STATUSES]))
       .orderBy(desc(projects.updatedAt)),
@@ -37,6 +47,7 @@ content.get("/", async (c) => {
   return c.json({
     track: setting.track ?? {},
     announcement: setting.announcement ?? null,
+    requests: setting.requests ?? { open: false },
     members: memberRows.map((m) => ({
       id: m.id,
       name: m.name,
@@ -63,7 +74,13 @@ content.get("/", async (c) => {
       glyph: b.glyph,
       milestone: b.milestoneId ?? undefined,
     })),
-    projects: projectRows.map((p) => ({ ...p, track: p.track ?? undefined, members: team.get(p.id) ?? [] })),
+    tracks: trackRows,
+    projects: projectRows.map((p) => ({
+      ...p,
+      trackId: p.trackId ?? undefined,
+      forLabel: p.forLabel ?? undefined,
+      members: team.get(p.id) ?? [],
+    })),
   });
 });
 

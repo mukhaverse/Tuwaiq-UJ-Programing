@@ -11,6 +11,14 @@ const FILTERS = [...Object.keys(STATUS), "all"];
 const filterLabel = (f) => (f === "all" ? "All" : STATUS[f]);
 const tagClass = (status) => `adm-tag adm-tag--${status.replace("_", "-")}`;
 
+/** Who a project is for, in a few words: the collab track, its "for" label, or nothing. */
+function forWhom(p, tracks) {
+  const track = tracks.find((t) => t.id === p.trackId);
+  if (track) return `Collab × ${track.name}`;
+  if (p.requesterTrack) return `From ${p.requesterTrack}`;
+  return p.forLabel ? `Project · for ${p.forLabel}` : "Project";
+}
+
 // Database timestamps are UTC: "2026-10-03 14:05:00".
 const when = (ts) => new Date(`${ts.replace(" ", "T")}Z`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
@@ -36,6 +44,7 @@ function useProjects() {
 
 export default function ProjectsSection({ data, reload: reloadSite }) {
   const projects = useProjects();
+  const tracks = data.tracks ?? [];
   const [filter, setFilter] = useState("new");
   const [selected, setSelected] = useState(null);
 
@@ -50,11 +59,13 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
   const refresh = () => Promise.all([projects.reload(), reloadSite()]);
 
   return (
+    <>
+    <RequestsSwitch open={data.requests?.open === true} onChanged={reloadSite} />
     <div className="adm-split">
       <section className="adm-panel" aria-label="Projects">
         <div className="adm-panel__head">
           <p className="adm-muted adm-small">
-            Requests from other tracks land in <strong>New request</strong>. Anything <strong>In progress</strong> shows in the Workshop on the site.
+            Requests from other tracks land in <strong>New request</strong>. Anything <strong>In progress</strong> shows under Builds on the site.
           </p>
           <Button variant="primary" onClick={() => setSelected("new")}>
             + Add
@@ -79,7 +90,7 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
                 {p.title} {filter === "all" && <span className={tagClass(p.status)}>{STATUS[p.status]}</span>}
               </span>
               <span className="adm-muted adm-small">
-                #{ticket(p.id)} · {p.track || "In-house"} · {kindOf(p.kind).label} · {when(p.createdAt)}
+                #{ticket(p.id)} · {forWhom(p, tracks)} · {kindOf(p.kind).label} · {when(p.createdAt)}
               </span>
             </span>
           )}
@@ -92,6 +103,7 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
             key={selected}
             project={selected === "new" ? null : current}
             members={data.members}
+            tracks={tracks}
             onSaved={(id, status) =>
               refresh().then(() => {
                 // Keep it in view after its status changes.
@@ -107,19 +119,47 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
             <a className="adm-link" href="/#request" target="_blank" rel="noopener">
               /#request
             </a>{" "}
-            with other tracks: it opens the request form.
+            with other tracks: it opens the request form (while requests are open).
           </p>
         )}
       </section>
     </div>
+    </>
   );
 }
 
-function ProjectForm({ project, members, onSaved, onDeleted }) {
+/* Whether visitors see the "request a build" monitor and can send requests. */
+function RequestsSwitch({ open, onChanged }) {
+  const [busy, run] = useAction();
+  const flip = () =>
+    run(() => api("/admin/settings/requests", { method: "PUT", body: { open: !open } }), open ? "Requests closed" : "Requests are open").then(
+      (ok) => ok && onChanged()
+    );
+  return (
+    <div className={`adm-switchbar${open ? " is-open" : ""}`}>
+      <span className="adm-switchbar__light" aria-hidden="true" />
+      <p>
+        <strong>Requests are {open ? "open" : "closed"}.</strong>{" "}
+        <span className="adm-muted">
+          {open
+            ? "Visitors see a “Your idea here” monitor under Builds and can send requests."
+            : "The request button is hidden, and the form says requests are closed."}
+        </span>
+      </p>
+      <Button variant={open ? "plain" : "primary"} onClick={flip} disabled={busy} role="switch" aria-checked={open}>
+        {open ? "Close requests" : "Open requests"}
+      </Button>
+    </div>
+  );
+}
+
+function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
   const isNew = !project;
   const [v, set] = useForm({
     title: project?.title ?? "",
-    track: project?.track ?? "",
+    trackId: project?.trackId ?? "",
+    forLabel: project?.forLabel ?? "",
+    requesterTrack: project?.requesterTrack ?? "",
     kind: project?.kind ?? "other",
     status: project?.status ?? "in_progress",
     note: project?.note ?? "",
@@ -129,13 +169,17 @@ function ProjectForm({ project, members, onSaved, onDeleted }) {
     deadline: project?.deadline ?? "",
     members: project?.members ?? [],
   });
+  // Not stored: a project with a track is a collaboration.
+  const [type, setType] = useState(project?.trackId ? "collab" : "project");
   const [busy, run] = useAction();
   const toggleMember = (id) => set("members", v.members.includes(id) ? v.members.filter((m) => m !== id) : [...v.members, id]);
 
   const save = (e) => {
     e.preventDefault();
+    // Only the field for the chosen type is kept.
+    const body = type === "collab" ? { ...v, forLabel: "" } : { ...v, trackId: "" };
     run(
-      () => (isNew ? api("/admin/projects", { method: "POST", body: v }) : api(`/admin/projects/${project.id}`, { method: "PUT", body: v })),
+      () => (isNew ? api("/admin/projects", { method: "POST", body }) : api(`/admin/projects/${project.id}`, { method: "PUT", body })),
       isNew ? "Project added" : "Saved"
     ).then((res) => res && onSaved(isNew ? res.id : project.id, v.status));
   };
@@ -159,7 +203,7 @@ function ProjectForm({ project, members, onSaved, onDeleted }) {
           <dl className="adm-request__facts">
             <dt>From</dt>
             <dd>
-              {project.requester} · {project.track}
+              {project.requester} · {tracks.find((t) => t.id === project.trackId)?.name ?? project.requesterTrack ?? "no track given"}
             </dd>
             <dt>Reach them</dt>
             <dd>
@@ -192,9 +236,48 @@ function ProjectForm({ project, members, onSaved, onDeleted }) {
         <Field label="Title" hint="Shown on the site." wide>
           <input id="pj-title" value={v.title} onChange={(e) => set("title", e.target.value)} required maxLength={80} />
         </Field>
-        <Field label="For track" hint="Leave empty for the track's own projects.">
-          <input id="pj-track" value={v.track} onChange={(e) => set("track", e.target.value)} maxLength={60} placeholder="In-house" />
-        </Field>
+        <fieldset className="adm-fieldset adm-field--wide">
+          <legend>Type</legend>
+          <div className="adm-status" role="radiogroup" aria-label="Type">
+            <label className={`adm-status__opt adm-status__opt--in-progress${type === "project" ? " is-on" : ""}`}>
+              <input type="radio" name="type" checked={type === "project"} onChange={() => setType("project")} />
+              Project
+            </label>
+            <label className={`adm-status__opt adm-status__opt--new${type === "collab" ? " is-on" : ""}`}>
+              <input type="radio" name="type" checked={type === "collab"} onChange={() => setType("collab")} />
+              Collaboration
+            </label>
+          </div>
+          {type === "collab" ? (
+            tracks.length ? (
+              <Field label="With track" hint="Its colour lights up the monitor on the site.">
+                <select id="pj-track" value={v.trackId} onChange={(e) => set("trackId", e.target.value)} required>
+                  <option value="" disabled>
+                    Pick a track…
+                  </option>
+                  {tracks.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            ) : (
+              <p className="adm-error adm-small">
+                No tracks yet. Add them in <a className="adm-link" href="#admin/tracks">Tracks</a> first.
+              </p>
+            )
+          ) : (
+            <Field label="For (optional)" hint="Who it's for, if anyone: “the whole club”, “first-years”…">
+              <input id="pj-for" value={v.forLabel} onChange={(e) => set("forLabel", e.target.value)} maxLength={60} />
+            </Field>
+          )}
+          {project?.requesterTrack && !v.trackId && (
+            <p className="adm-field__hint">
+              They typed “{project.requesterTrack}” as their track. Add it in Tracks to make this a collaboration.
+            </p>
+          )}
+        </fieldset>
         <Field label="Kind">
           <select id="pj-kind" value={v.kind} onChange={(e) => set("kind", e.target.value)}>
             {KINDS.map((k) => (

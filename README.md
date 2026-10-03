@@ -1,6 +1,6 @@
 # Programming Track
 
-The public site for the Programming Track of Tuwaiq Club at the University of Jeddah (Tuwaiq × UJ): a boot splash that draws the Commit Mountain, a roster of members, each with their own character and badges, a drag-around sticker playground, a semester journey, and a workshop showing what the track is building, where other tracks can request a build.
+The public site for the Programming Track of Tuwaiq Club at the University of Jeddah (Tuwaiq × UJ): a boot splash that draws the Commit Mountain, a roster of members, each with their own character and badges, a drag-around sticker playground, a semester journey, and the track's builds (its own projects and collaborations with other tracks), where other tracks can request a build.
 
 Built with React + Vite, Motion (`motion/react`) for interaction, and GSAP (ScrollTrigger, SplitText) for reveal animations. It runs on Cloudflare: one Worker serves the site and a small API (Hono), content lives in a D1 database (Drizzle), and uploads go to R2.
 
@@ -29,10 +29,10 @@ worker/                 the API (TypeScript)
   index.ts              mounts every route under /api
   auth.ts               login (Better Auth + GitHub) and the requireRole() check
   routes/content.ts     GET /api/content: everything the public site shows
-  routes/requests.ts    POST /api/requests: the public "request a build" form
+  routes/requests.ts    POST /api/requests: the public "request a build" form (only while requests are open)
   routes/media.ts       GET /api/media/<key>: uploaded files
   routes/admin/         one file per thing the admin panel edits (members, milestones, badges,
-                        settings, uploads, survey, projects); index.ts puts all of them behind requireRole("admin")
+                        settings, uploads, survey, projects, tracks); index.ts puts all of them behind requireRole("admin")
   db/schema.ts          the site's tables (Drizzle)
   db/auth-schema.ts     login tables (users, sessions, accounts)
   db/client.ts          database helper + binding types
@@ -50,7 +50,8 @@ src/
     badges.js           every badge that can be earned
     milestones.js       the semester journey
     announcement.js     the purple "Up next" tile in the members grid
-    projects.js         what's being built (in progress only), plus the request kinds and statuses
+    projects.js         what's being built (in progress only), the other tracks and their colours,
+                        whether requests are open, plus the request kinds and statuses
   components/
     splash/             boot screen: terminal opens, `git log --graph` draws the mountain,
                         which then flies into the header (shared motion layoutId "brand-mountain")
@@ -60,7 +61,7 @@ src/
     members/            filters, card grid, profile modal, #member/<id> link handling
     playground/         draggable sticker board of every member
     journey/            milestone timeline
-    workshop/           projects in progress, the "your idea here" tile, and the request form (#request)
+    builds/             the Builds monitors, the "your idea here" monitor, and the request form (#request)
     character/          the cartoon characters (blob, star, ghost, robot, cat, cloud, mushroom,
                         flower, monitor; sun and planet for the leader and co-leader)
     badges/             Badge + BadgeMark (the medal graphic)
@@ -84,13 +85,16 @@ src/
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.
 
-**Workshop and requests**: other tracks ask for something at `/#request` (a link to send them; the Workshop section and its "Your idea here" tile open it too). No sign-in: they fill in what it is, a name, details, an optional deadline, their name, track and contact, and get a ticket number like `#PT-007`. Requests land in **Projects** in the admin panel under **New request**. Open one to read it, then set its status:
+**Builds** (the section after the journey): everything the track is working on, each on its own little monitor, with the assigned members' characters peeking over the top (each links to their profile). Two kinds:
 
-- **In progress** puts it in the Workshop on the site, with its title, who it's for, the "Latest update" line and the crew (assigned members' characters peek over the card; each links to their profile).
-- **Done** or **Declined** takes it off the site again. Nothing is deleted, so a "shipped" list can be built from Done later.
-- **+ Add** creates the track's own projects (leave "For track" empty).
+- **Collaborations** are linked to another track and glow in that track's colour, with a "collab × Media" sticker. Tracks and their colours are set in **Tracks** in the admin panel.
+- **Projects** are the track's own work, in violet, with an optional "for …" label ("for the whole club").
 
-The requester's name, contact and details stay private (admin API only, never in `/api/content`). The kinds people can pick are `KINDS` in `src/data/projects.js`. Statuses are `PROJECT_STATUSES` in `worker/db/schema.ts` (+ labels in `STATUS` in `src/data/projects.js`), and which of them the site shows is `PUBLIC_PROJECT_STATUSES`. Light spam protection only: a hidden honeypot field, length limits, and the form stops taking requests once 100 are waiting in New.
+Manage them in **Projects** in the admin panel. A build shows on the site while it's **In progress**; **Done** or **Declined** takes it off again (nothing is deleted, so a "shipped" list can be built from Done later). **+ Add** creates one directly.
+
+**Requests** are off until you switch them on with the bar at the top of **Projects**. While they're open, Builds ends with a "Your idea here" monitor that opens the request form, also reachable at `/#request` (a link to send other tracks; while requests are closed it says so instead, and the API refuses submissions). No sign-in: people say what they need, pick their track (or type one under "Other"), leave a contact, and get a ticket number like `#PT-007`. Requests land under **New request**; set one to In progress to start it. The requester's name, contact, typed-in track and details stay private (admin API only, never in `/api/content`).
+
+Where to change things: request kinds are `KINDS` in `src/data/projects.js`; statuses are `PROJECT_STATUSES` in `worker/db/schema.ts` (+ labels in `STATUS`), and which of them the site shows is `PUBLIC_PROJECT_STATUSES`. Spam protection is light: a hidden honeypot field, length limits, and the form stops taking requests once 100 are waiting in New.
 
 **Survey** (`#admin/survey`, admin only): stats and a profile for each member, built from the members survey. Tabs: **Overall** (summary, skills, who to involve, an index of every question), **Questions** (each question on its own page with every answer, who gave it, and a breakdown by level, year, role, format or major; ← → step through them), **People**, **Teams**, **Import & data**. Import the survey's spreadsheet export (.xlsx or .csv) under **Import & data**. It's read in the browser and saved to the `survey_responses` table. Re-uploading a newer export only adds new responses. Each response is linked to a roster member by name (Arabic or English spelling), and wrong or missing links can be fixed on the same page. Only each person's latest submission counts. The answers never appear in `/api/content` or anywhere on the public site, and the Members tab links to each member's survey profile. The question wording lives in `src/admin/survey/model.js`: if a future survey changes its columns or answers, update it there. **Never commit the spreadsheet**: the repo is public, and `*.xlsx` / `*.csv` are git-ignored for that reason.
 

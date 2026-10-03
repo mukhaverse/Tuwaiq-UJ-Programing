@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { KINDS, ticket } from "../../data/projects";
+import { KINDS, requests, ticket, tracks } from "../../data/projects";
 import { members } from "../../data/members";
 import { color } from "../../lib/palette";
 import Character from "../character/Character";
 import Pill from "../ui/Pill";
 
-const EMPTY = { kind: "", title: "", details: "", deadline: "", name: "", track: "", contact: "", website: "" };
+const EMPTY = { kind: "", title: "", details: "", deadline: "", name: "", trackId: "", track: "", contact: "", website: "" };
+// The track picker's "not in the list" option; picking it shows a text box instead.
+const OTHER = "__other";
 
 async function send(values) {
   const res = await fetch("/api/requests", {
@@ -45,7 +47,9 @@ export default function RequestModal({ onClose }) {
     setSending(true);
     setError(null);
     try {
-      setSentId(await send(v));
+      const { trackId, track, ...rest } = v;
+      // A track from the list goes by id; anything else as typed.
+      setSentId(await send(trackId && trackId !== OTHER ? { ...rest, trackId } : { ...rest, track }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -68,7 +72,11 @@ export default function RequestModal({ onClose }) {
             <span>// build request</span>
             <span>{sentId ? `#${ticket(sentId)}` : "#PT-???"}</span>
           </header>
-          {sentId !== null ? <Sent id={sentId} contact={v.contact} onClose={onClose} /> : (
+          {!requests.open && sentId === null ? (
+            <Closed onClose={onClose} />
+          ) : sentId !== null ? (
+            <Sent id={sentId} contact={v.contact} onClose={onClose} />
+          ) : (
             <form className="req__form" onSubmit={submit}>
               <h2 id="req-title" className="req__title display">
                 What should we build?
@@ -119,10 +127,7 @@ export default function RequestModal({ onClose }) {
                   <span className="req__label">Your name</span>
                   <input id="req-person" value={v.name} onChange={set("name")} required maxLength={80} autoComplete="name" />
                 </label>
-                <label className="req__field">
-                  <span className="req__label">Your track</span>
-                  <input id="req-track" value={v.track} onChange={set("track")} required maxLength={60} placeholder="Media, Design, Events…" />
-                </label>
+                <TrackField v={v} set={set} />
               </div>
               <label className="req__field">
                 <span className="req__label">How do we reach you?</span>
@@ -174,7 +179,7 @@ function Sent({ id, contact, onClose }) {
         It's on our desk.
       </h2>
       <p className="req__body">
-        We'll look it over and reach out through <strong>{contact}</strong>. Once we start building, it shows up in the Workshop. Keep the
+        We'll look it over and reach out through <strong>{contact}</strong>. Once we start building, it shows up under Builds on the site. Keep the
         number in case you need to ask about it.
       </p>
       {cheer && (
@@ -187,6 +192,59 @@ function Sent({ id, contact, onClose }) {
           <Character type={cheer.avatar.char} body={color(cheer.avatar.body)} className="sticker" />
         </motion.div>
       )}
+      <Pill as="button" type="button" variant="accent" onClick={onClose}>
+        Back to the site
+      </Pill>
+    </div>
+  );
+}
+
+/* Their track: picked from the list, or typed in when it's not there (or there's no list yet). */
+function TrackField({ v, set }) {
+  const typing = !tracks.length || v.trackId === OTHER;
+  return (
+    <div className="req__field">
+      <label className="req__label" htmlFor={typing && !tracks.length ? "req-track" : "req-track-pick"}>
+        Your track
+      </label>
+      {tracks.length > 0 && (
+        <select id="req-track-pick" value={v.trackId} onChange={set("trackId")} required>
+          <option value="" disabled>
+            Pick one…
+          </option>
+          {tracks.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+          <option value={OTHER}>Other…</option>
+        </select>
+      )}
+      {typing && (
+        <input
+          id="req-track"
+          className={tracks.length ? "req__other" : undefined}
+          value={v.track}
+          onChange={set("track")}
+          required
+          maxLength={60}
+          placeholder="Which track?"
+          aria-label={tracks.length ? "Your track's name" : undefined}
+        />
+      )}
+    </div>
+  );
+}
+
+/* Someone opened a #request link while requests are switched off. */
+function Closed({ onClose }) {
+  return (
+    <div className="req__sent">
+      <p className="req__stamp req__stamp--closed mono">Closed</p>
+      <h2 id="req-title" className="req__title display">
+        Not taking requests right now.
+      </h2>
+      <p className="req__body">Our hands are full at the moment. Check back soon, or catch us at the next meeting.</p>
       <Pill as="button" type="button" variant="accent" onClick={onClose}>
         Back to the site
       </Pill>

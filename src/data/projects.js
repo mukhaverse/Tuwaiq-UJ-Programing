@@ -1,11 +1,15 @@
-// What the track is building right now: accepted requests from other tracks and
-// the track's own projects, loaded from the database at startup (see content.js).
+// What the track is building, loaded from the database at startup (see content.js).
 // Only public fields reach the site; who asked and how to reach them stay in the
-// admin panel. Each project:
+// admin panel. Two kinds of build:
 //
+//   collaboration  for another track (trackId set): shown in that track's colour
+//   project        the track's own work, for anyone or no one in particular
+//
+// Each one:
 //   id         number, also its ticket number (see ticket())
 //   title      short name
-//   track      the track it's for (undefined for the track's own projects)
+//   trackId    the track it's a collaboration with (undefined for projects)
+//   forLabel   projects only, optional: who it's for, e.g. "the whole club"
 //   kind       one of KINDS below
 //   status     see STATUS below; the site only gets the ones the API makes public
 //   note       one public line about where it's at
@@ -17,7 +21,27 @@ export function setProjects(list) {
   projects = list;
 }
 
-// What other tracks can ask for. A new kind is one line here: the API accepts any id.
+// The club's other tracks: { id, name, color: "#rrggbb" }, edited in the admin panel.
+export let tracks = [];
+
+export function setTracks(list) {
+  tracks = list;
+}
+
+export function getTrack(id) {
+  return tracks.find((t) => t.id === id);
+}
+
+export const isCollab = (project) => Boolean(project.trackId && getTrack(project.trackId));
+
+// Whether visitors can send requests right now (admins switch it in the panel).
+export let requests = { open: false };
+
+export function setRequests(value) {
+  requests = value ?? { open: false };
+}
+
+// What people can ask for. A new kind is one line here: the API accepts any id.
 export const KINDS = [
   { id: "survey", label: "Survey / form", glyph: "?" },
   { id: "website", label: "Website / page", glyph: "</>" },

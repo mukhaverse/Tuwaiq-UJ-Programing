@@ -7,7 +7,7 @@ import "./Layout.css";
 const links = [
   { href: "#members", label: "Members" },
   { href: "#journey", label: "Journey" },
-  { href: "#workshop", label: "Workshop" },
+  { href: "#builds", label: "Builds" },
   { href: "#playground", label: "Playground", minor: true },
 ];
 

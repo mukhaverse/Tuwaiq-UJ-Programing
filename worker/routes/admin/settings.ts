@@ -26,6 +26,8 @@ const shapes = {
     ctaLabel: optional(30),
     ctaUrl: z.union([z.literal(""), z.string().trim().regex(/^(https?:\/\/|#)/, "Use a full link (https://…) or a section like #journey")]).default(""),
   }),
+  // Whether visitors can send build requests (the form and its button on the site).
+  requests: z.object({ open: z.boolean() }),
 } as const;
 
 type Key = keyof typeof shapes;

@@ -66,7 +66,8 @@ export const memberBadges = sqliteTable(
 );
 
 // Site-wide values stored as JSON under a key: "track" (names and intro copy),
-// "announcement" (the purple "Up next" tile), and whatever comes next.
+// "announcement" (the purple "Up next" tile), "requests" (whether the request
+// form is open), and whatever comes next.
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value", { mode: "json" }).notNull(),
@@ -94,9 +95,21 @@ export const surveyResponses = sqliteTable(
   (t) => [uniqueIndex("survey_responses_unique").on(t.respondent, t.submittedAt), index("survey_responses_member").on(t.memberId)]
 );
 
-// Work the track is doing: requests from other tracks (submitted on the site)
-// and the track's own projects (added in the admin panel). A new status only
-// needs adding here; which ones the public site shows is PUBLIC_PROJECT_STATUSES.
+// The club's other tracks, each with its theme colour. A project linked to one
+// is a collaboration, and shows in that track's colour on the site.
+export const tracks = sqliteTable("tracks", {
+  // URL-safe slug, like "media".
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  // "#rrggbb"
+  color: text("color").notNull(),
+  position: integer("position").notNull().default(0),
+  ...timestamps,
+});
+
+// What the track is building: collaborations with other tracks (often from a
+// request submitted on the site) and its own projects (added in the admin panel).
+// A new status only needs adding here; which ones the site shows is PUBLIC_PROJECT_STATUSES.
 export const PROJECT_STATUSES = ["new", "in_progress", "done", "declined"] as const;
 export const PUBLIC_PROJECT_STATUSES = ["in_progress"] as const;
 
@@ -105,16 +118,20 @@ export const projects = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title").notNull(),
-    // The track it's for, as the requester wrote it. Null for the track's own projects.
-    track: text("track"),
+    // Set: a collaboration with that track. Empty: one of the track's own projects.
+    trackId: text("track_id").references(() => tracks.id, { onDelete: "set null" }),
+    // Projects only, optional: who it's for, e.g. "the whole club".
+    forLabel: text("for_label"),
     // What kind of thing it is: "survey", "website"… (the list lives in src/data/projects.js).
     kind: text("kind").notNull().default("other"),
     status: text("status", { enum: PROJECT_STATUSES }).notNull().default("new"),
-    // One public line under the title on the site, e.g. "Draft ready for review".
+    // One public line on the site, e.g. "Draft ready for review".
     note: text("note").notNull().default(""),
     // Private: what the requester asked for, who they are and how to reach them.
     details: text("details").notNull().default(""),
     requester: text("requester"),
+    // Their track as they typed it, when it wasn't in the list.
+    requesterTrack: text("track"),
     contact: text("contact"),
     // Free-form, as they wrote it: "before week 8", "ASAP"…
     deadline: text("deadline"),

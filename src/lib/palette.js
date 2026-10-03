@@ -20,3 +20,10 @@ export function color(key) {
 export function textOn(key) {
   return DARK.has(key) ? palette.cream : palette.ink;
 }
+
+/** Ink or cream: whichever reads better on a "#rrggbb" background (a track's colour, say). */
+export function inkOn(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const lum = 0.2126 * r ** 2.2 + 0.7152 * g ** 2.2 + 0.0722 * b ** 2.2;
+  return lum > 0.18 ? palette.ink : palette.cream;
+}

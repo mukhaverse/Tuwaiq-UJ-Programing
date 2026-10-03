@@ -1,4 +1,4 @@
-// Colours and labels shared by the TV and the drawer.
+// Colours and labels shared by the monitor and the drawer.
 import { getTrack, isCollab } from "../../data/projects";
 import { inkOn } from "../../lib/palette";
 

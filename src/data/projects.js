@@ -11,7 +11,7 @@
 //   trackId    the track it's a collaboration with (undefined for projects)
 //   forLabel   projects only, optional: who it's for, e.g. "the whole club"
 //   kind       optional: one of KINDS below
-//   status     "in_progress" (on the TV) or "done" (in the shipped drawer)
+//   status     "in_progress" (on the monitor) or "done" (in the shipped drawer)
 //   note       one public line about where it's at
 //   updatedAt  "YYYY-MM-DD HH:MM:SS", UTC
 //   finishedAt same format, for done ones: when it was marked done
@@ -22,7 +22,7 @@ export function setProjects(list) {
   projects = list;
 }
 
-/** In progress, most recently updated first: the TV's channels. */
+/** In progress, most recently updated first: what the monitor shows. */
 export const onAir = () => projects.filter((p) => p.status === "in_progress");
 
 /** Done, most recently finished first: the folders in the drawer. */

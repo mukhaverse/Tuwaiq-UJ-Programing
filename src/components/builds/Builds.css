@@ -2,7 +2,7 @@
   border-top: var(--line);
 }
 
-/* The TV on the left, the drawer on the right; stacked on narrow screens. */
+/* Building now on the left, the drawer on the right; stacked on narrow screens. */
 .builds__stage {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
@@ -54,102 +54,205 @@
   color: var(--fg);
 }
 
-/* ---------- The TV ----------
-   --hue is the channel's colour (a collaboration's track colour, violet for our
-   own projects); --hue-ink is the text colour that reads on it. */
-.tv {
+/* ---------- Building now: the guide and the monitor ---------- */
+.onair {
+  display: grid;
+  gap: 22px;
+}
+
+/* The guide: how many collabs and projects there are, a chip each. */
+.guide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+}
+
+@media (max-width: 560px) {
+  .guide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.guide__group {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.guide__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.guide__count {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--raised);
+  color: var(--orange);
+  box-shadow: inset 0 0 0 2px var(--edge);
+}
+
+.guide__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+}
+
+.guide__none {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* A keycap per build; the one on screen is pressed in and lit in its colour. */
+.guide__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 7px 12px;
+  border: var(--line);
+  border-radius: 10px;
+  background: var(--raised);
+  box-shadow: var(--cap);
+  color: var(--muted);
+  font: 600 0.85rem/1.2 var(--body);
+  cursor: pointer;
+  transition:
+    translate 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+@media (hover: hover) {
+  .guide__chip:hover {
+    border-color: var(--hue);
+    color: var(--fg);
+  }
+}
+
+.guide__chip:active,
+.guide__chip[aria-pressed="true"] {
+  translate: 0 3px;
+  box-shadow:
+    0 2px 0 0 #0a0812,
+    0 2px 0 2px color-mix(in srgb, var(--hue) 45%, var(--edge));
+}
+
+.guide__chip[aria-pressed="true"] {
+  border-color: var(--hue);
+  background: color-mix(in srgb, var(--hue) 18%, var(--raised));
+  color: var(--fg);
+}
+
+.guide__chip:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.guide__dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--hue);
+}
+
+.guide__chip[aria-pressed="true"] .guide__dot {
+  box-shadow: 0 0 8px var(--hue);
+}
+
+.guide__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The monitor: --hue is the build's colour (a collaboration's track colour,
+   violet for our own projects); --hue-ink is the text colour that reads on it. */
+.monitor {
   position: relative;
   isolation: isolate;
-  padding-top: 70px; /* room for the antenna and the crew */
+  padding-top: 48px; /* room for the crew peeking over */
 }
 
-.tv__antenna {
-  position: absolute;
-  z-index: -2;
-  top: 0;
-  left: calc(50% - 60px);
-  width: 120px;
-  overflow: visible;
-  transform-origin: 50% 100%;
-  fill: none;
-  stroke: var(--edge);
-  stroke-width: 4;
-  stroke-linecap: round;
-}
-
-.tv__antenna circle {
-  fill: var(--hue);
-  stroke: none;
-  filter: drop-shadow(0 0 6px var(--hue));
-}
-
-.tv__dome {
-  fill: var(--raised);
-  stroke: var(--edge);
-  stroke-width: 3;
-}
-
-/* The crew stands behind the set and peeks over the top. */
-.tv__crew {
+/* The crew stands behind the monitor and peeks over the top. */
+.monitor__crew {
   position: absolute;
   z-index: -1;
-  top: 22px;
+  top: 0;
   inset-inline-end: 34px;
   display: flex;
   flex-direction: row-reverse;
 }
 
-.tv__mate {
+.monitor__mate {
   display: block;
-  width: 70px;
+  width: 66px;
   margin-inline-start: -18px;
 }
 
-.tv__mate:last-child {
+.monitor__mate:last-child {
   margin-inline-start: 0;
 }
 
-/* Hovering the TV: the crew peeks further, one after another. */
-.tv__mate > svg {
+.monitor__mate > svg {
   transition: translate 0.35s var(--spring);
 }
 
 @media (hover: hover) {
-  .tv:hover .tv__mate > svg {
+  .monitor:hover .monitor__mate > svg {
     translate: 0 -14px;
   }
 
-  .tv:hover .tv__mate:nth-last-child(2) > svg {
+  .monitor:hover .monitor__mate:nth-last-child(2) > svg {
     transition-delay: 0.05s;
   }
 
-  .tv:hover .tv__mate:nth-last-child(3) > svg {
+  .monitor:hover .monitor__mate:nth-last-child(3) > svg {
     transition-delay: 0.1s;
   }
 }
 
-.tv__set {
+/* Thin bezel, flat screen. */
+.monitor__frame {
   position: relative;
-  padding: 16px 16px 0;
+  padding: 12px 12px 0;
   border: 2px solid color-mix(in srgb, var(--hue) 45%, var(--edge));
-  border-radius: 24px;
+  border-radius: 14px;
   background: linear-gradient(180deg, var(--raised), var(--surface));
   box-shadow:
-    0 7px 0 0 #0a0812,
-    0 7px 0 2px color-mix(in srgb, var(--hue) 30%, var(--edge)),
-    0 24px 70px -24px color-mix(in srgb, var(--hue) 60%, transparent);
+    0 24px 70px -26px color-mix(in srgb, var(--hue) 60%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
   transition:
     border-color 0.4s,
     box-shadow 0.4s;
 }
 
-/* A label stuck on the set: what's on and who it's for. */
-.tv__sticker {
+.monitor__cam {
+  position: absolute;
+  top: 4px;
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #07060d;
+  box-shadow: inset 0 0 0 1.5px var(--edge);
+}
+
+/* A label stuck on the bezel: what it is and who it's for. */
+.monitor__sticker {
   position: absolute;
   z-index: 2;
-  top: -14px;
-  inset-inline-start: 22px;
-  max-width: calc(100% - 44px);
+  top: -13px;
+  inset-inline-start: 20px;
+  max-width: calc(100% - 40px);
   overflow: hidden;
   padding: 5px 11px;
   border-radius: 6px;
@@ -157,26 +260,25 @@
   box-shadow: 2px 3px 0 rgb(0 0 0 / 0.55);
   color: var(--hue-ink);
   font-weight: 800;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-  rotate: -3deg;
+  rotate: -2deg;
 }
 
-/* The screen: dark glass lit by the hue, with scanlines and a reflection. */
-.tv__screen {
+/* The screen: dark glass lit by the hue, with faint scanlines and a reflection. */
+.monitor__screen {
   position: relative;
   overflow: hidden;
-  border: 3px solid #07060d;
-  border-radius: 16px / 20px;
+  border-radius: 6px;
   background:
-    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 26%, transparent), transparent 70%),
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 24%, transparent), transparent 70%),
     #09080f;
-  box-shadow: inset 0 0 40px rgb(0 0 0 / 0.85);
+  box-shadow: inset 0 0 0 1px #000;
 }
 
-.tv__screen::before,
-.tv__screen::after {
+.monitor__screen::before,
+.monitor__screen::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -184,40 +286,33 @@
   pointer-events: none;
 }
 
-.tv__screen::before {
-  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px);
-  animation: scan 7s linear infinite;
+.monitor__screen::before {
+  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px);
 }
 
-.tv__screen::after {
-  background: linear-gradient(115deg, rgb(255 255 255 / 0.07) 0 20%, transparent 20.5%);
+.monitor__screen::after {
+  background: linear-gradient(115deg, rgb(255 255 255 / 0.06) 0 22%, transparent 22.5%);
 }
 
-@keyframes scan {
-  to {
-    background-position: 0 60px;
-  }
-}
-
-.tv__picture {
+.monitor__picture {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: clamp(250px, 26vw, 320px);
+  aspect-ratio: 16 / 9; /* a minimum: longer content makes it taller (no min-height: that would force the width) */
   padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 40px;
 }
 
-/* Static between channels: noise, jumping around. */
-.tv__static {
+/* A quick glitch between builds: noise, jumping around. */
+.monitor__glitch {
   position: absolute;
   inset: -50%;
   z-index: 1;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.9;
-  animation: static 0.2s steps(4) infinite;
+  opacity: 0.85;
+  animation: glitch 0.2s steps(4) infinite;
 }
 
-@keyframes static {
+@keyframes glitch {
   25% {
     translate: -12% 8%;
   }
@@ -232,37 +327,20 @@
   }
 }
 
-/* The channel number that flashes up after switching, in the empty bottom corner. */
-.tv__osd {
-  position: absolute;
-  z-index: 3;
-  bottom: 34px;
-  inset-inline-end: 24px;
-  color: #6dff8f;
-  font-size: clamp(1.3rem, 2.4vw, 1.9rem);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-shadow:
-    0 0 10px rgb(109 255 143 / 0.8),
-    2px 2px 0 #000;
-}
-
-.tv__status {
+.monitor__status {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 4px 12px;
+  gap: 12px;
   margin: 0;
   color: var(--hue);
   font-weight: 700;
 }
 
-.tv__ago {
+.monitor__count {
   color: var(--muted);
-  font-weight: 400;
 }
 
-.tv__dot {
+.monitor__dot {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -279,16 +357,16 @@
   }
 }
 
-.tv__title {
+.monitor__title {
   margin: 4px 0 0;
   max-width: 16ch;
   color: #fff;
-  font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
   letter-spacing: -0.05em;
   text-shadow: 0 0 22px color-mix(in srgb, var(--hue) 55%, transparent);
 }
 
-.tv__note {
+.monitor__note {
   margin: 0;
   max-width: 46ch;
   color: var(--fg);
@@ -297,25 +375,25 @@
   opacity: 0.85;
 }
 
-.tv__prompt {
+.monitor__prompt {
   color: var(--hue);
   font-weight: 700;
 }
 
-.tv__meta {
+.monitor__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  gap: 6px 16px;
   margin: auto 0 0;
   color: var(--muted);
 }
 
-.tv__kind {
+.monitor__kind {
   color: var(--hue);
 }
 
 /* Loading bar along the bottom of the screen: it never quite finishes. */
-.tv__load {
+.monitor__load {
   position: absolute;
   inset: auto 20px 16px;
   height: 6px;
@@ -332,7 +410,7 @@
   }
 }
 
-.tv__nosignal {
+.monitor__nosignal {
   display: grid;
   place-content: center;
   gap: 8px;
@@ -340,11 +418,11 @@
   text-align: center;
 }
 
-.tv__nosignal p {
+.monitor__nosignal p {
   margin: 0;
 }
 
-.tv__nosignal .mono {
+.monitor__nosignal .mono {
   padding: 8px 18px;
   border: 2px solid var(--muted);
   color: var(--fg);
@@ -363,88 +441,93 @@
   }
 }
 
-.tv__chin {
+.monitor__chin {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 12px 6px 14px;
+  padding: 8px 4px 9px;
 }
 
-.tv__brand {
+.monitor__brand {
   color: var(--muted);
   font-weight: 800;
+  letter-spacing: 0.2em;
 }
 
-.tv__count {
-  margin-inline-start: 8px;
-  color: var(--hue);
-}
-
-.tv__controls {
+.monitor__controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-/* Channel buttons are keycaps that press in. */
-.tv__btn {
-  padding: 8px 12px;
+/* Small hardware buttons on the chin. */
+.monitor__btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 22px;
   border: var(--line);
-  border-radius: 10px;
+  border-radius: 6px;
   background: var(--raised);
-  box-shadow: var(--cap);
-  color: var(--fg);
-  font-weight: 800;
+  box-shadow: 0 2px 0 0 #0a0812;
+  color: var(--muted);
+  font-size: 0.6rem;
   cursor: pointer;
   transition:
-    translate 0.1s ease-out,
-    box-shadow 0.1s ease-out,
+    translate 0.1s,
+    box-shadow 0.1s,
+    color 0.15s,
     border-color 0.15s;
 }
 
 @media (hover: hover) {
-  .tv__btn:hover {
+  .monitor__btn:hover:not(:disabled) {
     border-color: var(--hue);
+    color: var(--fg);
   }
 }
 
-.tv__btn:active {
-  translate: 0 3px;
-  box-shadow: var(--cap-down);
+.monitor__btn:active:not(:disabled) {
+  translate: 0 2px;
+  box-shadow: none;
 }
 
-.tv__led {
-  width: 9px;
-  height: 9px;
-  margin-inline-start: 4px;
+.monitor__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.monitor__led {
+  width: 7px;
+  height: 7px;
+  margin-inline-start: 6px;
   border-radius: 50%;
   background: var(--hue);
-  box-shadow: 0 0 10px var(--hue);
-  animation: led 3s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--hue);
 }
 
-@keyframes led {
-  50% {
-    box-shadow: 0 0 2px var(--hue);
-    opacity: 0.6;
-  }
+/* The stand: a neck and a base. */
+.monitor__stand {
+  display: grid;
+  justify-items: center;
 }
 
-.tv__feet {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 14%;
+.monitor__neck {
+  width: 56px;
+  height: 34px;
+  border-inline: 2px solid var(--edge);
+  background: linear-gradient(90deg, var(--surface), var(--raised), var(--surface));
+  clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
 }
 
-.tv__feet span {
-  width: 44px;
-  height: 14px;
+.monitor__base {
+  width: 190px;
+  height: 12px;
   border: var(--line);
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
+  border-radius: 10px 10px 4px 4px;
   background: var(--raised);
+  box-shadow: 0 4px 0 #0a0812;
 }
 
 /* ---------- The drawer of shipped builds ---------- */
@@ -522,7 +605,7 @@
 .folder__tab {
   position: relative;
   display: block;
-  max-width: min(58%, 100% - var(--tab));
+  width: calc(100% / 3);
   margin-inline-start: var(--tab);
   padding: 7px 14px 6px;
   border: 2px solid color-mix(in srgb, var(--hue) 55%, var(--edge));

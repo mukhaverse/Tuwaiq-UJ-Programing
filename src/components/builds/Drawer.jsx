@@ -5,8 +5,9 @@ import { color } from "../../lib/palette";
 import Character from "../character/Character";
 import { hueOf, hueVars, stickerOf } from "./hue";
 
-// Tabs sit at staggered spots along the folder tops, like a real filing drawer.
-const TAB_SPOTS = ["0%", "34%", "62%"];
+// Every tab is a third of the folder wide, and they step left, middle, right,
+// then start over: the classic filing-drawer pattern, lined up on a grid.
+const TAB_SPOTS = ["0%", "33.333%", "66.666%"];
 
 /* Everything shipped, filed as folders in an open drawer. Pick one to pull it up:
    what it was, who it was for, who built it, and when. */

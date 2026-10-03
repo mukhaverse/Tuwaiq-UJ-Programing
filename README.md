@@ -61,7 +61,7 @@ src/
     members/            filters, card grid, profile modal, #member/<id> link handling
     playground/         draggable sticker board of every member
     journey/            milestone timeline
-    builds/             Builds: the TV (Tv.jsx), the shipped drawer (Drawer.jsx), and the request form (#request)
+    builds/             Builds: the guide and monitor (OnAir.jsx), the shipped drawer (Drawer.jsx), and the request form (#request)
     character/          the cartoon characters (blob, star, ghost, robot, cat, cloud, mushroom,
                         flower, monitor; sun and planet for the leader and co-leader)
     badges/             Badge + BadgeMark (the medal graphic)
@@ -87,14 +87,14 @@ src/
 
 **Builds** (the section after the journey) has two halves:
 
-- **On air:** a TV with one channel per build in progress. CH −/+ (or the arrow keys) flips between them with a burst of static and a "CH 02" flash. The assigned members' characters peek over the set (each links to their profile), and the whole set takes the build's colour.
+- **Building now:** a guide counts what's in progress (Collabs · 02, Projects · 02) with a chip for each, and a monitor shows the one picked in full. Click a chip, the ◀ ▶ buttons on the monitor, or the arrow keys to switch (with a quick glitch). The assigned members' characters peek over the monitor (each links to their profile), and the monitor takes the build's colour.
 - **Shipped:** a drawer of folders, one per finished build. Pick one to pull it up: what it was, who it was for, who built it, and a "shipped" stamp with the month.
 
 Each build is either a **collaboration** (linked to another track: it glows in that track's colour, with a "collab × Media" sticker; tracks and colours are set in **Tracks** in the admin panel) or a **project** (the track's own work, in violet, with an optional "for …" label). The kind (survey, website…) is optional; leave it empty and nothing is shown.
 
-Manage them in **Projects** in the admin panel: **In progress** puts a build on the TV, **Done** files it in the drawer (stamped with the date it was marked done; reopening it clears the stamp), **Declined** keeps it off the site. **+ Add** creates one directly.
+Manage them in **Projects** in the admin panel: **In progress** puts a build on the monitor, **Done** files it in the drawer (stamped with the date it was marked done; reopening it clears the stamp), **Declined** keeps it off the site. **+ Add** creates one directly.
 
-**Requests** are off until you switch them on with the bar at the top of **Projects**. While they're open, a "Request a build" button under the TV opens the request form, also reachable at `/#request` (a link to send other tracks; while requests are closed it says so instead, and the API refuses submissions). No sign-in: people say what they need, pick their track (or type one under "Other"), leave a contact, and get a ticket number like `#PT-007`. Requests land under **New request**; set one to In progress to start it. The requester's name, contact, typed-in track and details stay private (admin API only, never in `/api/content`).
+**Requests** are off until you switch them on with the bar at the top of **Projects**. While they're open, a "Request a build" button under the monitor opens the request form, also reachable at `/#request` (a link to send other tracks; while requests are closed it says so instead, and the API refuses submissions). No sign-in: people say what they need, pick their track (or type one under "Other"), leave a contact, and get a ticket number like `#PT-007`. Requests land under **New request**; set one to In progress to start it. The requester's name, contact, typed-in track and details stay private (admin API only, never in `/api/content`).
 
 Where to change things: request kinds are `KINDS` in `src/data/projects.js`; statuses are `PROJECT_STATUSES` in `worker/db/schema.ts` (+ labels in `STATUS`), and which of them the site shows is `PUBLIC_PROJECT_STATUSES`. Spam protection is light: a hidden honeypot field, length limits, and the form stops taking requests once 100 are waiting in New.
 

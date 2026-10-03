@@ -65,7 +65,7 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
       <section className="adm-panel" aria-label="Projects">
         <div className="adm-panel__head">
           <p className="adm-muted adm-small">
-            Requests land in <strong>New request</strong>. <strong>In progress</strong> is on the TV on the site; <strong>Done</strong> is in
+            Requests land in <strong>New request</strong>. <strong>In progress</strong> is on the monitor on the site; <strong>Done</strong> is in
             the drawer.
           </p>
           <Button variant="primary" onClick={() => setSelected("new")}>
@@ -231,7 +231,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
           ))}
         </div>
         <p className="adm-field__hint">
-          In progress puts it on the TV on the site. Done files it in the “shipped” drawer, stamped with today's date. Declined keeps it off
+          In progress puts it on the monitor on the site. Done files it in the “shipped” drawer, stamped with today's date. Declined keeps it off
           the site.
         </p>
       </fieldset>
@@ -282,7 +282,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
             </p>
           )}
         </fieldset>
-        <Field label="Kind" hint="Optional. Shown on the TV when set.">
+        <Field label="Kind" hint="Optional. Shown on the monitor when set.">
           <select id="pj-kind" value={v.kind} onChange={(e) => set("kind", e.target.value)}>
             <option value="">None</option>
             {KINDS.map((k) => (

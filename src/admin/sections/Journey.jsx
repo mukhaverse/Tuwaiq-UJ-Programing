@@ -70,7 +70,7 @@ export default function JourneySection({ data, reload }) {
 
 function MilestoneForm({ milestone, onSaved, onDeleted }) {
   const isNew = !milestone;
-  const [v, set] = useForm({
+  const [v, set, setValues] = useForm({
     id: milestone?.id ?? "",
     title: milestone?.title ?? "",
     when: milestone?.when ?? "",
@@ -124,7 +124,7 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
         <input id="ms-done" type="checkbox" checked={v.done} onChange={(e) => set("done", e.target.checked)} />
         Done: the track has reached this milestone
       </label>
-      <Photos photos={v.photos} onChange={(photos) => set("photos", photos)} />
+      <Photos photos={v.photos} onChange={(change) => setValues((prev) => ({ ...prev, photos: change(prev.photos) }))} />
       <div className="adm-actions">
         <Button type="submit" variant="primary" disabled={busy}>
           {busy ? "Saving…" : isNew ? "Add milestone" : "Save changes"}
@@ -139,7 +139,19 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
   );
 }
 
-/* The event's photos: shown on the site as a pile of Polaroids when the milestone is clicked. */
+// An image file's size in pixels: { w, h }, or {} if it can't be read.
+function measure(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  return new Promise((resolve) => {
+    img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => resolve({});
+    img.src = url;
+  }).finally(() => URL.revokeObjectURL(url));
+}
+
+/* The event's photos: shown on the site as a pile of Polaroids when the milestone is clicked.
+   onChange takes a function from the current list to the new one. */
 function Photos({ photos, onChange }) {
   const [uploading, setUploading] = useState(0);
   const toast = useToast();
@@ -154,27 +166,29 @@ function Photos({ photos, onChange }) {
       const form = new FormData();
       form.append("file", file);
       try {
-        const { url } = await api("/admin/uploads", { method: "POST", form });
-        added.push({ url, caption: "" });
+        // Its size picks the Polaroid's shape on the site.
+        const [{ url }, size] = await Promise.all([api("/admin/uploads", { method: "POST", form }), measure(file)]);
+        added.push({ url, caption: "", ...size });
       } catch (err) {
         toast(`${file.name}: ${err.message}`, "error");
       }
       setUploading((n) => n - 1);
     }
     if (added.length) {
-      onChange([...photos, ...added]);
+      onChange((list) => [...list, ...added]);
       toast(`${added.length} ${added.length === 1 ? "photo" : "photos"} added. Save to publish.`);
     }
   };
 
-  const update = (i, patch) => onChange(photos.map((p, j) => (j === i ? { ...p, ...patch } : p)));
-  const move = (i, dir) => {
-    const to = i + dir;
-    if (to < 0 || to >= photos.length) return;
-    const next = [...photos];
-    [next[i], next[to]] = [next[to], next[i]];
-    onChange(next);
-  };
+  const update = (i, patch) => onChange((list) => list.map((p, j) => (j === i ? { ...p, ...patch } : p)));
+  const move = (i, dir) =>
+    onChange((list) => {
+      const to = i + dir;
+      if (to < 0 || to >= list.length) return list;
+      const next = [...list];
+      [next[i], next[to]] = [next[to], next[i]];
+      return next;
+    });
 
   return (
     <fieldset className="adm-fieldset">
@@ -187,7 +201,13 @@ function Photos({ photos, onChange }) {
         <ol className="adm-photos">
           {photos.map((p, i) => (
             <li key={p.url} className="adm-photo">
-              <img src={p.url} alt="" loading="lazy" />
+              <img
+                src={p.url}
+                alt=""
+                loading="lazy"
+                // Photos added before sizes were recorded get theirs here, saved with the next save.
+                onLoad={(e) => !p.w && update(i, { w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+              />
               <input
                 aria-label={`Caption for photo ${i + 1}`}
                 value={p.caption}
@@ -202,7 +222,7 @@ function Photos({ photos, onChange }) {
                 <Button onClick={() => move(i, 1)} disabled={i === photos.length - 1} aria-label="Move down">
                   ↓
                 </Button>
-                <Button variant="danger" onClick={() => onChange(photos.filter((_, j) => j !== i))} aria-label="Remove photo">
+                <Button variant="danger" onClick={() => onChange((list) => list.filter((_, j) => j !== i))} aria-label="Remove photo">
                   ✕
                 </Button>
               </span>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { animate, motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "motion/react";
+import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { gsap, useGSAP, MOTION_OK } from "../../lib/gsap";
 import { BadgeMark } from "../badges/Badge";
 import "./Memories.css";
@@ -17,6 +17,14 @@ function slot(pos) {
   if (pos === 0) return { x: 0, y: 0, rotation: -2 };
   const p = Math.min(pos, 6);
   return { x: ((p * 53) % 23) - 11, y: ((p * 29) % 15) - 4 + p * 3, rotation: ((p * 37) % 19) - 9 };
+}
+
+// Each photo gets the instant-film format closest to its shape, so nothing important
+// gets cropped: wide (Instax Wide, for group photos), square, or tall (Instax Mini).
+function shapeOf(size) {
+  if (!size) return "square";
+  const ratio = size.w / size.h;
+  return ratio > 1.2 ? "wide" : ratio < 0.85 ? "tall" : "square";
 }
 
 const DUST = Array.from({ length: 18 }, (_, i) => ({
@@ -41,6 +49,8 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
   const closing = useRef(false);
   const [order, setOrder] = useState(() => photos.map((_, i) => i));
   const orderRef = useRef(order);
+  // Pixel sizes, from the admin panel; older photos report theirs once loaded.
+  const [sizes, setSizes] = useState(() => photos.map((p) => (p.w && p.h ? { w: p.w, h: p.h } : null)));
   const n = photos.length;
   const blank = mode === "blank";
 
@@ -80,7 +90,6 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
       .fromTo(q(".mem-photo__img"), { filter: FOGGY }, { filter: CLEAR, duration: 2.6, ease: "power2.inOut" }, 0)
       // Everyone shakes a Polaroid.
       .to(q(".mem-pol"), { keyframes: { rotation: [0, -4, 3.5, -2.5, 2, -1, 0] }, duration: 0.7, ease: "none" }, 0.05)
-      .fromTo(q(".mem-photo__shine"), { xPercent: -160 }, { xPercent: 160, duration: 0.9, ease: "power2.inOut" }, blank ? 1.2 : 2.1)
       .fromTo(q(".mem-pol__caption"), { clipPath: hidden }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.1, ease: "power1.inOut" }, 1.1);
   };
 
@@ -274,6 +283,10 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
     motionOf.current[idx] = values;
   }, []);
 
+  const onSize = useCallback((idx, w, h) => {
+    setSizes((all) => (all[idx] ? all : all.map((s, i) => (i === idx ? { w, h } : s))));
+  }, []);
+
   const onDragEnd = (info) => {
     const { offset, velocity } = info;
     if (Math.abs(offset.x) > 110 || Math.abs(velocity.x) > 650) flip(Math.sign(offset.x || velocity.x));
@@ -316,7 +329,14 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
         {photos.map((p, i) => {
           const pos = order.indexOf(i);
           return (
-            <div key={i} className="mem-card" ref={(el) => (cards.current[i] = el)} style={{ zIndex: n - pos }} aria-hidden={i !== top}>
+            <div
+              key={i}
+              className="mem-card"
+              data-shape={shapeOf(sizes[i])}
+              ref={(el) => (cards.current[i] = el)}
+              style={{ zIndex: n - pos }}
+              aria-hidden={i !== top}
+            >
               <Polaroid
                 index={i}
                 photo={p}
@@ -326,6 +346,7 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
                 alt={p.caption || `Photo ${i + 1} from ${milestone.title}`}
                 isTop={i === top && !blank}
                 register={register}
+                onSize={onSize}
                 onDragStart={() => lift(i, true)}
                 onDragEnd={onDragEnd}
               />
@@ -333,7 +354,8 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
           );
         })}
         {badge && (
-          <div className="mem__stamp" aria-label={`${badge.name} badge`}>
+          // It sits on the top photo's corner, wherever that is for its shape.
+          <div className="mem__stamp" data-shape={shapeOf(sizes[top])} aria-label={`${badge.name} badge`}>
             <span className="mem__stamp-ring" />
             <svg viewBox="0 0 120 120" className="mem__stamp-text" aria-hidden="true">
               <defs>
@@ -373,37 +395,15 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
   );
 }
 
-/* One Polaroid. Layers: drag (motion) → tilt toward the pointer (motion) → paper (GSAP shakes it). */
-function Polaroid({ index, photo, blank, caption, note, alt, isTop, register, onDragStart, onDragEnd }) {
+/* One Polaroid. Layers: drag (motion) → paper (GSAP shakes it while it develops). */
+function Polaroid({ index, photo, blank, caption, note, alt, isTop, register, onSize, onDragStart, onDragEnd }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-360, 0, 360], [-24, 0, 24]);
-  const rx = useSpring(0, { stiffness: 200, damping: 18 });
-  const ry = useSpring(0, { stiffness: 200, damping: 18 });
-  const gx = useMotionValue(30);
-  const gy = useMotionValue(20);
-  const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgb(255 255 255 / 0.4), transparent 55%)`;
 
   useEffect(() => register(index, { x, y }), [register, index, x, y]);
 
-  const tilt = (e) => {
-    if (!isTop) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;
-    const py = (e.clientY - r.top) / r.height;
-    ry.set((px - 0.5) * 18);
-    rx.set(-(py - 0.5) * 18);
-    gx.set(px * 100);
-    gy.set(py * 100);
-  };
-  const untilt = () => {
-    rx.set(0);
-    ry.set(0);
-  };
-
   const rtl = ARABIC.test(caption ?? "");
-  // Tape at a slightly different angle on every photo.
-  const tape = ((index * 47) % 13) - 6;
 
   return (
     <motion.div
@@ -411,31 +411,33 @@ function Polaroid({ index, photo, blank, caption, note, alt, isTop, register, on
       style={{ x, y, rotate }}
       drag={isTop}
       dragMomentum={false}
-      whileDrag={{ scale: 1.05, cursor: "grabbing" }}
+      whileDrag={{ scale: 1.04, cursor: "grabbing" }}
       onDragStart={onDragStart}
       onDragEnd={(_, info) => onDragEnd(info)}
     >
-      <motion.div className="mem-tilt" style={{ rotateX: rx, rotateY: ry }} onPointerMove={tilt} onPointerLeave={untilt}>
-        <div className="mem-pol">
-          <span className="mem-pol__tape" style={{ rotate: `${tape}deg` }} aria-hidden="true" />
-          <div className="mem-photo">
-            {blank ? (
-              <span className="mem-photo__img mem-photo__blank" aria-hidden="true">
-                ?
-              </span>
-            ) : (
-              <img className="mem-photo__img" src={photo.url} alt={alt} draggable={false} decoding="async" />
-            )}
-            <span className="mem-photo__fog" aria-hidden="true" />
-            <span className="mem-photo__shine" aria-hidden="true" />
-            {isTop && <motion.span className="mem-photo__glare" style={{ background: glare }} aria-hidden="true" />}
-          </div>
-          <p className="mem-pol__caption" lang={rtl ? "ar" : undefined} dir={rtl ? "rtl" : "ltr"}>
-            {caption}
-            {note && <small>{note}</small>}
-          </p>
+      <div className="mem-pol">
+        <div className="mem-photo">
+          {blank ? (
+            <span className="mem-photo__img mem-photo__blank" aria-hidden="true">
+              ?
+            </span>
+          ) : (
+            <img
+              className="mem-photo__img"
+              src={photo.url}
+              alt={alt}
+              draggable={false}
+              decoding="async"
+              onLoad={(e) => onSize(index, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)}
+            />
+          )}
+          <span className="mem-photo__fog" aria-hidden="true" />
         </div>
-      </motion.div>
+        <p className="mem-pol__caption" lang={rtl ? "ar" : undefined} dir={rtl ? "rtl" : "ltr"}>
+          {caption}
+          {note && <small>{note}</small>}
+        </p>
+      </div>
     </motion.div>
   );
 }

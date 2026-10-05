@@ -16,6 +16,8 @@ const fields = {
       z.object({
         url: z.string().trim().regex(/^\/api\/media\/\S+$/, "Upload the photo first").max(300),
         caption: z.string().trim().max(120).default(""),
+        w: z.number().int().positive().max(50000).optional(),
+        h: z.number().int().positive().max(50000).optional(),
       })
     )
     .max(40)

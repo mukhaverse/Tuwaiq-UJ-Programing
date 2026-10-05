@@ -42,7 +42,8 @@ export const milestones = sqliteTable("milestones", {
   ...timestamps,
 });
 
-export type MilestonePhoto = { url: string; caption: string };
+// w and h: the image's size in pixels, which picks its Polaroid's shape (wide, square or tall).
+export type MilestonePhoto = { url: string; caption: string; w?: number; h?: number };
 
 export const badges = sqliteTable("badges", {
   id: text("id").primaryKey(),

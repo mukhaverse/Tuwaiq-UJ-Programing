@@ -2,11 +2,12 @@
   border-top: var(--line);
 }
 
-/* One monitor, centred, with the request box under it. */
+/* One monitor, centred, with the request box under it. Its width follows the
+   window's height, so the whole monitor (plus the box) fits on one screen. */
 .builds__stage {
   display: grid;
-  gap: 28px;
-  max-width: 1000px;
+  gap: 24px;
+  max-width: clamp(560px, (100svh - 340px) * 1.6, 880px);
   margin-inline: auto;
 }
 
@@ -182,20 +183,45 @@
   transition: background 0.5s;
 }
 
-/* Phones: a taller screen and bigger type, so it stays readable. */
+/* Phones: a square screen, bigger type, and a smaller shipped folder. */
 @container (max-width: 520px) {
   .os {
-    font-size: 2.9cqi;
+    font-size: 3.1cqi;
+  }
+
+  .os-desk {
+    padding: 0.8em 0.8em 0.9em 5.4em;
+  }
+
+  .os-folder {
+    left: 0.3em;
+    width: 4.8em;
+  }
+
+  .os-folder svg {
+    width: 2.6em;
+  }
+
+  .os-win__title {
+    font-size: 1.9em;
   }
 }
 
 @media (max-width: 560px) {
+  .monitor {
+    padding-top: 42px;
+  }
+
   .monitor__screen {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
   }
 
   .monitor__mate {
-    width: 52px;
+    width: 50px;
+  }
+
+  .monitor__neck {
+    height: 22px;
   }
 }
 

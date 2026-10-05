@@ -697,6 +697,67 @@
   box-shadow: 0 0 0 3px var(--fg);
 }
 
+.adm-swatch-row {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+/* Their members-survey pick (★) and the closest original colour to it (≈). */
+.adm-swatch.is-picked,
+.adm-swatch.is-nearest {
+  position: relative;
+}
+
+.adm-swatch.is-picked::after,
+.adm-swatch.is-nearest::after,
+.adm-pick__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.adm-swatch.is-picked::after,
+.adm-swatch.is-nearest::after {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+}
+
+.adm-swatch.is-picked::after,
+.adm-pick__mark.is-picked {
+  content: "★";
+  background: var(--violet);
+  color: var(--ink);
+}
+
+.adm-swatch.is-nearest::after,
+.adm-pick__mark.is-nearest {
+  content: "≈";
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.adm-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.adm-pick__dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
 .adm-char:focus-visible,
 .adm-swatch:focus-visible {
   outline: 2px solid var(--violet);

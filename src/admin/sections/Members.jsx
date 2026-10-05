@@ -1,18 +1,24 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Character, { CHARACTERS } from "../../components/character/Character";
 import { BadgeMark } from "../../components/badges/Badge";
-import { color, palette } from "../../lib/palette";
+import { ORIGINAL_COLOURS, color, palette, surveyColour } from "../../lib/palette";
 import { roleLabel, yearLabel } from "../../data/members";
 import { api } from "../api";
 import { Button, ConfirmButton, Field, ItemList } from "../ui";
 import { moved, useAction, useForm } from "../hooks";
 
-const COLOURS = Object.keys(palette).filter((k) => k !== "ink");
+// Two swatch rows: the original character colours, then the survey's exact shades.
+const SURVEY_SHADES = Object.keys(palette).filter((k) => k !== "ink" && !ORIGINAL_COLOURS.includes(k));
+const COLOUR_ROWS = [
+  ["Original", ORIGINAL_COLOURS],
+  ["Survey shades", SURVEY_SHADES],
+];
 
 export default function MembersSection({ data, reload }) {
   const [selected, setSelected] = useState(null); // member id, "new", or null
   const [query, setQuery] = useState("");
   const [, run] = useAction();
+  const picks = useSurveyColours();
 
   const q = query.trim().toLowerCase();
   const list = q ? data.members.filter((m) => `${m.name} ${m.id} ${m.major}`.toLowerCase().includes(q)) : data.members;
@@ -68,6 +74,7 @@ export default function MembersSection({ data, reload }) {
             key={selected}
             member={selected === "new" ? null : current}
             badges={data.badges}
+            surveyPick={picks.get(selected) ?? null}
             onSaved={(id) => reload().then(() => setSelected(id))}
             onDeleted={() => reload().then(() => setSelected(null))}
           />
@@ -79,7 +86,29 @@ export default function MembersSection({ data, reload }) {
   );
 }
 
-function MemberForm({ member, badges, onSaved, onDeleted }) {
+/** Member id → the favourite colour from their latest survey answer: { name, hex, exact, nearest }. */
+function useSurveyColours() {
+  const [responses, setResponses] = useState([]);
+  useEffect(() => {
+    // Only a hint on the colour picker: without it the form works the same.
+    api("/admin/survey")
+      .then((d) => setResponses(d.responses))
+      .catch(() => {});
+  }, []);
+  return useMemo(() => {
+    const picks = new Map();
+    // Oldest first, so each member ends up with their latest answer.
+    for (const r of responses) {
+      const name = r.answers["Favorite Color"];
+      if (!r.memberId || !name) continue;
+      const hex = /^#[0-9a-f]{3,8}$/i.test(r.answers["Favorite Color Hex"] ?? "") ? r.answers["Favorite Color Hex"] : null;
+      picks.set(r.memberId, { name, hex, ...surveyColour(name) });
+    }
+    return picks;
+  }, [responses]);
+}
+
+function MemberForm({ member, badges, surveyPick, onSaved, onDeleted }) {
   const isNew = !member;
   const [v, set] = useForm({
     id: member?.id ?? "",
@@ -200,21 +229,50 @@ function MemberForm({ member, badges, onSaved, onDeleted }) {
             </button>
           ))}
         </div>
-        <div className="adm-swatches" role="radiogroup" aria-label="Colour">
-          {COLOURS.map((k) => (
-            <button
-              type="button"
-              key={k}
-              role="radio"
-              aria-checked={v.body === k}
-              className={`adm-swatch${v.body === k ? " is-on" : ""}`}
-              style={{ background: palette[k] }}
-              onClick={() => set("body", k)}
-              title={k}
-              aria-label={k}
-            />
-          ))}
-        </div>
+        {COLOUR_ROWS.map(([title, keys]) => (
+          <div key={title} className="adm-swatch-row">
+            <span className="adm-muted adm-small">{title}</span>
+            <div className="adm-swatches" role="radiogroup" aria-label={`${title} colours`}>
+              {keys.map((k) => {
+                const mark = k === surveyPick?.exact ? "picked" : k === surveyPick?.nearest ? "nearest" : null;
+                const label = mark === "picked" ? `${k} (their survey pick)` : mark === "nearest" ? `${k} (closest original to their pick)` : k;
+                return (
+                  <button
+                    type="button"
+                    key={k}
+                    role="radio"
+                    aria-checked={v.body === k}
+                    className={`adm-swatch${v.body === k ? " is-on" : ""}${mark ? ` is-${mark}` : ""}`}
+                    style={{ background: palette[k] }}
+                    onClick={() => set("body", k)}
+                    title={label}
+                    aria-label={label}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {surveyPick && (
+          <div className="adm-pick adm-small">
+            <span className="adm-pick__dot" style={{ background: surveyPick.hex ?? palette[surveyPick.exact] }} aria-hidden="true" />
+            <span>
+              Survey pick: <strong>{surveyPick.name}</strong>
+              {surveyPick.exact ? (
+                <>
+                  {" "}
+                  <span className="adm-pick__mark is-picked">★</span> {surveyPick.exact}
+                  {" · closest original "}
+                  <span className="adm-pick__mark is-nearest">≈</span> {surveyPick.nearest}
+                </>
+              ) : (
+                " (no character colour matches)"
+              )}
+            </span>
+            {surveyPick.exact && surveyPick.exact !== v.body && <Button onClick={() => set("body", surveyPick.exact)}>Use survey pick</Button>}
+            {surveyPick.nearest && surveyPick.nearest !== v.body && <Button onClick={() => set("body", surveyPick.nearest)}>Use closest original</Button>}
+          </div>
+        )}
       </fieldset>
 
       <fieldset className="adm-fieldset">

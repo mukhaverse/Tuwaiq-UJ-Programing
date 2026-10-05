@@ -171,6 +171,12 @@ function BuildWindow({ build, index, total }) {
       <TitleBar label={labelOf(build)} position={`${pad(index + 1)} / ${pad(total)}`} />
       <div className="os-win__body">
         <h3 className="os-win__title">{build.title}</h3>
+        {(kind || build.summary) && (
+          <p className="os-win__about">
+            {kind && <span className="os-win__kind">{kind.label}</span>}
+            {build.summary}
+          </p>
+        )}
         {build.note && <p className="os-win__note">{build.note}</p>}
         {track && (
           <p className="os-win__byline">
@@ -187,11 +193,6 @@ function BuildWindow({ build, index, total }) {
                   <Character type={m.avatar.char} body={color(m.avatar.body)} />
                 </a>
               ))}
-            </span>
-          )}
-          {kind && (
-            <span className="os-win__kind">
-              <span aria-hidden="true">{kind.glyph}</span> {kind.label}
             </span>
           )}
           <span className="os-win__progress">

@@ -12,6 +12,7 @@
 //   forLabel   projects only, optional: who it's for, e.g. "the whole club"
 //   kind       optional: one of KINDS below
 //   status     "in_progress" (on the monitor) or "done" (in the shipped folder)
+//   summary    one short sentence on what it is
 //   note       one public line about where it's at
 //   updatedAt  "YYYY-MM-DD HH:MM:SS", UTC
 //   finishedAt same format, for done ones: when it was marked done

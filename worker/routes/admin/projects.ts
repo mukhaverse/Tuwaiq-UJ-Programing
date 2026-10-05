@@ -16,6 +16,7 @@ const input = z.object({
   forLabel: optionalText(60),
   kind,
   status: z.enum(PROJECT_STATUSES),
+  summary: z.string().trim().max(140).default(""),
   note: z.string().trim().max(160).default(""),
   details: z.string().trim().max(3000).default(""),
   requester: optionalText(80),

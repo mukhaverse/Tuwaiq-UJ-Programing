@@ -163,6 +163,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
     requesterTrack: project?.requesterTrack ?? "",
     kind: kindOf(project?.kind) ? project.kind : "",
     status: project?.status ?? "in_progress",
+    summary: project?.summary ?? "",
     note: project?.note ?? "",
     details: project?.details ?? "",
     requester: project?.requester ?? "",
@@ -239,6 +240,9 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
       <div className="adm-grid">
         <Field label="Title" hint="Shown on the site." wide>
           <input id="pj-title" value={v.title} onChange={(e) => set("title", e.target.value)} required maxLength={80} />
+        </Field>
+        <Field label="Short description" hint="One short sentence under the title, like “A custom survey for the 3D track’s workshop.”" wide>
+          <input id="pj-summary" value={v.summary} onChange={(e) => set("summary", e.target.value)} maxLength={140} />
         </Field>
         <fieldset className="adm-fieldset adm-field--wide">
           <legend>Type</legend>

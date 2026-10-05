@@ -2,25 +2,67 @@
   border-top: var(--line);
 }
 
-/* One monitor, a little right of centre, with the request box under it. Its
-   width follows the window's height, so the whole monitor fits on one screen. */
-.builds__stage {
+/* Wide screens: the heading, intro and request box on the left, the monitor on
+   the right. Narrow: stacked, with the request box after the monitor. The
+   monitor's width follows the window's height, so it fits on one screen. */
+.builds__layout {
   display: grid;
-  gap: 24px;
-  max-width: clamp(580px, (100svh - 300px) * 1.6, 940px);
-  margin-inline: auto clamp(0px, 6vw, 96px);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "intro"
+    "stage"
+    "ask";
+  gap: 28px;
 }
 
-@media (max-width: 900px) {
-  .builds__stage {
-    margin-inline: auto;
-  }
+.builds__intro {
+  grid-area: intro;
+}
+
+.builds__intro h2 {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
 }
 
 .builds__lede {
-  max-width: 44ch;
+  max-width: 40ch;
   margin: 16px 0 0;
   color: var(--muted);
+}
+
+.builds__stage {
+  grid-area: stage;
+  min-width: 0;
+}
+
+.builds__ask {
+  grid-area: ask;
+}
+
+@media (min-width: 820px) {
+  .builds__layout {
+    grid-template-columns: minmax(200px, 1fr) minmax(0, clamp(480px, (100svh - 240px) * 1.6, 900px));
+    grid-template-areas:
+      "intro stage"
+      "ask stage";
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    column-gap: clamp(28px, 4vw, 64px);
+    row-gap: 24px;
+  }
+
+  .builds__intro {
+    padding-top: 52px; /* the monitor's room for its crew: lines the title up with its top */
+  }
+
+  .builds__ask {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .builds__ask .pill {
+    align-self: flex-start;
+  }
 }
 
 .builds__ask {
@@ -470,11 +512,23 @@
   text-wrap: balance;
 }
 
+.os-win__about {
+  margin: -0.2em 0 0;
+  max-width: 52ch;
+  color: rgb(255 255 255 / 0.85);
+  font-size: 1.05em;
+}
+
 .os-win__note {
   margin: 0;
   max-width: 48ch;
-  color: rgb(255 255 255 / 0.78);
-  font-size: 1.05em;
+  color: rgb(255 255 255 / 0.6);
+  font-size: 0.95em;
+}
+
+.os-win__note::before {
+  content: "Latest: ";
+  color: rgb(255 255 255 / 0.45);
 }
 
 /* "Programming × Media": bottom right, just above the footer. */
@@ -526,7 +580,8 @@
 }
 
 .os-win__kind {
-  padding: 0.15em 0.6em;
+  margin-inline-end: 0.6em;
+  padding: 0.1em 0.55em;
   border-radius: 1em;
   background: color-mix(in srgb, var(--hue) 22%, transparent);
   color: #fff;

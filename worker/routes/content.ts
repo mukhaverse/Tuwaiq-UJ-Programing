@@ -25,6 +25,7 @@ content.get("/", async (c) => {
         forLabel: projects.forLabel,
         kind: projects.kind,
         status: projects.status,
+        summary: projects.summary,
         note: projects.note,
         updatedAt: projects.updatedAt,
         finishedAt: projects.finishedAt,

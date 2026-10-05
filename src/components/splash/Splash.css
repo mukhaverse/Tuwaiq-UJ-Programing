@@ -5,10 +5,8 @@
   display: grid;
   place-items: center;
   padding: var(--gutter);
-  background:
-    radial-gradient(60rem 28rem at 50% -8rem, rgb(79 41 183 / 0.38), transparent 70%),
-    radial-gradient(30rem 20rem at 100% 110%, rgb(244 166 100 / 0.07), transparent 70%),
-    var(--bg);
+  /* No background of its own: the page's glow and grid (global.css) show through,
+     so nothing changes when the splash appears or leaves. */
   cursor: pointer;
 }
 

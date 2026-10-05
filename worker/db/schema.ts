@@ -127,6 +127,8 @@ export const projects = sqliteTable(
     // src/data/projects.js). "", "other" or any id that's not in the list means none.
     kind: text("kind").notNull().default("other"),
     status: text("status", { enum: PROJECT_STATUSES }).notNull().default("new"),
+    // One short public sentence on what it is, under the title on the site.
+    summary: text("summary").notNull().default(""),
     // One public line on the site, e.g. "Draft ready for review".
     note: text("note").notNull().default(""),
     // Private: what the requester asked for, who they are and how to reach them.

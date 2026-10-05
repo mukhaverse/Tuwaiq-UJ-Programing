@@ -1,4 +1,4 @@
-﻿.journey {
+.journey {
   border-top: var(--line);
 }
 
@@ -124,6 +124,88 @@
   border-radius: var(--radius-sm);
   background: var(--surface);
   font-size: 0.85rem;
+}
+
+/* ---------- Opening a milestone's memories ---------- */
+.ms--openable {
+  cursor: pointer;
+}
+
+.ms--openable .ms__node {
+  transition:
+    translate 0.15s var(--spring),
+    box-shadow 0.15s;
+}
+
+.ms--done.ms--openable:hover .ms__node {
+  translate: 0 0;
+  box-shadow:
+    0 5px 0 0 #0a0812,
+    0 5px 0 2px var(--cyan);
+}
+
+.ms__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 5px 10px;
+  border: 2px dashed rgb(87 227 216 / 0.45);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    translate 0.15s var(--spring);
+}
+
+.ms--next .ms__open {
+  border-color: rgb(244 166 100 / 0.45);
+  color: var(--orange);
+}
+
+.ms--openable:hover .ms__open,
+.ms__open:focus-visible {
+  translate: 0 -2px;
+  border-style: solid;
+  background: rgb(87 227 216 / 0.08);
+}
+
+.ms--next:hover .ms__open {
+  background: rgb(244 166 100 / 0.08);
+}
+
+.ms__open:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+.ms--locked {
+  cursor: not-allowed;
+}
+
+.ms__peek {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  margin-left: -50px;
+  width: 100px;
+  padding: 4px 6px;
+  border: var(--line);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--fg);
+  font-size: 0.65rem;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* ---------- Locked: no info at all, just a padlock and redacted bars ---------- */

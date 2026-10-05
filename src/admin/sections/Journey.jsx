@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
 import { Button, ConfirmButton, Field, ItemList } from "../ui";
-import { moved, useAction, useForm } from "../hooks";
+import { moved, useAction, useForm, useToast } from "../hooks";
 
 // Same rule as the site: the first milestone that isn't done is "up next".
 function statusOf(milestones, index) {
@@ -76,6 +76,7 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
     when: milestone?.when ?? "",
     note: milestone?.note ?? "",
     done: milestone?.done ?? false,
+    photos: milestone?.photos ?? [],
   });
   const [busy, run] = useAction();
 
@@ -123,6 +124,7 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
         <input id="ms-done" type="checkbox" checked={v.done} onChange={(e) => set("done", e.target.checked)} />
         Done: the track has reached this milestone
       </label>
+      <Photos photos={v.photos} onChange={(photos) => set("photos", photos)} />
       <div className="adm-actions">
         <Button type="submit" variant="primary" disabled={busy}>
           {busy ? "Saving…" : isNew ? "Add milestone" : "Save changes"}
@@ -134,5 +136,84 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
         )}
       </div>
     </form>
+  );
+}
+
+/* The event's photos: shown on the site as a pile of Polaroids when the milestone is clicked. */
+function Photos({ photos, onChange }) {
+  const [uploading, setUploading] = useState(0);
+  const toast = useToast();
+
+  const upload = async (e) => {
+    const files = [...(e.target.files ?? [])];
+    e.target.value = "";
+    if (!files.length) return;
+    setUploading(files.length);
+    const added = [];
+    for (const file of files) {
+      const form = new FormData();
+      form.append("file", file);
+      try {
+        const { url } = await api("/admin/uploads", { method: "POST", form });
+        added.push({ url, caption: "" });
+      } catch (err) {
+        toast(`${file.name}: ${err.message}`, "error");
+      }
+      setUploading((n) => n - 1);
+    }
+    if (added.length) {
+      onChange([...photos, ...added]);
+      toast(`${added.length} ${added.length === 1 ? "photo" : "photos"} added. Save to publish.`);
+    }
+  };
+
+  const update = (i, patch) => onChange(photos.map((p, j) => (j === i ? { ...p, ...patch } : p)));
+  const move = (i, dir) => {
+    const to = i + dir;
+    if (to < 0 || to >= photos.length) return;
+    const next = [...photos];
+    [next[i], next[to]] = [next[to], next[i]];
+    onChange(next);
+  };
+
+  return (
+    <fieldset className="adm-fieldset">
+      <legend>Photos</legend>
+      <p className="adm-muted adm-small">
+        Shown as a pile of Polaroids when someone clicks this milestone, first photo on top. Captions are handwritten on the
+        Polaroid's strip.
+      </p>
+      {photos.length > 0 && (
+        <ol className="adm-photos">
+          {photos.map((p, i) => (
+            <li key={p.url} className="adm-photo">
+              <img src={p.url} alt="" loading="lazy" />
+              <input
+                aria-label={`Caption for photo ${i + 1}`}
+                value={p.caption}
+                onChange={(e) => update(i, { caption: e.target.value })}
+                maxLength={120}
+                placeholder="Caption (optional)"
+              />
+              <span className="adm-photo__tools">
+                <Button onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">
+                  ↑
+                </Button>
+                <Button onClick={() => move(i, 1)} disabled={i === photos.length - 1} aria-label="Move down">
+                  ↓
+                </Button>
+                <Button variant="danger" onClick={() => onChange(photos.filter((_, j) => j !== i))} aria-label="Remove photo">
+                  ✕
+                </Button>
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <label className="adm-btn adm-btn--plain adm-upload">
+        <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" multiple onChange={upload} disabled={uploading > 0} />
+        {uploading > 0 ? `Uploading ${uploading}…` : "+ Upload photos"}
+      </label>
+    </fieldset>
   );
 }

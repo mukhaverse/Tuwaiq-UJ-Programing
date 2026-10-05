@@ -11,6 +11,15 @@ const fields = {
   when: requiredText(40),
   note: z.string().trim().max(200).default(""),
   done: z.boolean().default(false),
+  photos: z
+    .array(
+      z.object({
+        url: z.string().trim().regex(/^\/api\/media\/\S+$/, "Upload the photo first").max(300),
+        caption: z.string().trim().max(120).default(""),
+      })
+    )
+    .max(40)
+    .default([]),
 };
 const createInput = z.object({ id: slug, ...fields });
 const updateInput = z.object(fields);

@@ -1057,3 +1057,52 @@
   border-color: rgb(229 72 77 / 0.7);
   color: #ffb3b5;
 }
+
+/* Milestone photos */
+.adm-photos {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adm-photo {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-photo img {
+  width: 56px;
+  height: 56px;
+  border: 3px solid #f4f1e8;
+  border-bottom-width: 9px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.adm-photo__tools {
+  display: flex;
+  gap: 4px;
+}
+
+.adm-upload {
+  position: relative;
+  display: inline-block;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.adm-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.adm-upload:focus-within {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}

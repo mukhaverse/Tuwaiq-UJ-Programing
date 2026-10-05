@@ -35,9 +35,14 @@ export const milestones = sqliteTable("milestones", {
   when: text("when_label").notNull().default("TBA"),
   note: text("note").notNull().default(""),
   done: integer("done", { mode: "boolean" }).notNull().default(false),
+  // Photos from the event, in order, shown as a pile of Polaroids on the site.
+  // Each url is a file uploaded in the admin panel (/api/media/…).
+  photos: text("photos", { mode: "json" }).$type<MilestonePhoto[]>().notNull().default(sql`'[]'`),
   position: integer("position").notNull().default(0),
   ...timestamps,
 });
+
+export type MilestonePhoto = { url: string; caption: string };
 
 export const badges = sqliteTable("badges", {
   id: text("id").primaryKey(),

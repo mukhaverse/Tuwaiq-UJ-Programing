@@ -68,6 +68,7 @@ content.get("/", async (c) => {
       when: m.when,
       note: m.note,
       done: m.done,
+      photos: m.photos,
     })),
     badges: badgeRows.map((b) => ({
       id: b.id,

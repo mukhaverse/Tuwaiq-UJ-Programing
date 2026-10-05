@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { gsap, useGSAP, MOTION_OK } from "../../lib/gsap";
 import { milestones, milestoneStatus, LOCKED_SHOWN } from "../../data/milestones";
 import { badges } from "../../data/badges";
@@ -6,6 +6,8 @@ import { members } from "../../data/members";
 import { track } from "../../data/track";
 import { BadgeMark } from "../badges/Badge";
 import SplitHeading from "../ui/SplitHeading";
+import Memories from "./Memories";
+import { devPhotos } from "./devPhotos";
 import "./Journey.css";
 
 const LABEL = { done: "Done", next: "Up next", locked: "Locked" };
@@ -23,6 +25,12 @@ function fillTo(shown, i) {
   if (i === shown.length - 1) return 0;
   if (shown[i + 1].done) return 1;
   return shown[i].done ? 0.5 : 0;
+}
+
+// A milestone's photos. In `npm run dev`, done milestones without any get stand-ins.
+function photosOf(m) {
+  if (m.photos?.length) return m.photos;
+  return import.meta.env.DEV && m.done ? devPhotos() : [];
 }
 
 function earnedCount(badgeId) {
@@ -43,8 +51,11 @@ export default function Journey() {
   const root = useRef(null);
   const done = milestones.filter((m) => m.done).length;
   const { shown, openEnded } = visibleSteps();
+  // The milestone whose memories are open, and the node they came out of.
+  const [open, setOpen] = useState(null);
+  const opener = useRef(null);
 
-  useGSAP(
+  const { contextSafe } = useGSAP(
     () => {
       const mm = gsap.matchMedia();
       mm.add(MOTION_OK, () => {
@@ -76,6 +87,40 @@ export default function Journey() {
     { scope: root }
   );
 
+  /* The node presses in like a shutter button, then the memories open. */
+  // Tweens started from event handlers, kept in the section's GSAP context.
+  const tween = (fn) => contextSafe(fn)();
+
+  const openMemories = (m, li, button) => {
+    const node = li.querySelector(".ms__node");
+    opener.current = button ?? li.querySelector(".ms__open");
+    tween(() => gsap.fromTo(node, { scale: 1 }, { scale: 0.78, duration: 0.09, yoyo: true, repeat: 1, ease: "power2.in" }));
+    setOpen({ milestone: m, node });
+  };
+
+  const closeMemories = () => {
+    const node = open?.node;
+    setOpen(null);
+    opener.current?.focus({ preventScroll: true });
+    // The node swallows the photos back with a little gulp.
+    if (node) tween(() => gsap.fromTo(node, { scale: 1.25 }, { scale: 1, duration: 0.6, ease: "elastic.out(1.1, 0.4)" }));
+  };
+
+  /* Locked: the padlock rattles, and says so. */
+  const rattle = (li) =>
+    tween(() => {
+    gsap.fromTo(li.querySelector(".ms__lock"), { rotation: 0 }, { keyframes: { rotation: [0, -18, 15, -11, 8, -4, 0] }, duration: 0.5, ease: "none", overwrite: true });
+    const tip = li.querySelector(".ms__peek");
+    gsap.killTweensOf(tip);
+    gsap
+      .timeline()
+      .fromTo(tip, { autoAlpha: 0, y: 6, scale: 0.8 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(3)" })
+      .to(tip, { autoAlpha: 0, y: -6, duration: 0.3 }, "+=1.1");
+    });
+
+  const status = open && milestoneStatus(milestones.indexOf(open.milestone));
+  const openPhotos = open ? photosOf(open.milestone) : [];
+
   return (
     <section className="section journey" id="journey" ref={root}>
       <div className="wrap">
@@ -98,10 +143,11 @@ export default function Journey() {
 
             if (status === "locked") {
               return (
-                <li className="ms ms--locked" key={m.id} aria-label="Locked milestone">
+                <li className="ms ms--locked" key={m.id} aria-label="Locked milestone" onClick={(e) => rattle(e.currentTarget)}>
                   <div className="ms__rail" aria-hidden="true">
                     <span className="ms__node">
                       <Lock />
+                      <span className="ms__peek mono">no peeking!</span>
                     </span>
                     {(!last || trail) && <span className={`ms__seg ${trail ? "ms__seg--trail" : ""}`} />}
                   </div>
@@ -117,8 +163,14 @@ export default function Journey() {
             }
 
             const reward = badges.find((b) => b.milestone === m.id);
+            const count = photosOf(m).length;
             return (
-              <li className={`ms ms--${status}`} key={m.id}>
+              <li
+                className={`ms ms--${status} ms--openable`}
+                key={m.id}
+                // The whole step opens it for a mouse; the button below is the keyboard way in.
+                onClick={(e) => !e.target.closest("button") && openMemories(m, e.currentTarget)}
+              >
                 <div className="ms__rail" aria-hidden="true">
                   <span className="ms__node">{status === "done" ? "✓" : String(i + 1).padStart(2, "0")}</span>
                   {(!last || trail) && (
@@ -142,12 +194,30 @@ export default function Journey() {
                       </span>
                     </p>
                   )}
+                  <button type="button" className="ms__open mono" onClick={(e) => openMemories(m, e.currentTarget.closest("li"), e.currentTarget)}>
+                    <span aria-hidden="true">▸</span>{" "}
+                    {status === "next" ? "not developed yet" : count ? `${count} ${count === 1 ? "photo" : "photos"}` : "memories"}
+                  </button>
                 </div>
               </li>
             );
           })}
         </ol>
       </div>
+
+      {open && (
+        <Memories
+          key={open.milestone.id}
+          milestone={open.milestone}
+          origin={open.node}
+          mode={openPhotos.length ? "photos" : "blank"}
+          photos={openPhotos.length ? openPhotos : [{ url: null, caption: "" }]}
+          caption={status === "next" ? "not developed yet…" : "no photos yet"}
+          note={status === "next" ? open.milestone.when : "the film's still in the camera"}
+          badge={status === "done" ? badges.find((b) => b.milestone === open.milestone.id) : null}
+          onClose={closeMemories}
+        />
+      )}
     </section>
   );
 }

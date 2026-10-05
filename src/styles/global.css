@@ -23,29 +23,17 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ---------- Backdrop: IDE grid paper with a violet glow at the top ---------- */
-body::before,
-body::after {
+/* ---------- Backdrop: a violet glow at the top ---------- */
+body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-}
-
-body::before {
   background:
     radial-gradient(60rem 28rem at 50% -8rem, rgb(79 41 183 / 0.38), transparent 70%),
     radial-gradient(30rem 20rem at 0% 110%, rgb(87 227 216 / 0.08), transparent 70%),
     radial-gradient(26rem 18rem at 100% 100%, rgb(244 166 100 / 0.06), transparent 70%);
-}
-
-body::after {
-  background-image:
-    linear-gradient(var(--hairline) 1px, transparent 1px),
-    linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 0.35) 70%, transparent 100%);
 }
 
 body.is-locked {

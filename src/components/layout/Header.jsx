@@ -6,8 +6,8 @@ import "./Layout.css";
 // `minor` links are dropped on phones, where all of them don't fit next to the logo.
 const links = [
   { href: "#members", label: "Members" },
-  { href: "#journey", label: "Journey" },
   { href: "#builds", label: "Builds" },
+  { href: "#journey", label: "Journey" },
   { href: "#playground", label: "Playground", minor: true },
 ];
 

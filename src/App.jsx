@@ -94,8 +94,8 @@ export default function App() {
             <main>
               <Hero />
               <Members />
-              <Journey />
               <Builds />
+              <Journey />
               <Playground />
             </main>
             <Footer />

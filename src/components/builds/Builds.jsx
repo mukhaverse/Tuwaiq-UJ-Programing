@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import { gsap, useGSAP, MOTION_OK } from "../../lib/gsap";
-import { isCollab, onAir, requests, shipped } from "../../data/projects";
+import { onAir, requests, shipped } from "../../data/projects";
 import Pill from "../ui/Pill";
 import SplitHeading from "../ui/SplitHeading";
 import Desktop from "./Desktop";
@@ -16,8 +16,6 @@ export default function Builds() {
   const request = useRequestRoute();
   const live = onAir();
   const done = shipped();
-  const collabs = live.filter(isCollab).length;
-  const own = live.length - collabs;
 
   useGSAP(
     () => {
@@ -40,17 +38,11 @@ export default function Builds() {
           <div>
             <p className="eyebrow mono">Projects &amp; collabs</p>
             <SplitHeading className="display">Builds</SplitHeading>
+            <p className="builds__lede">
+              What we're making right now, on our own and with the club's other tracks. Click around: finished builds wait in the shipped
+              folder.
+            </p>
           </div>
-          <p>
-            {live.length || done.length ? (
-              <>
-                Building now: <strong>{collabs}</strong> {collabs === 1 ? "collab" : "collabs"} and <strong>{own}</strong>{" "}
-                {own === 1 ? "project" : "projects"}. Shipped so far: <strong>{done.length}</strong>.
-              </>
-            ) : (
-              "Nothing being built and nothing shipped, yet. Stay tuned."
-            )}
-          </p>
         </div>
 
         <div className="builds__stage">

@@ -2,13 +2,25 @@
   border-top: var(--line);
 }
 
-/* One monitor, centred, with the request box under it. Its width follows the
-   window's height, so the whole monitor (plus the box) fits on one screen. */
+/* One monitor, a little right of centre, with the request box under it. Its
+   width follows the window's height, so the whole monitor fits on one screen. */
 .builds__stage {
   display: grid;
   gap: 24px;
-  max-width: clamp(560px, (100svh - 340px) * 1.6, 880px);
-  margin-inline: auto;
+  max-width: clamp(580px, (100svh - 300px) * 1.6, 940px);
+  margin-inline: auto clamp(0px, 6vw, 96px);
+}
+
+@media (max-width: 900px) {
+  .builds__stage {
+    margin-inline: auto;
+  }
+}
+
+.builds__lede {
+  max-width: 44ch;
+  margin: 16px 0 0;
+  color: var(--muted);
 }
 
 .builds__ask {

@@ -2,35 +2,12 @@
   border-top: var(--line);
 }
 
-/* Building now on the left, the drawer on the right; stacked on narrow screens. */
+/* One monitor, centred, with the request box under it. */
 .builds__stage {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: clamp(36px, 5vw, 72px);
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .builds__stage {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.builds__col {
-  display: grid;
-  gap: 18px;
-  min-width: 0;
-}
-
-.builds__label {
-  margin: 0;
-  color: var(--muted);
-}
-
-.builds__label::before {
-  content: "// ";
-  color: var(--orange);
-  font-weight: 700;
+  gap: 28px;
+  max-width: 1000px;
+  margin-inline: auto;
 }
 
 .builds__ask {
@@ -39,7 +16,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px 20px;
-  margin-top: 8px;
   padding: 16px 18px;
   border: 2px dashed rgb(244 166 100 / 0.45);
   border-radius: var(--radius);
@@ -54,140 +30,24 @@
   color: var(--fg);
 }
 
-/* ---------- Building now: the guide and the monitor ---------- */
-.onair {
-  display: grid;
-  gap: 22px;
-}
-
-/* The guide: how many collabs and projects there are, a chip each. */
-.guide {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 24px;
-}
-
-@media (max-width: 560px) {
-  .guide {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.guide__group {
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  min-width: 0;
-}
-
-.guide__label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  color: var(--fg);
-  font-weight: 700;
-}
-
-.guide__count {
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: var(--raised);
-  color: var(--orange);
-  box-shadow: inset 0 0 0 2px var(--edge);
-}
-
-.guide__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 8px;
-}
-
-.guide__none {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-/* A keycap per build; the one on screen is pressed in and lit in its colour. */
-.guide__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 100%;
-  padding: 7px 12px;
-  border: var(--line);
-  border-radius: 10px;
-  background: var(--raised);
-  box-shadow: var(--cap);
-  color: var(--muted);
-  font: 600 0.85rem/1.2 var(--body);
-  cursor: pointer;
-  transition:
-    translate 0.12s ease-out,
-    box-shadow 0.12s ease-out,
-    border-color 0.15s,
-    color 0.15s;
-}
-
-@media (hover: hover) {
-  .guide__chip:hover {
-    border-color: var(--hue);
-    color: var(--fg);
-  }
-}
-
-.guide__chip:active,
-.guide__chip[aria-pressed="true"] {
-  translate: 0 3px;
-  box-shadow:
-    0 2px 0 0 #0a0812,
-    0 2px 0 2px color-mix(in srgb, var(--hue) 45%, var(--edge));
-}
-
-.guide__chip[aria-pressed="true"] {
-  border-color: var(--hue);
-  background: color-mix(in srgb, var(--hue) 18%, var(--raised));
-  color: var(--fg);
-}
-
-.guide__chip:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 3px;
-}
-
-.guide__dot {
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--hue);
-}
-
-.guide__chip[aria-pressed="true"] .guide__dot {
-  box-shadow: 0 0 8px var(--hue);
-}
-
-.guide__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The monitor: --hue is the build's colour (a collaboration's track colour,
-   violet for our own projects); --hue-ink is the text colour that reads on it. */
+/* ---------- The monitor ----------
+   --hue is the open build's colour (a collaboration's track colour, violet for
+   our own projects); --hue-ink is the text colour that reads on it. */
 .monitor {
+  --hue: var(--violet);
+  --hue-ink: var(--ink);
   position: relative;
   isolation: isolate;
-  padding-top: 48px; /* room for the crew peeking over */
+  min-width: 0;
+  padding-top: 52px; /* room for the crew peeking over */
 }
 
-/* The crew stands behind the monitor and peeks over the top. */
+/* The open build's crew stands behind the monitor and peeks over the top. */
 .monitor__crew {
   position: absolute;
   z-index: -1;
-  top: 0;
-  inset-inline-end: 34px;
+  top: 4px;
+  inset-inline-end: 44px;
   display: flex;
   flex-direction: row-reverse;
 }
@@ -196,6 +56,7 @@
   display: block;
   width: 66px;
   margin-inline-start: -18px;
+  animation: peek-up 0.5s var(--spring) both;
 }
 
 .monitor__mate:last-child {
@@ -206,30 +67,25 @@
   transition: translate 0.35s var(--spring);
 }
 
-@media (hover: hover) {
-  .monitor:hover .monitor__mate > svg {
-    translate: 0 -14px;
-  }
-
-  .monitor:hover .monitor__mate:nth-last-child(2) > svg {
-    transition-delay: 0.05s;
-  }
-
-  .monitor:hover .monitor__mate:nth-last-child(3) > svg {
-    transition-delay: 0.1s;
+@keyframes peek-up {
+  from {
+    translate: 0 60%;
   }
 }
 
-/* Thin bezel, flat screen. */
+@media (hover: hover) {
+  .monitor:hover .monitor__mate > svg {
+    translate: 0 -12px;
+  }
+}
+
 .monitor__frame {
   position: relative;
   padding: 12px 12px 0;
   border: 2px solid color-mix(in srgb, var(--hue) 45%, var(--edge));
-  border-radius: 14px;
+  border-radius: 16px;
   background: linear-gradient(180deg, var(--raised), var(--surface));
-  box-shadow:
-    0 24px 70px -26px color-mix(in srgb, var(--hue) 60%, transparent),
-    inset 0 1px 0 rgb(255 255 255 / 0.05);
+  box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--hue) 70%, transparent);
   transition:
     border-color 0.4s,
     box-shadow 0.4s;
@@ -242,112 +98,140 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #07060d;
-  box-shadow: inset 0 0 0 1.5px var(--edge);
+  background: #09080f;
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
-/* A label stuck on the bezel: what it is and who it's for. */
-.monitor__sticker {
-  position: absolute;
-  z-index: 2;
-  top: -13px;
-  inset-inline-start: 20px;
-  max-width: calc(100% - 40px);
-  overflow: hidden;
-  padding: 5px 11px;
-  border-radius: 6px;
-  background: var(--hue);
-  box-shadow: 2px 3px 0 rgb(0 0 0 / 0.55);
-  color: var(--hue-ink);
-  font-weight: 800;
-  font-size: 0.66rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  rotate: -2deg;
-}
-
-/* The screen: dark glass lit by the hue, with faint scanlines and a reflection. */
 .monitor__screen {
   position: relative;
+  container-type: inline-size;
+  aspect-ratio: 16 / 10;
+  max-width: 100%;
   overflow: hidden;
-  border-radius: 6px;
-  background:
-    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--hue) 24%, transparent), transparent 70%),
-    #09080f;
+  border-radius: 7px;
+  background: #09080f;
   box-shadow: inset 0 0 0 1px #000;
 }
 
-.monitor__screen::before,
+/* A faint reflection on the glass. */
 .monitor__screen::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 5;
   pointer-events: none;
+  background: linear-gradient(115deg, rgb(255 255 255 / 0.04) 0 22%, transparent 22.5%);
 }
 
-.monitor__screen::before {
-  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px);
-}
-
-.monitor__screen::after {
-  background: linear-gradient(115deg, rgb(255 255 255 / 0.06) 0 22%, transparent 22.5%);
-}
-
-.monitor__picture {
+.monitor__chin {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  aspect-ratio: 16 / 9; /* a minimum: longer content makes it taller (no min-height: that would force the width) */
-  padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 40px;
-}
-
-/* A quick glitch between builds: noise, jumping around. */
-.monitor__glitch {
-  position: absolute;
-  inset: -50%;
-  z-index: 1;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.85;
-  animation: glitch 0.2s steps(4) infinite;
-}
-
-@keyframes glitch {
-  25% {
-    translate: -12% 8%;
-  }
-  50% {
-    translate: 9% -14%;
-  }
-  75% {
-    translate: -6% -4%;
-  }
-  100% {
-    translate: 14% 10%;
-  }
-}
-
-.monitor__status {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin: 0;
-  color: var(--hue);
-  font-weight: 700;
+  padding: 8px 4px 9px;
 }
 
-.monitor__count {
+.monitor__brand {
   color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.25em;
 }
 
-.monitor__dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-inline-end: 4px;
+.monitor__led {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--hue);
   box-shadow: 0 0 8px var(--hue);
+}
+
+.monitor__stand {
+  display: grid;
+  justify-items: center;
+}
+
+.monitor__neck {
+  width: 60px;
+  height: 34px;
+  background: linear-gradient(90deg, var(--surface), var(--raised), var(--surface));
+  clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+}
+
+.monitor__base {
+  width: 210px;
+  max-width: 60%;
+  height: 12px;
+  border: var(--line);
+  border-radius: 10px 10px 4px 4px;
+  background: var(--raised);
+}
+
+/* ---------- PT-OS (Fluent: frosted windows on a blurred bloom wallpaper) ---------- */
+.os {
+  --os-font: "Segoe UI Variable", "Segoe UI", "IBM Plex Sans", system-ui, sans-serif;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  color: #f3f1f8;
+  font: clamp(8px, 1.85cqi, 13.5px) / 1.45 var(--os-font);
+  background:
+    radial-gradient(60% 80% at 75% 85%, color-mix(in srgb, var(--hue) 55%, transparent), transparent 70%),
+    radial-gradient(70% 70% at 20% 10%, rgb(79 41 183 / 0.75), transparent 70%),
+    radial-gradient(50% 60% at 95% 5%, rgb(87 227 216 / 0.25), transparent 70%),
+    #120d26;
+  transition: background 0.5s;
+}
+
+/* Phones: a taller screen and bigger type, so it stays readable. */
+@container (max-width: 520px) {
+  .os {
+    font-size: 2.9cqi;
+  }
+}
+
+@media (max-width: 560px) {
+  .monitor__screen {
+    aspect-ratio: 4 / 5;
+  }
+
+  .monitor__mate {
+    width: 52px;
+  }
+}
+
+.os-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.3em;
+  margin: 0.5em 0.6em 0;
+  padding: 0.4em 0.9em;
+  border-radius: 0.6em;
+  background: rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(12px);
+  font-size: 0.92em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.os-bar__logo {
+  font-weight: 700;
+}
+
+.os-bar__count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+}
+
+.os-bar__count b {
+  color: #fff;
+}
+
+.os-bar__live {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: #6ccb5f;
   animation: blink-dot 1.2s steps(1) infinite;
 }
 
@@ -357,365 +241,538 @@
   }
 }
 
-.monitor__title {
-  margin: 4px 0 0;
-  max-width: 16ch;
-  color: #fff;
-  font-size: clamp(1.9rem, 4vw, 3.2rem);
-  letter-spacing: -0.05em;
-  text-shadow: 0 0 22px color-mix(in srgb, var(--hue) 55%, transparent);
+.os-bar__clock {
+  margin-inline-start: auto;
+  color: rgb(255 255 255 / 0.7);
+  font-variant-numeric: tabular-nums;
 }
 
-.monitor__note {
-  margin: 0;
-  max-width: 46ch;
-  color: var(--fg);
-  font-family: var(--mono);
-  font-size: 0.9rem;
-  opacity: 0.85;
-}
-
-.monitor__prompt {
-  color: var(--hue);
-  font-weight: 700;
-}
-
-.monitor__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  margin: auto 0 0;
-  color: var(--muted);
-}
-
-.monitor__kind {
-  color: var(--hue);
-}
-
-/* Loading bar along the bottom of the screen: it never quite finishes. */
-.monitor__load {
-  position: absolute;
-  inset: auto 20px 16px;
-  height: 6px;
-  border-radius: 3px;
-  background: repeating-linear-gradient(-45deg, var(--hue) 0 8px, color-mix(in srgb, var(--hue) 35%, #09080f) 8px 16px);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--hue) 50%, transparent);
-  animation: load 1.3s linear infinite;
-}
-
-/* One stripe period: 16px across the 45° stripes is 16 / sin 45° wide. */
-@keyframes load {
-  to {
-    background-position: 22.63px 0;
-  }
-}
-
-.monitor__nosignal {
-  display: grid;
-  place-content: center;
-  gap: 8px;
-  flex: 1;
-  text-align: center;
-}
-
-.monitor__nosignal p {
-  margin: 0;
-}
-
-.monitor__nosignal .mono {
-  padding: 8px 18px;
-  border: 2px solid var(--muted);
-  color: var(--fg);
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  animation: drift 9s ease-in-out infinite alternate;
-}
-
-@keyframes drift {
-  0% {
-    translate: -14px -10px;
-  }
-  100% {
-    translate: 14px 10px;
-  }
-}
-
-.monitor__chin {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 4px 9px;
-}
-
-.monitor__brand {
-  color: var(--muted);
-  font-weight: 800;
-  letter-spacing: 0.2em;
-}
-
-.monitor__controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Small hardware buttons on the chin. */
-.monitor__btn {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 22px;
-  border: var(--line);
-  border-radius: 6px;
-  background: var(--raised);
-  box-shadow: 0 2px 0 0 #0a0812;
-  color: var(--muted);
-  font-size: 0.6rem;
-  cursor: pointer;
-  transition:
-    translate 0.1s,
-    box-shadow 0.1s,
-    color 0.15s,
-    border-color 0.15s;
-}
-
-@media (hover: hover) {
-  .monitor__btn:hover:not(:disabled) {
-    border-color: var(--hue);
-    color: var(--fg);
-  }
-}
-
-.monitor__btn:active:not(:disabled) {
-  translate: 0 2px;
-  box-shadow: none;
-}
-
-.monitor__btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.monitor__led {
-  width: 7px;
-  height: 7px;
-  margin-inline-start: 6px;
-  border-radius: 50%;
-  background: var(--hue);
-  box-shadow: 0 0 8px var(--hue);
-}
-
-/* The stand: a neck and a base. */
-.monitor__stand {
-  display: grid;
-  justify-items: center;
-}
-
-.monitor__neck {
-  width: 56px;
-  height: 34px;
-  border-inline: 2px solid var(--edge);
-  background: linear-gradient(90deg, var(--surface), var(--raised), var(--surface));
-  clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
-}
-
-.monitor__base {
-  width: 190px;
-  height: 12px;
-  border: var(--line);
-  border-radius: 10px 10px 4px 4px;
-  background: var(--raised);
-  box-shadow: 0 4px 0 #0a0812;
-}
-
-/* ---------- The drawer of shipped builds ---------- */
-.cabinet {
+.os-desk {
   position: relative;
-  padding-top: 40px; /* room for the back folders' tabs */
-}
-
-/* The inside of the open drawer: folders stand in it, the front hides their bottoms. */
-.cabinet__inside {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  margin: 0;
-  padding: 0 14px 30px;
-  border: var(--line);
-  border-bottom: 0;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(180deg, #08070e, var(--surface));
-  list-style: none;
+  padding: 1em 1.2em 1.1em 7.2em;
 }
 
-.cabinet__empty {
-  padding: 46px 8px 18px;
-  color: var(--muted);
-  text-align: center;
-  text-transform: none;
-}
-
-.cabinet__front {
-  position: relative;
-  z-index: 1;
+/* The shipped folder, on the desktop. */
+.os-folder {
+  position: absolute;
+  top: 0.9em;
+  left: 0.6em;
   display: grid;
   justify-items: center;
-  gap: 10px;
-  margin-top: -26px;
-  padding: 14px 16px 18px;
-  border: var(--line);
-  border-radius: 6px 6px 16px 16px;
-  background: linear-gradient(180deg, var(--raised), var(--surface));
-  box-shadow: var(--cap);
-}
-
-/* A paper label in a metal frame. */
-.cabinet__label {
-  padding: 4px 12px;
-  border: 2px solid var(--edge);
-  border-radius: 4px;
-  background: #ede6d6;
-  color: var(--ink);
-  font-weight: 800;
-}
-
-.cabinet__handle {
-  width: 96px;
-  height: 14px;
-  border: var(--line);
-  border-radius: 999px;
-  background: var(--bg);
-  box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.5);
-}
-
-/* A folder: a tab at a staggered spot, and a body that the next folder overlaps.
-   Opening one pulls it up and unfolds what's inside. */
-.folder {
-  --paper: color-mix(in srgb, var(--hue) 26%, var(--raised));
-  position: relative;
-  margin-top: -14px;
-  transition: translate 0.3s var(--spring);
-}
-
-.folder:first-child {
-  margin-top: 0;
-}
-
-.folder__tab {
-  position: relative;
-  display: block;
-  width: calc(100% / 3);
-  margin-inline-start: var(--tab);
-  padding: 7px 14px 6px;
-  border: 2px solid color-mix(in srgb, var(--hue) 55%, var(--edge));
-  border-bottom: 0;
-  border-radius: 10px 10px 0 0;
-  background: var(--paper);
-  color: var(--fg);
-  font: 700 0.82rem/1.2 var(--body);
-  text-align: start;
+  gap: 0.3em;
+  width: 6em;
+  padding: 0.5em 0.2em;
+  border: 0;
+  border-radius: 0.4em;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 0.88em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
-.folder__name {
-  display: block;
+.os-folder:hover,
+.os-folder[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.os-folder svg {
+  width: 3.2em;
+}
+
+.os-folder__badge {
+  position: absolute;
+  top: 0.25em;
+  right: 0.6em;
+  min-width: 1.7em;
+  padding: 0 0.35em;
+  border-radius: 1em;
+  background: #fff;
+  color: #111;
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* The next builds, peeking out behind the open window. */
+.os-stack {
+  display: grid;
+}
+
+.os-peek {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin: 0 calc(var(--d) * 2.2%) -0.35em;
+  padding: 0.35em 0.8em 0.7em;
+  border: 0;
+  border-radius: 0.5em 0.5em 0 0;
+  background: color-mix(in srgb, var(--hue) calc(55% - var(--d) * 10%), rgb(32 30 44 / 0.9));
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font: inherit;
+  font-size: 0.82em;
+  font-weight: 600;
+  text-align: start;
+  opacity: calc(1 - var(--d) * 0.18);
+  cursor: pointer;
+  transition:
+    translate 0.2s,
+    opacity 0.2s;
+}
+
+.os-peek:hover {
+  translate: 0 -0.25em;
+  opacity: 1;
+}
+
+.os-peek__title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.folder__tab:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
+.os-peek__more {
+  margin-inline-start: auto;
+  opacity: 0.75;
+  white-space: nowrap;
 }
 
-.folder__body {
-  margin-top: -2px;
-  border: 2px solid color-mix(in srgb, var(--hue) 55%, var(--edge));
-  border-radius: 0 8px 4px 4px;
-  background: var(--paper);
-  box-shadow: 0 -3px 10px rgb(0 0 0 / 0.35);
-}
-
-@media (hover: hover) {
-  .folder:hover {
-    translate: 0 -5px;
-  }
-
-  .folder:hover .folder__tab {
-    background: color-mix(in srgb, var(--hue) 40%, var(--raised));
-  }
-}
-
-.folder.is-open {
-  z-index: 1;
-  translate: 0 -10px;
-}
-
-/* Closed: a sliver of folder. Open: the sheet inside unfolds. */
-.folder__more {
-  display: grid;
-  grid-template-rows: 0fr;
-  min-height: 22px;
-  transition: grid-template-rows 0.4s var(--spring);
-}
-
-.folder.is-open .folder__more {
-  grid-template-rows: 1fr;
-}
-
-.folder__sheet {
-  display: grid;
-  justify-items: start;
-  gap: 10px;
+/* A window: frosted glass, a title bar in the build's colour. */
+.os-win {
+  position: relative;
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  padding: 0 16px;
-  transition: padding 0.3s;
+  border-radius: 0.55em;
+  background: rgb(30 27 42 / 0.82);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.1),
+    0 1.6em 3em -0.6em rgb(0 0 0 / 0.6);
+  animation: os-open 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
-.folder.is-open .folder__sheet {
-  padding: 16px;
+@keyframes os-open {
+  from {
+    opacity: 0;
+    translate: 0 0.8em;
+  }
 }
 
-.folder__sticker {
-  padding: 3px 9px;
-  border-radius: 5px;
-  background: var(--hue);
+.os-win__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.25em 0.4em 0.25em 0.9em;
+  background: color-mix(in srgb, var(--hue) 85%, #000);
   color: var(--hue-ink);
-  font-size: 0.62rem;
-  font-weight: 800;
+  font-size: 0.85em;
+  font-weight: 600;
 }
 
-.folder__title {
+.os-win__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-win__of {
+  margin-inline-start: auto;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-win__ctrls {
+  display: flex;
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.os-win__of + .os-win__ctrls {
+  margin-inline-start: 0;
+}
+
+.os-win__ctrls i {
+  display: grid;
+  place-items: center;
+  width: 2.2em;
+  height: 1.6em;
+  border-radius: 0.2em;
+  font-style: normal;
+}
+
+.os-win__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 1.2em 1.4em 1.3em;
+}
+
+.os-win__title {
   margin: 0;
   color: #fff;
-  font-size: clamp(1.25rem, 2vw, 1.5rem);
-  letter-spacing: -0.04em;
+  font-size: 2.2em;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
-.folder__crew {
-  display: flex;
+.os-win__note {
   margin: 0;
+  max-width: 48ch;
+  color: rgb(255 255 255 / 0.78);
+  font-size: 1.05em;
 }
 
-.folder__mate {
-  width: 34px;
-  margin-inline-end: -6px;
+/* "Programming × Media": bottom right, just above the footer. */
+.os-win__byline {
+  margin: auto 0 0;
+  align-self: flex-end;
+  font-size: 1.05em;
+  font-weight: 700;
 }
 
-/* A rubber stamp. */
-.folder__stamp {
-  margin: 4px 0 0;
-  padding: 4px 10px;
-  border: 2px solid var(--cyan);
-  border-radius: 6px;
-  color: var(--cyan);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  rotate: -4deg;
+.os-win__us {
+  color: var(--violet);
+}
+
+.os-win__them {
+  color: var(--hue);
+}
+
+.os-win__x {
+  margin: 0 0.35em;
+  opacity: 0.55;
+}
+
+.os-win__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em 1.2em;
+  margin-top: auto;
+}
+
+.os-win__byline + .os-win__foot {
+  margin-top: 0;
+}
+
+.os-win__crew {
+  display: flex;
+  gap: 0.2em;
+}
+
+.os-win__crew a {
+  display: block;
+  width: 2.3em;
+  transition: translate 0.2s var(--spring);
+}
+
+.os-win__crew a:hover {
+  translate: 0 -0.2em;
+}
+
+.os-win__kind {
+  padding: 0.15em 0.6em;
+  border-radius: 1em;
+  background: color-mix(in srgb, var(--hue) 22%, transparent);
+  color: #fff;
+  font-size: 0.85em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* "building" and a thin bar that keeps sliding. */
+.os-win__progress {
+  flex: 1;
+  min-width: 8em;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  color: rgb(255 255 255 / 0.6);
+  font-size: 0.85em;
+}
+
+.os-win__bar-track {
+  position: relative;
+  flex: 1;
+  height: 0.3em;
+  overflow: hidden;
+  border-radius: 1em;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.os-win__bar-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  border-radius: 1em;
+  background: var(--hue);
+  animation: os-slide 1.6s ease-in-out infinite;
+}
+
+@keyframes os-slide {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 300% 0;
+  }
+}
+
+/* The other track's cursor, wandering about a collab's window. */
+.os-guest {
+  position: absolute;
+  top: 34%;
+  right: 14%;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
+  animation: os-drift 6s ease-in-out infinite alternate;
+}
+
+.os-guest svg {
+  width: 1.2em;
+  fill: var(--hue);
+  stroke: #000;
+  stroke-width: 1.2;
+}
+
+.os-guest span {
+  margin: 1em 0 0 -0.2em;
+  padding: 0.1em 0.5em;
+  border-radius: 0.3em;
+  background: var(--hue);
+  color: var(--hue-ink);
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+@keyframes os-drift {
+  50% {
+    translate: -2.4em 1em;
+  }
+  100% {
+    translate: 1.4em -0.6em;
+  }
+}
+
+/* The shipped folder, opened. */
+.os-files {
+  display: grid;
+  gap: 0.2em;
+  margin: 0;
+  padding: 0.5em;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.os-files li {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.55em 0.7em;
+  border-radius: 0.35em;
+}
+
+.os-files li:hover {
+  background: rgb(255 255 255 / 0.06);
+}
+
+.os-files__ok {
+  color: #6ccb5f;
+  font-weight: 700;
+}
+
+.os-files__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-files__when {
+  color: rgb(255 255 255 / 0.6);
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.os-files__empty {
+  margin: auto;
+  padding: 2em;
+  color: rgb(255 255 255 / 0.7);
+  text-align: center;
+}
+
+.os-chip {
+  padding: 0.1em 0.6em;
+  border-radius: 1em;
+  background: var(--hue);
+  color: var(--hue-ink);
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.os-idle {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  gap: 0.5em;
+  color: rgb(255 255 255 / 0.7);
+  text-align: center;
+}
+
+.os-idle b {
+  color: #fff;
+  font-size: 1.4em;
+  font-weight: 600;
+}
+
+/* Taskbar: centred and frosted, a Start button in front, builds grouped. */
+.os-task {
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  gap: 0.4em;
+  padding: 0.45em 0.7em;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(28 24 42 / 0.75);
+  backdrop-filter: blur(16px);
+}
+
+.os-task__start {
+  flex: none;
+  width: 1.3em;
+  margin: 0 0.45em;
+}
+
+.os-task__group {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.os-task__label {
+  flex: none;
+  padding: 0 0.3em;
+  color: rgb(255 255 255 / 0.55);
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+.os-task__label b {
+  color: #fff;
+}
+
+.os-tab {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  max-width: 13em;
+  overflow: hidden;
+  padding: 0.35em 0.6em;
+  border: 0;
+  border-radius: 0.35em;
+  background: transparent;
+  color: rgb(255 255 255 / 0.75);
+  font: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.os-tab i {
+  flex: none;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 0.25em;
+  background: var(--hue);
+}
+
+.os-tab span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-tab:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.os-tab[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+}
+
+/* The open tab's little pill underneath; while the desktop is moving on its own, it fills up as a timer. */
+.os-tab[aria-pressed="true"]::after,
+.os-tab__timer {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 35%;
+  width: 30%;
+  height: 0.18em;
+  border-radius: 1em;
+  background: var(--hue);
+}
+
+.os-tab__timer {
+  z-index: 1;
+  background: #fff;
+  transform-origin: left;
+  animation: os-timer var(--every) linear forwards;
+}
+
+@keyframes os-timer {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.os-task:focus-within .os-tab:focus-visible,
+.os-peek:focus-visible,
+.os-folder:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+/* Lots of builds: tabs shrink to colour squares; only the open one keeps its name. */
+.os-task.is-dense .os-tab:not([aria-pressed="true"]) {
+  padding: 0.45em;
+}
+
+.os-task.is-dense .os-tab:not([aria-pressed="true"]) span {
+  display: none;
+}
+
+.os-task.is-dense .os-tab:not([aria-pressed="true"]) i {
+  width: 0.85em;
+  height: 0.85em;
 }
 
 /* ---------- Request form: a ticket ---------- */

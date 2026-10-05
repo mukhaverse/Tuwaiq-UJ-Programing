@@ -61,7 +61,7 @@ src/
     members/            filters, card grid, profile modal, #member/<id> link handling
     playground/         draggable sticker board of every member
     journey/            milestone timeline
-    builds/             Builds: the guide and monitor (OnAir.jsx), the shipped drawer (Drawer.jsx), and the request form (#request)
+    builds/             Builds: the PT-OS desktop (Desktop.jsx) and the request form (#request)
     character/          the cartoon characters (blob, star, ghost, robot, cat, cloud, mushroom,
                         flower, monitor; sun and planet for the leader and co-leader)
     badges/             Badge + BadgeMark (the medal graphic)
@@ -85,14 +85,11 @@ src/
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.
 
-**Builds** (the section after the journey) has two halves:
+**Builds** (the section after the journey) is PT-OS: a little desktop on a monitor (`src/components/builds/Desktop.jsx`). The top bar counts what's building and what's shipped. One build is open at a time in a window, with the next few peeking out behind it; the taskbar switches between them, grouped into Collabs and Projects (past five builds, its tabs shrink to colour squares). Left alone, the desktop moves to the next build every 6 seconds (a timer fills under the open tab), so no build looks like the main one; it pauses on hover, stops for good once someone clicks, and only runs while the section is on screen. The open build's crew peeks over the monitor (each links to their profile). Finished builds are in the **shipped** folder on the desktop, each with a ✓ and the month it was marked done.
 
-- **Building now:** a guide counts what's in progress (Collabs · 02, Projects · 02) with a chip for each, and a monitor shows the one picked in full. Click a chip, the ◀ ▶ buttons on the monitor, or the arrow keys to switch (with a quick glitch). The assigned members' characters peek over the monitor (each links to their profile), and the monitor takes the build's colour.
-- **Shipped:** a drawer of folders, one per finished build. Pick one to pull it up: what it was, who it was for, who built it, and a "shipped" stamp with the month.
+Each build is either a **collaboration** (linked to another track: its window, taskbar tab and the monitor's glow take that track's colour, "Programming × Media" sits in the window's corner, and the other track's cursor wanders around it; tracks and colours are set in **Tracks** in the admin panel) or a **project** (the track's own work, in violet, with an optional "for …" label). The kind (survey, website…) is optional; leave it empty and nothing is shown.
 
-Each build is either a **collaboration** (linked to another track: it glows in that track's colour, with a "collab × Media" sticker; tracks and colours are set in **Tracks** in the admin panel) or a **project** (the track's own work, in violet, with an optional "for …" label). The kind (survey, website…) is optional; leave it empty and nothing is shown.
-
-Manage them in **Projects** in the admin panel: **In progress** puts a build on the monitor, **Done** files it in the drawer (stamped with the date it was marked done; reopening it clears the stamp), **Declined** keeps it off the site. **+ Add** creates one directly.
+Manage them in **Projects** in the admin panel: **In progress** puts a build on the monitor, **Done** files it in the shipped folder (stamped with the date it was marked done; reopening it clears the stamp), **Declined** keeps it off the site. **+ Add** creates one directly.
 
 **Requests** are off until you switch them on with the bar at the top of **Projects**. While they're open, a "Request a build" button under the monitor opens the request form, also reachable at `/#request` (a link to send other tracks; while requests are closed it says so instead, and the API refuses submissions). No sign-in: people say what they need, pick their track (or type one under "Other"), leave a contact, and get a ticket number like `#PT-007`. Requests land under **New request**; set one to In progress to start it. The requester's name, contact, typed-in track and details stay private (admin API only, never in `/api/content`).
 

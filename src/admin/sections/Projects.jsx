@@ -66,7 +66,7 @@ export default function ProjectsSection({ data, reload: reloadSite }) {
         <div className="adm-panel__head">
           <p className="adm-muted adm-small">
             Requests land in <strong>New request</strong>. <strong>In progress</strong> is on the monitor on the site; <strong>Done</strong> is in
-            the drawer.
+            the shipped folder.
           </p>
           <Button variant="primary" onClick={() => setSelected("new")}>
             + Add
@@ -231,7 +231,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
           ))}
         </div>
         <p className="adm-field__hint">
-          In progress puts it on the monitor on the site. Done files it in the “shipped” drawer, stamped with today's date. Declined keeps it off
+          In progress puts it on the monitor on the site. Done files it in the “shipped” folder, stamped with today's date. Declined keeps it off
           the site.
         </p>
       </fieldset>

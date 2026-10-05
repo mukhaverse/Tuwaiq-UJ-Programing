@@ -47,10 +47,14 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
   const developed = useRef(new Set());
   const busy = useRef(true); // until the intro has landed
   const closing = useRef(false);
+  const intro = useRef(null); // the opening timeline, so spreading out can skip to its end
   const [order, setOrder] = useState(() => photos.map((_, i) => i));
   const orderRef = useRef(order);
   // Pixel sizes, from the admin panel; older photos report theirs once loaded.
   const [sizes, setSizes] = useState(() => photos.map((p) => (p.w && p.h ? { w: p.w, h: p.h } : null)));
+  // Spread out across the table instead of in a pile.
+  const [spread, setSpread] = useState(false);
+  const spreadRef = useRef(false);
   const n = photos.length;
   const blank = mode === "blank";
 
@@ -132,6 +136,7 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
 
       const gap = Math.min(0.14, 1.3 / n);
       const tl = gsap.timeline();
+      intro.current = tl;
       // Flash, and a film light leak sweeping across.
       tl.fromTo(".mem__flash", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05, ease: "power1.in" }, 0)
         .to(".mem__flash", { autoAlpha: 0, duration: 0.8, ease: "power2.out" }, 0.07)
@@ -235,6 +240,91 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
     animate(y, 0, spring);
   };
 
+  /* Where each photo lands when they're spread out: a loose grid in upload order,
+     scaled to fit the stage, each a little crooked. */
+  const layout = () => {
+    const s = stage.current.getBoundingClientRect();
+    const w = Math.max(...cards.current.map((el) => el.offsetWidth));
+    const h = Math.max(...cards.current.map((el) => el.offsetHeight));
+    // The column count that lets the photos be biggest.
+    let best = { scale: 0, cols: 1 };
+    for (let cols = 1; cols <= n; cols++) {
+      const rows = Math.ceil(n / cols);
+      const scale = Math.min(s.width / cols / w, s.height / rows / h) * 0.88;
+      if (scale > best.scale) best = { scale, cols };
+    }
+    const scale = Math.min(best.scale, 0.8);
+    const { cols } = best;
+    const rows = Math.ceil(n / cols);
+    const cellW = Math.min(s.width / cols, w * scale * 1.1);
+    const cellH = Math.min(s.height / rows, h * scale * 1.1);
+    return photos.map((_, i) => {
+      const row = Math.floor(i / cols);
+      const inRow = row === rows - 1 ? n - row * cols : cols; // the last row is centred
+      return {
+        x: ((i % cols) - (inRow - 1) / 2) * cellW + (((i * 53) % 13) - 6),
+        y: (row - (rows - 1) / 2) * cellH + (((i * 29) % 11) - 5),
+        rotation: ((i * 37) % 13) - 6,
+        scale,
+      };
+    });
+  };
+
+  /* Deal the pile out across the table; anything not developed yet develops now. */
+  const spreadOut = () =>
+    contextSafe(() => {
+      if (busy.current || closing.current || n < 2) return;
+      // The badge may not have stamped yet: finish the intro so it doesn't land on the table.
+      intro.current?.progress(1);
+      busy.current = true;
+      spreadRef.current = true;
+      setSpread(true);
+      const at = layout();
+      const fast = reduced();
+      const tl = gsap.timeline({ onComplete: () => (busy.current = false) });
+      tl.to(".mem__stamp", { autoAlpha: 0, duration: fast ? 0 : 0.2 }, 0);
+      // Top of the pile first, like dealing cards.
+      orderRef.current.forEach((idx, k) => {
+        tl.to(cards.current[idx], { ...at[idx], duration: fast ? 0 : 0.7, ease: "back.out(1.3)" }, fast ? 0 : k * 0.06);
+      });
+      photos.forEach((_, idx) => {
+        if (!developed.current.has(idx)) tl.add(() => developSafe(idx), fast ? 0 : 0.35 + idx * 0.12);
+      });
+    })();
+
+  /* Back into a pile, `next` giving the order (top first). */
+  const gather = (next) =>
+    contextSafe(() => {
+      if (closing.current) return;
+      busy.current = true;
+      spreadRef.current = false;
+      setSpread(false);
+      // The pile is placed here, so the order effect has nothing to do.
+      stacked.current = next;
+      updateOrder(next);
+      const fast = reduced();
+      const tl = gsap.timeline({ onComplete: () => (busy.current = false) });
+      // Bottom of the pile first, so the chosen photo lands on top last.
+      [...next].reverse().forEach((idx, k) => {
+        tl.to(cards.current[idx], { ...slot(next.indexOf(idx)), scale: 1, duration: fast ? 0 : 0.6, ease: "power3.inOut" }, fast ? 0 : k * 0.04);
+      });
+      tl.to(".mem__stamp", { autoAlpha: 1, duration: fast ? 0 : 0.3 }, ">-0.1");
+    })();
+
+  /* Picking a photo off the table puts it back on top of the pile. */
+  const pick = (idx) => gather([idx, ...orderRef.current.filter((i) => i !== idx)]);
+
+  // Keep the spread fitting the screen when it changes size.
+  useEffect(() => {
+    const onResize = () => {
+      if (!spreadRef.current) return;
+      const at = layout();
+      contextSafe(() => at.forEach((pos, idx) => gsap.set(cards.current[idx], pos)))();
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  });
+
   /* Everything goes back into the node it came out of. */
   const close = () => contextSafe(closeNow)();
   function closeNow() {
@@ -262,6 +352,11 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
   const keys = useRef();
   useEffect(() => {
     keys.current = (e) => {
+      // Spread out, Esc just stacks them back up.
+      if (spreadRef.current) {
+        if (e.key === "Escape") gather(orderRef.current);
+        return;
+      }
       if (e.key === "Escape") close();
       else if (e.key === "ArrowRight") flip(-1);
       else if (e.key === "ArrowLeft") back();
@@ -335,7 +430,18 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
               data-shape={shapeOf(sizes[i])}
               ref={(el) => (cards.current[i] = el)}
               style={{ zIndex: n - pos }}
-              aria-hidden={i !== top}
+              aria-hidden={!spread && i !== top}
+              {...(spread && {
+                role: "button",
+                tabIndex: 0,
+                "aria-label": `Photo ${i + 1}${p.caption ? `: ${p.caption}` : ""}. Put it on top`,
+                onClick: () => pick(i),
+                onKeyDown: (e) => {
+                  if (e.key !== "Enter" && e.key !== " ") return;
+                  e.preventDefault();
+                  pick(i);
+                },
+              })}
             >
               <Polaroid
                 index={i}
@@ -344,7 +450,7 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
                 caption={blank ? caption : p.caption}
                 note={blank ? note : null}
                 alt={p.caption || `Photo ${i + 1} from ${milestone.title}`}
-                isTop={i === top && !blank}
+                isTop={i === top && !blank && !spread}
                 register={register}
                 onSize={onSize}
                 onDragStart={() => lift(i, true)}
@@ -376,16 +482,33 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
 
       {!blank && (
         <footer className="mem__hud mem__nav">
-          <button type="button" className="mem__arrow" onClick={back} aria-label="Previous photo" disabled={n < 2}>
-            ←
-          </button>
-          <p className="mem__count mono" aria-live="polite">
-            <strong>{String(top + 1).padStart(2, "0")}</strong> / {String(n).padStart(2, "0")}
-          </p>
-          <button type="button" className="mem__arrow" onClick={() => flip(-1)} aria-label="Next photo" disabled={n < 2}>
-            →
-          </button>
-          {n > 1 && <p className="mem__hint mono">drag a photo to flip it</p>}
+          {spread ? (
+            <p className="mem__count mono" aria-live="polite">
+              pick one
+            </p>
+          ) : (
+            <>
+              <button type="button" className="mem__arrow" onClick={back} aria-label="Previous photo" disabled={n < 2}>
+                ←
+              </button>
+              <p className="mem__count mono" aria-live="polite">
+                <strong>{String(top + 1).padStart(2, "0")}</strong> / {String(n).padStart(2, "0")}
+              </p>
+              <button type="button" className="mem__arrow" onClick={() => flip(-1)} aria-label="Next photo" disabled={n < 2}>
+                →
+              </button>
+            </>
+          )}
+          {n > 1 && (
+            <button
+              type="button"
+              className="mem__spread mono"
+              aria-pressed={spread}
+              onClick={() => (spread ? gather(orderRef.current) : spreadOut())}
+            >
+              <span aria-hidden="true">{spread ? "▣" : "⊞"}</span> {spread ? "stack them" : "spread them out"}
+            </button>
+          )}
         </footer>
       )}
 

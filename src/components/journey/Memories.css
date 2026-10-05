@@ -170,13 +170,73 @@
   font-size: 1.15rem;
 }
 
-.mem__hint {
-  flex-basis: 100%;
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.7rem;
-  text-align: center;
-  opacity: 0.7;
+.mem__spread {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 46px;
+  padding: 0 14px;
+  border: var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  box-shadow: var(--cap);
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    translate 0.12s,
+    box-shadow 0.12s,
+    border-color 0.2s;
+}
+
+.mem__spread span {
+  font-size: 1.1rem;
+}
+
+.mem__spread:hover {
+  border-color: var(--cyan);
+}
+
+.mem__spread:active,
+.mem__spread[aria-pressed="true"] {
+  translate: 0 3px;
+  box-shadow: var(--cap-down);
+}
+
+.mem__spread:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 3px;
+}
+
+/* Spread out: every photo can be picked up; the one under the pointer comes forward. */
+.mem-card[role="button"] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.mem-card[role="button"]:hover,
+.mem-card[role="button"]:focus-visible {
+  z-index: 400 !important;
+  outline: none;
+}
+
+.mem-card[role="button"] .mem-pol {
+  transition: translate 0.2s var(--spring);
+}
+
+/* It lifts off its dotted shadow, like the site's buttons. */
+.mem-card[role="button"]:hover .mem-pol,
+.mem-card[role="button"]:focus-visible .mem-pol {
+  translate: -10px -14px;
+  border-color: var(--violet);
+}
+
+.mem-card[role="button"]:focus-visible .mem-pol {
+  outline: 3px solid var(--violet);
+  outline-offset: 3px;
 }
 
 /* ---------- The pile ---------- */

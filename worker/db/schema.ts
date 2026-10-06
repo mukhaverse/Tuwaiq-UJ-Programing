@@ -71,6 +71,22 @@ export const memberBadges = sqliteTable(
   (t) => [primaryKey({ columns: [t.memberId, t.badgeId] })]
 );
 
+// Every bio submitted from a profile card on the site, oldest first. A submission
+// goes live straight away (it's also written to members.bio); this is the log
+// admins check, e.g. to put back what someone really wrote.
+export const bioEdits = sqliteTable(
+  "bio_edits",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    bio: text("bio").notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("bio_edits_member").on(t.memberId)]
+);
+
 // Site-wide values stored as JSON under a key: "track" (names and intro copy),
 // "announcement" (the purple "Up next" tile), "requests" (whether the request
 // form is open), and whatever comes next.

@@ -108,6 +108,36 @@ function useSurveyColours() {
   }, [responses]);
 }
 
+/* Every bio submitted for this member from their profile card, newest first.
+   "Use this" puts one back in the Bio field (then Save changes). */
+function BioHistory({ memberId, current, onUse }) {
+  const [edits, setEdits] = useState(null);
+  useEffect(() => {
+    api(`/admin/members/${encodeURIComponent(memberId)}/bio-edits`)
+      .then((d) => setEdits(d.edits))
+      .catch(() => setEdits([]));
+  }, [memberId]);
+  if (!edits?.length) return null;
+  return (
+    <details className="adm-field adm-field--wide adm-bio-log">
+      <summary className="adm-field__label">Bio history · {edits.length} from the site</summary>
+      <ol>
+        {edits.map((e) => (
+          <li key={e.id}>
+            <span className="adm-muted adm-small">{new Date(`${e.createdAt.replace(" ", "T")}Z`).toLocaleString()}</span>
+            <p dir="auto">{e.bio}</p>
+            {e.bio === current.trim() ? (
+              <span className="adm-muted adm-small">In the Bio field</span>
+            ) : (
+              <Button onClick={() => onUse(e.bio)}>Use this</Button>
+            )}
+          </li>
+        ))}
+      </ol>
+    </details>
+  );
+}
+
 function MemberForm({ member, badges, surveyPick, onSaved, onDeleted }) {
   const isNew = !member;
   const [v, set] = useForm({
@@ -207,6 +237,7 @@ function MemberForm({ member, badges, surveyPick, onSaved, onDeleted }) {
         <Field label="Bio" hint="One or two sentences. Profiles say “coming soon” until it's filled." wide>
           <textarea id="m-bio" rows={3} value={v.bio} onChange={(e) => set("bio", e.target.value)} maxLength={600} />
         </Field>
+        {!isNew && <BioHistory memberId={member.id} current={v.bio} onUse={(bio) => set("bio", bio)} />}
         <Field label="Playground quote" hint="What their character says on the playground board." wide>
           <input id="m-quote" value={v.quote} onChange={(e) => set("quote", e.target.value)} maxLength={160} />
         </Field>

@@ -587,6 +587,32 @@
   font-weight: 700;
 }
 
+.adm-bio-log summary {
+  cursor: pointer;
+}
+
+.adm-bio-log ol {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adm-bio-log li {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  padding: 10px 12px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+}
+
+.adm-bio-log p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
 .adm-field__hint {
   font-size: 0.75rem;
   color: var(--muted);

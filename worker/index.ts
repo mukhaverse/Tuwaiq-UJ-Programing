@@ -6,6 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { createAuth, getUser } from "./auth";
 import type { AppEnv } from "./db/client";
 import admin from "./routes/admin";
+import bios from "./routes/bios";
 import content from "./routes/content";
 import media from "./routes/media";
 import requests from "./routes/requests";
@@ -16,6 +17,7 @@ const app = new Hono<AppEnv>().basePath("/api");
 app.route("/content", content);
 app.route("/media", media);
 app.route("/requests", requests);
+app.route("/bios", bios);
 app.get("/health", (c) => c.json({ ok: true }));
 
 // Login: sign in with GitHub, sign out, sessions (handled by Better Auth).

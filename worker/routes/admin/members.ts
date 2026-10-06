@@ -1,9 +1,10 @@
-// Admin: add, edit, reorder and remove members, and set which badges they've earned.
+// Admin: add, edit, reorder and remove members, set which badges they've earned,
+// and read the log of bios submitted from the site.
 import { Hono } from "hono";
-import { and, eq, max, sql } from "drizzle-orm";
+import { and, desc, eq, max, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type AppEnv } from "../../db/client";
-import { memberBadges, members } from "../../db/schema";
+import { bioEdits, memberBadges, members } from "../../db/schema";
 import { body, isDuplicate, optionalText, orderInput, requiredText, slug } from "./shared";
 
 const fields = {
@@ -82,6 +83,16 @@ route.put("/:id", body(updateInput), async (c) => {
     await db.batch([first, ...rest]);
   }
   return c.json({ ok: true });
+});
+
+// Every bio submitted for this member from the site, newest first.
+route.get("/:id/bio-edits", async (c) => {
+  const edits = await getDb(c.env)
+    .select({ id: bioEdits.id, bio: bioEdits.bio, createdAt: bioEdits.createdAt })
+    .from(bioEdits)
+    .where(eq(bioEdits.memberId, c.req.param("id")))
+    .orderBy(desc(bioEdits.id));
+  return c.json({ edits });
 });
 
 route.delete("/:id", async (c) => {

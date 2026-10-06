@@ -4,7 +4,7 @@ import Character from "../character/Character";
 import BadgeShelf, { BadgeMark } from "../badges/Badge";
 import Pill from "../ui/Pill";
 import SplitHeading from "../ui/SplitHeading";
-import { members, getMember, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
+import { members, getMember, setMemberBio, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
 import { getBadge } from "../../data/badges";
 import { announcement } from "../../data/announcement";
 import { color } from "../../lib/palette";
@@ -162,6 +162,77 @@ function NextCard() {
   );
 }
 
+async function sendBio(id, bio) {
+  const res = await fetch(`/api/bios/${encodeURIComponent(id)}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ bio }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Couldn't save it. Try again in a moment.");
+  return data.bio;
+}
+
+/* The bio on a profile, which anyone can write or change. It goes live at once;
+   every version is kept in a log in the admin panel (Members → Bio history). */
+function Bio({ member }) {
+  const [bio, setBio] = useState(member.bio ?? "");
+  const [draft, setDraft] = useState(null); // null = not editing
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState(null);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    setError(null);
+    try {
+      const saved = await sendBio(member.id, draft);
+      setMemberBio(member.id, saved);
+      setBio(saved);
+      setDraft(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (draft === null)
+    return (
+      <>
+        {bio ? <p className="modal__line">{bio}</p> : <p className="modal__line modal__line--soon">Bio coming soon.</p>}
+        <button type="button" className="modal__edit mono" onClick={() => setDraft(bio)}>
+          {bio ? "Edit bio" : "Is this you? Write your bio"}
+        </button>
+      </>
+    );
+
+  return (
+    <form className="modal__bio" onSubmit={save}>
+      <textarea
+        aria-label="Bio"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={4}
+        maxLength={600}
+        required
+        dir="auto"
+        placeholder="One or two sentences: what you're into, what you're building."
+        autoFocus
+      />
+      {error && <p className="modal__error">{error}</p>}
+      <div className="modal__bio-actions">
+        <Pill as="button" type="submit" variant="accent" disabled={sending || !draft.trim()}>
+          {sending ? "Saving…" : "Save bio"}
+        </Pill>
+        <button type="button" className="modal__edit mono" onClick={() => setDraft(null)}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function MemberModal({ member, onClose }) {
   const earned = earnedBadges(member);
   const { char, body } = member.avatar;
@@ -206,11 +277,7 @@ function MemberModal({ member, onClose }) {
             <h3 id="modal-title" className="display" lang={nameLang(member.name)}>
               {member.name}
             </h3>
-            {member.bio ? (
-              <p className="modal__line">{member.bio}</p>
-            ) : (
-              <p className="modal__line modal__line--soon">Bio coming soon.</p>
-            )}
+            <Bio member={member} />
             <div className="modal__facts">
               <p className="modal__slot mono">{member.major}</p>
               <p className="modal__slot mono">{yearLabel(member.year)}</p>

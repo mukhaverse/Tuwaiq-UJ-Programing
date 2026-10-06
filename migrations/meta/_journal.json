@@ -57,6 +57,13 @@
       "when": 1791235494027,
       "tag": "0007_milestone_photos",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791289255015,
+      "tag": "0008_bio_edits",
+      "breakpoints": true
     }
   ]
 }

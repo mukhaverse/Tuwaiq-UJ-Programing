@@ -561,3 +561,61 @@
   color: var(--muted);
   font-style: italic;
 }
+
+.modal__edit {
+  margin: -6px 0 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.modal__edit:hover,
+.modal__edit:focus-visible {
+  color: var(--fg);
+}
+
+.modal__bio {
+  display: grid;
+  gap: 10px;
+  max-width: 44ch;
+  margin-bottom: 16px;
+}
+
+.modal__bio textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.modal__bio textarea:focus-visible {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.modal__bio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal__bio-actions .modal__edit {
+  margin: 0;
+}
+
+.modal__error {
+  margin: 0;
+  color: #ff8a8e;
+  font-size: 0.9rem;
+}

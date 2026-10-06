@@ -43,8 +43,15 @@ export const body = <T extends z.ZodType>(schema: T, target: keyof ValidationTar
     }
   });
 
-/** True when a D1 error is a duplicate primary key. */
-export const isDuplicate = (err: unknown) => String((err as Error)?.message ?? err).includes("UNIQUE constraint failed");
+/** An error's message and those of its causes (Drizzle wraps D1's error in its own). */
+export function errorText(err: unknown): string {
+  const parts: string[] = [];
+  for (let e = err; e && parts.length < 5; e = (e as Error).cause) parts.push(String((e as Error).message ?? e));
+  return parts.join(" | ");
+}
+
+/** True when a D1 error is a duplicate primary key or unique value. */
+export const isDuplicate = (err: unknown) => errorText(err).includes("UNIQUE constraint failed");
 
 /** Whether visitors can send build requests. Closed until an admin opens it. */
 export async function requestsOpen(env: Env) {

@@ -31,6 +31,7 @@ worker/                 the API (TypeScript)
   routes/content.ts     GET /api/content: everything the public site shows
   routes/requests.ts    POST /api/requests: the public "request a build" form (only while requests are open)
   routes/media.ts       GET /api/media/<key>: uploaded files
+  routes/bios.ts        POST /api/bios/<member id>: anyone writes a member's bio from their profile
   routes/admin/         one file per thing the admin panel edits (members, milestones, badges,
                         settings, uploads, survey, projects, tracks); index.ts puts all of them behind requireRole("admin")
   db/schema.ts          the site's tables (Drizzle)
@@ -81,6 +82,7 @@ src/
 **Content** (members, badges, the journey, the "Up next" tile, site text, files) is edited in the admin panel at `/#admin`. Changes are live within about 10 seconds. Things to know:
 
 - **Members**: the link id (`#member/<id>`) is set when a member is added and can't change afterwards. Names are written exactly as they spell them (Arabic names get an Arabic font automatically); "Card name" overrides the first + last name on cards. Leader / Co-leader gives a card its own hue. Order matters: the first three stand on the Commit Mountain in the hero.
+- **Bios**: anyone can write or change a bio from a member's profile ("Write your bio" / "Edit bio"). No sign-in and no review: it's live at once. Every submission is kept, and an admin sees them under **Bio history** on that member's page in Members, newest first. If someone changed another person's bio, press **Use this** on the version they really wrote, then **Save changes**. (Edits made in the admin panel aren't logged.)
 - **Badges** are created in Badges and awarded to people from their page in Members. A badge linked to a milestone also shows on that journey step.
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.

@@ -41,6 +41,12 @@ export function nameLang(name) {
   return /[\u0600-\u06FF]/.test(name) ? "ar" : undefined;
 }
 
+// After someone writes a bio on a profile, so cards show it without a reload.
+export function setMemberBio(id, bio) {
+  const m = getMember(id);
+  if (m) m.bio = bio;
+}
+
 export function getMember(id) {
   return members.find((m) => m.id === id);
 }

@@ -113,10 +113,6 @@ export default function Splash({ onDone }) {
           </motion.p>
         </div>
       </motion.div>
-
-      <motion.p className="splash__skip mono" {...show(0.8)}>
-        press any key to skip
-      </motion.p>
     </motion.div>
   );
 }

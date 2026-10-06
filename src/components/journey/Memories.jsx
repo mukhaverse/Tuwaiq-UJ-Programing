@@ -502,11 +502,13 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
           {n > 1 && (
             <button
               type="button"
-              className="mem__spread mono"
+              className="mem__spread"
               aria-pressed={spread}
+              aria-label={spread ? "Stack them" : "Spread them out"}
+              title={spread ? "Stack them" : "Spread them out"}
               onClick={() => (spread ? gather(orderRef.current) : spreadOut())}
             >
-              <span aria-hidden="true">{spread ? "▣" : "⊞"}</span> {spread ? "stack them" : "spread them out"}
+              <span aria-hidden="true">{spread ? "▣" : "⊞"}</span>
             </button>
           )}
         </footer>

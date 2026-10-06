@@ -171,20 +171,16 @@
 }
 
 .mem__spread {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
   height: 46px;
-  padding: 0 14px;
+  padding: 0;
   border: var(--line);
   border-radius: 12px;
   background: var(--raised);
   box-shadow: var(--cap);
   color: var(--cyan);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   cursor: pointer;
   transition:
     translate 0.12s,
@@ -193,7 +189,8 @@
 }
 
 .mem__spread span {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .mem__spread:hover {

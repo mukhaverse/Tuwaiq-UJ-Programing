@@ -21,6 +21,7 @@
 }
 
 .shelf__slot {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,6 +35,83 @@
   display: block;
   width: 64px;
   aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+button.shelf__art {
+  cursor: help;
+  border-radius: 50%;
+}
+
+button.shelf__art:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 6px;
+}
+
+/* The badge lifts a little while its note is open. */
+.shelf__badge .badge-mark {
+  transition: translate 0.25s var(--spring);
+}
+
+.shelf__slot.is-active .shelf__badge .badge-mark {
+  translate: 0 -4px;
+}
+
+/* ---------- Why it was earned: a note that pops up over the shelf ---------- */
+.shelf__why {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border: var(--line);
+  border-color: var(--orange);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+  box-shadow: 4px 5px 0 rgb(0 0 0 / 0.5);
+  text-align: start;
+  pointer-events: none;
+}
+
+.shelf__why-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--orange);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shelf__why-text {
+  color: var(--fg);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.shelf__why-arrow {
+  position: absolute;
+  top: 100%;
+  width: 12px;
+  height: 12px;
+  margin: -5px 0 0 -6px;
+  border-right: var(--line);
+  border-bottom: var(--line);
+  border-color: var(--orange);
+  background: var(--raised);
+  rotate: 45deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf__badge .badge-mark {
+    transition: none;
+  }
 }
 
 .shelf__trace,

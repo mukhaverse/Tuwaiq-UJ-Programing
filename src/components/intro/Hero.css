@@ -127,6 +127,120 @@
 }
 
 
+/* The President and Vice President, standing on the end blocks of the
+   mountain. Lead-sized: a chess piece is narrower than a member's character, so
+   at the members' width it looks too small. The base sits 8% above the bottom
+   of its 200 × 200 box, so it's nudged down to stand on the block. */
+.climb__leader {
+  position: absolute;
+  z-index: 1;
+  width: 14%;
+  padding: 0;
+  border: 0;
+  background: none;
+  translate: -50% 8%;
+  cursor: default;
+}
+
+.climb__leader:hover,
+.climb__leader:focus {
+  z-index: 2;
+}
+
+.climb__leader--first {
+  --accent: var(--butter);
+}
+
+.climb__leader--second {
+  --accent: var(--cyan);
+}
+
+.climb__leader:focus-visible {
+  outline-offset: 6px;
+}
+
+/* Their "@name", always shown above them in their colour; on hover or tap it
+   grows and rolls to their role. Only the line on show is in the flow, so the tag
+   fits it snugly; the other is lifted out and waits off-tag. Each tag hangs
+   from its piece's outer edge, so it stays over the mountain. */
+.climb__tag {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  display: grid;
+  overflow: hidden;
+  padding: 2px 7px;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: rgb(14 11 24 / 0.8);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  transition: scale 0.25s var(--spring);
+}
+
+.climb__leader--first .climb__tag {
+  left: 0;
+  transform-origin: 0 100%;
+}
+
+.climb__leader--second .climb__tag {
+  right: 0;
+  transform-origin: 100% 100%;
+}
+
+.climb__tag > span {
+  transition: translate 0.3s var(--spring);
+}
+
+.climb__tag > span:last-child,
+.climb__leader:hover .climb__tag > span:first-child,
+.climb__leader:focus .climb__tag > span:first-child {
+  position: absolute;
+  top: 2px;
+  left: 7px;
+}
+
+.climb__leader--second .climb__tag > span:last-child,
+.climb__leader--second:hover .climb__tag > span:first-child,
+.climb__leader--second:focus .climb__tag > span:first-child {
+  left: auto;
+  right: 7px;
+}
+
+.climb__leader:hover .climb__tag > span:last-child,
+.climb__leader:focus .climb__tag > span:last-child {
+  position: static;
+}
+
+.climb__tag > span {
+  color: var(--accent);
+}
+
+.climb__tag > span:first-child {
+  font-weight: 800;
+}
+
+.climb__tag > span:last-child {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  translate: 0 110%;
+}
+
+.climb__leader:hover .climb__tag,
+.climb__leader:focus .climb__tag {
+  scale: 1.35;
+}
+
+.climb__leader:hover .climb__tag > span:first-child,
+.climb__leader:focus .climb__tag > span:first-child {
+  translate: 0 -110%;
+}
+
+.climb__leader:hover .climb__tag > span:last-child,
+.climb__leader:focus .climb__tag > span:last-child {
+  translate: 0 0;
+}
+
 .climb__goal {
   position: absolute;
   top: 8.5%;
@@ -166,10 +280,11 @@
   margin-bottom: clamp(28px, 4vw, 52px);
 }
 
+/* Stacked: "Meet the members" over "The journey". */
 .hero__pills {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 14px;
 }
 
@@ -263,7 +378,7 @@
   }
 
   .hero__pills {
-    justify-content: flex-start;
+    align-items: flex-start;
   }
 }
 

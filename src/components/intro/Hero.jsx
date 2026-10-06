@@ -7,6 +7,7 @@ import { milestones } from "../../data/milestones";
 import Character from "../character/Character";
 import Mountain from "../brand/Mountain";
 import Pill from "../ui/Pill";
+import Leaders from "./Leaders";
 import { memberHref } from "../members/useMemberRoute";
 import { color } from "../../lib/palette";
 import { CELLS, assemblyTime } from "../../lib/mountain";
@@ -45,9 +46,20 @@ const getClimbers = () =>
     lead: i === 0,
   }));
 
+
 // Cell coordinates → % of the 150 × 70 mountain box.
 const leftOf = (c) => `${((c * 10 + 5) / 150) * 100}%`;
 const bottomOf = (r) => `${((70 - (r * 10 + 1)) / 70) * 100}%`;
+
+// The President and Vice President stand on the mountain's two end blocks,
+// nudged inward (`at`, in columns) so they don't hang off its sides. Both stay
+// on the bottom row, so they still stand on a block.
+const LEADER_SPOTS = [
+  { col: 0, at: 0.6 },
+  { col: 14, at: 13.4 },
+];
+const leaderSpots = () =>
+  LEADER_SPOTS.map(({ col, at }) => ({ left: leftOf(at), bottom: bottomOf(perches.find((p) => p.c === col).r) }));
 
 function Climb() {
   const land = MOUNTAIN_DELAY + assemblyTime(MOUNTAIN_STEP);
@@ -71,6 +83,10 @@ function Climb() {
             <Character type={member.avatar.char} body={color(member.avatar.body)} blink={i * 0.7} className="sticker" />
           </motion.a>
         ))}
+        <Leaders
+          spots={leaderSpots()}
+          delay={land + climbers.length * 0.08 + 0.45}
+        />
         <motion.span
           className="climb__goal mono"
           initial={{ opacity: 0, x: -8 }}

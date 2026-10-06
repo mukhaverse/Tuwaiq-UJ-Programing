@@ -7,7 +7,7 @@ const INK = c.ink;
 const S = { stroke: INK, strokeWidth: 4.5, strokeLinejoin: "round", strokeLinecap: "round" };
 
 /* An eye whose pupil tracks the shared pointer. Offsets are in viewBox units. */
-function Eye({ cx, cy, r = 15, pupil = 0.5, delay = 0 }) {
+export function Eye({ cx, cy, r = 15, pupil = 0.5, delay = 0 }) {
   const ref = useRef(null);
   const spring = { stiffness: 260, damping: 20, mass: 0.6 };
   const px = useSpring(0, spring);

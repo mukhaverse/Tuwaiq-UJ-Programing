@@ -130,11 +130,11 @@
 /* The President and Vice President, standing on the end blocks of the
    mountain. Lead-sized: a chess piece is narrower than a member's character, so
    at the members' width it looks too small. The base sits 8% above the bottom
-   of its 200 × 200 box, so it's nudged down to stand on the block. */
+   of its 200 × 240 box, so it's nudged down to stand on the block. */
 .climb__leader {
   position: absolute;
   z-index: 1;
-  width: 14%;
+  width: 12.5%;
   padding: 0;
   border: 0;
   background: none;

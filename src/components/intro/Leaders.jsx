@@ -9,41 +9,45 @@ const line = { fill: "none", strokeLinecap: "round" };
 // Dark brown marble (Emperador): a polished stone, warm but not wood.
 const MARBLE = "#5a4038";
 
-/* A marble chess set: the Knight in white, the Rook in dark brown. Same 200 × 200 grid
-   and outline as the members' characters, but they aren't in CHARACTERS, so the
-   admin can't hand one to a member. */
+/* A marble chess set: the Knight in white, the Rook in dark brown. Same outline
+   as the members' characters, but on a taller 200 × 240 grid so the pieces stand
+   tall and slim. They aren't in CHARACTERS, so the admin can't hand one to a
+   member. Each base ends 19 units above the bottom (8%), which Hero.css nudges
+   down so it stands on its block. */
 const pieces = {
   knight: {
     draw: () => (
       <>
-        {/* Horse head in profile, facing left */}
+        {/* Horse head in profile, facing left, on a long neck */}
         <path
-          d="M64 160Q66 132 84 116Q68 112 52 106Q38 100 40 86Q42 72 58 64L84 44L90 22L106 40Q140 50 146 100Q148 132 136 160Z"
+          d="M62 198Q56 150 80 104Q64 98 48 108Q32 106 34 90L70 46Q80 30 96 28L104 8L118 30Q152 46 152 96Q154 150 140 198Z"
           fill={c.cream}
           {...S}
         />
-        <rect x="42" y="158" width="116" height="26" rx="10" fill={c.cream} {...S} />
         {/* Mane */}
-        <path d="M112 46Q128 54 132 68M128 76Q138 86 138 98M134 108Q142 120 140 134" {...line} stroke={c.lemon} strokeWidth="5" />
+        <path d="M120 32Q152 54 150 118" {...line} stroke={INK} strokeWidth="9" />
+        <path d="M120 32Q152 54 150 118" {...line} stroke="#4a4166" strokeWidth="4" />
         {/* Marble veins */}
-        <path d="M76 150Q88 132 98 126M60 176Q76 166 92 172" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
-        <circle cx="48" cy="84" r="3" fill={INK} />
-        <Eye cx={80} cy={78} r={11} />
-        <Eye cx={106} cy={78} r={11} delay={0.4} />
-        <path d="M84 100Q94 108 104 100" fill="none" {...S} />
+        <path d="M84 186Q92 162 102 150M110 70Q120 80 128 78" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
+        <circle cx="46" cy="94" r="3.5" fill={INK} />
+        <path d="M40 104Q52 110 62 104" fill="none" {...S} strokeWidth="3.5" />
+        <Eye cx={90} cy={62} r={13} />
+        <rect x="42" y="195" width="116" height="26" rx="10" fill={c.cream} {...S} />
+        <path d="M60 213Q76 203 92 209" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
       </>
     ),
   },
   rook: {
     draw: () => (
       <>
-        <path d="M54 76V34H74V50H90V34H110V50H126V34H146V76Z" fill={MARBLE} {...S} />
-        <path d="M62 160L70 76H130L138 160Z" fill={MARBLE} {...S} />
-        <rect x="42" y="158" width="116" height="26" rx="10" fill={MARBLE} {...S} />
-        <path d="M74 150Q86 128 82 112M118 84Q122 96 128 98M60 176Q78 166 96 172" {...line} stroke={c.cream} strokeOpacity=".22" strokeWidth="2" />
-        <Eye cx={86} cy={108} r={12} delay={1.1} />
-        <Eye cx={114} cy={108} r={12} delay={1.5} />
-        <path d="M90 136Q100 146 110 136" fill="none" {...S} stroke={c.cream} />
+        <path d="M54 66V22H74V38H90V22H110V38H126V22H146V66Z" fill={MARBLE} {...S} />
+        <path d="M62 196L70 66H130L138 196Z" fill={MARBLE} {...S} />
+        <rect x="42" y="195" width="116" height="26" rx="10" fill={MARBLE} {...S} />
+        {/* Marble veins */}
+        <path d="M74 184Q86 158 82 136M118 76Q122 88 128 90M60 213Q78 203 96 209" {...line} stroke={c.cream} strokeOpacity=".22" strokeWidth="2" />
+        <Eye cx={86} cy={112} r={12} delay={1.1} />
+        <Eye cx={114} cy={112} r={12} delay={1.5} />
+        <path d="M90 142Q100 152 110 142" fill="none" {...S} stroke={c.cream} />
       </>
     ),
   },
@@ -71,7 +75,7 @@ export default function Leaders({ spots, delay = 0 }) {
           <span>@{l.name}</span>
           <span>{l.title}</span>
         </span>
-        <svg viewBox="0 0 200 200" className="char sticker" aria-hidden="true">
+        <svg viewBox="0 0 200 240" className="char sticker" aria-hidden="true">
           {piece.draw()}
         </svg>
       </motion.button>

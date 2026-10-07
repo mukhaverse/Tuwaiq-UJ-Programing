@@ -29,6 +29,11 @@ const pieces = {
         <path d="M120 32Q152 54 150 118" {...line} stroke="#4a4166" strokeWidth="4" />
         {/* Marble veins */}
         <path d="M84 186Q92 162 102 150M110 70Q120 80 128 78" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
+        {/* Mini crown, tilted to sit on the forehead in front of the ear */}
+        <g transform="translate(86 34) rotate(-34) scale(1.6)">
+          <path d="M-14 0L-16 -16L-7 -8L0 -20L7 -8L16 -16L14 0Z" fill={c.butter} {...S} strokeWidth="2.8" />
+          <circle cx="0" cy="-6" r="2.6" fill={c.tomato} />
+        </g>
         <circle cx="46" cy="94" r="3.5" fill={INK} />
         <path d="M40 104Q52 110 62 104" fill="none" {...S} strokeWidth="3.5" />
         <Eye cx={90} cy={62} r={13} />

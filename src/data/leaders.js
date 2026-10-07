@@ -4,8 +4,8 @@
 //
 //   name   always shown above the piece, as "@name"
 //   title  their club role, shown on hover
-//   piece  "king" | "rook" (see components/intro/Leaders.jsx)
+//   piece  "knight" | "rook" (see components/intro/Leaders.jsx)
 export const leaders = [
-  { name: "Jana", title: "President", piece: "king" },
+  { name: "Jana", title: "President", piece: "knight" },
   { name: "Albaraa", title: "Vice President", piece: "rook" },
 ];

@@ -9,24 +9,28 @@ const line = { fill: "none", strokeLinecap: "round" };
 // Dark brown marble (Emperador): a polished stone, warm but not wood.
 const MARBLE = "#5a4038";
 
-/* A marble chess set: the King in white, the Rook in dark brown. Same 200 × 200 grid
+/* A marble chess set: the Knight in white, the Rook in dark brown. Same 200 × 200 grid
    and outline as the members' characters, but they aren't in CHARACTERS, so the
    admin can't hand one to a member. */
 const pieces = {
-  king: {
+  knight: {
     draw: () => (
       <>
-        <path d="M100 34V6M88 18H112" {...line} stroke={INK} strokeWidth="12" />
-        <path d="M100 34V6M88 18H112" {...line} stroke={c.lemon} strokeWidth="5" />
-        <path d="M74 60Q74 30 100 30Q126 30 126 60Z" fill={c.cream} {...S} />
-        <rect x="58" y="56" width="84" height="18" rx="9" fill={c.cream} {...S} />
-        <path d="M66 160L78 74H122L134 160Z" fill={c.cream} {...S} />
+        {/* Horse head in profile, facing left */}
+        <path
+          d="M64 160Q66 132 84 116Q68 112 52 106Q38 100 40 86Q42 72 58 64L84 44L90 22L106 40Q140 50 146 100Q148 132 136 160Z"
+          fill={c.cream}
+          {...S}
+        />
         <rect x="42" y="158" width="116" height="26" rx="10" fill={c.cream} {...S} />
+        {/* Mane */}
+        <path d="M112 46Q128 54 132 68M128 76Q138 86 138 98M134 108Q142 120 140 134" {...line} stroke={c.lemon} strokeWidth="5" />
         {/* Marble veins */}
-        <path d="M72 150Q84 128 80 110M116 80Q120 92 130 96M60 176Q76 166 92 172" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
-        <Eye cx={86} cy={104} r={12} />
-        <Eye cx={114} cy={104} r={12} delay={0.4} />
-        <path d="M90 132Q100 142 110 132" fill="none" {...S} />
+        <path d="M76 150Q88 132 98 126M60 176Q76 166 92 172" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
+        <circle cx="48" cy="84" r="3" fill={INK} />
+        <Eye cx={80} cy={78} r={11} />
+        <Eye cx={106} cy={78} r={11} delay={0.4} />
+        <path d="M84 100Q94 108 104 100" fill="none" {...S} />
       </>
     ),
   },

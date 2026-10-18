@@ -9,6 +9,8 @@ const S = { stroke: INK, strokeWidth: 4.5, strokeLinejoin: "round", strokeLineca
      face  (0, 0) is midway between the eyes, which are 48 apart
      neck  (0, 0) is the middle of the neckline */
 
+// A component in a file that exports a helper: fine here, it never hot-reloads on its own.
+// oxlint-disable-next-line react/only-export-components
 function Cap({ fill, mark }) {
   return (
     <>

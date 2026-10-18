@@ -25,6 +25,10 @@ const shapes = {
     body: optional(300),
     ctaLabel: optional(30),
     ctaUrl: z.union([z.literal(""), z.string().trim().regex(/^(https?:\/\/|#)/, "Use a full link (https://…) or a section like #journey")]).default(""),
+    // The entry pass: a second button that opens a barcode. Empty label = no button;
+    // a label with no image yet shows a "coming soon" pass.
+    passLabel: optional(30),
+    passImage: z.union([z.literal(""), z.string().trim().regex(/^\/api\/media\/\S+$/, "Upload the barcode first").max(300)]).default(""),
   }),
   // Whether visitors can send build requests (the form and its button on the site).
   requests: z.object({ open: z.boolean() }),

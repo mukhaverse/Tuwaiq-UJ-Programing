@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion, useSpring } from "motion/react";
 import Character from "../character/Character";
 import BadgeShelf, { BadgeMark } from "../badges/Badge";
@@ -132,7 +132,7 @@ const external = (url) => (/^https?:/.test(url) ? { target: "_blank", rel: "noop
 
 /* The purple tile in the grid: the current announcement (edited in the admin
    panel), with a big label standing huge behind it. */
-function NextCard() {
+function NextCard({ onPass }) {
   const a = announcement;
   return (
     <motion.li layout {...pop} className="grid__item grid__item--promo">
@@ -152,13 +152,85 @@ function NextCard() {
           {a.title}
         </h3>
         {a.body && <p className="promo__note">{a.body}</p>}
-        {a.ctaUrl && (
-          <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant="accent">
-            {a.ctaLabel || "Open"}
-          </Pill>
+        {(a.passLabel || a.ctaUrl) && (
+          <div className="promo__actions">
+            {a.passLabel && (
+              <Pill as="button" type="button" variant="accent" onClick={onPass} icon={<BarcodeIcon />}>
+                {a.passLabel}
+              </Pill>
+            )}
+            {a.ctaUrl && (
+              <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant={a.passLabel ? "" : "accent"}>
+                {a.ctaLabel || "Open"}
+              </Pill>
+            )}
+          </div>
         )}
       </section>
     </motion.li>
+  );
+}
+
+function BarcodeIcon() {
+  return (
+    <svg className="promo__icon" viewBox="0 0 16 12" aria-hidden="true" shapeRendering="crispEdges">
+      <path d="M0 0h2v12H0zM3 0h1v12H3zM5 0h2v12H5zM8 0h1v12H8zM10 0h1v12h-1zM12 0h2v12h-2zM15 0h1v12h-1z" fill="currentColor" />
+    </svg>
+  );
+}
+
+// Escape closes, the page underneath stops scrolling, and focus goes back where it was.
+function useDialog(onClose) {
+  // Read during render, before the close button's autoFocus takes focus away.
+  const [returnTo] = useState(() => document.activeElement);
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+      returnTo?.focus?.({ preventScroll: true });
+    };
+  }, [onClose, returnTo]);
+}
+
+/* The entry pass behind the tile's barcode button: the uploaded barcode on a
+   white ticket, or a blurred stand-in until there is one. */
+function PassModal({ onClose }) {
+  const a = announcement;
+  useDialog(onClose);
+
+  return (
+    <>
+      <motion.div className="modal__backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <div className="modal__wrap" role="dialog" aria-modal="true" aria-labelledby="pass-title">
+        <motion.div className="pass" {...pop}>
+          <p className="pass__eyebrow mono">Entry pass</p>
+          <h3 id="pass-title" className="pass__title display">
+            {a.title}
+          </h3>
+          <div className="pass__tear" aria-hidden="true" />
+          {a.passImage ? (
+            <>
+              <img className="pass__code" src={a.passImage} alt={`Entry barcode for ${a.title}`} />
+              <p className="pass__hint">Show this at the entrance. Turn your screen brightness up if it won't scan.</p>
+            </>
+          ) : (
+            <>
+              <div className="pass__code pass__code--soon" aria-hidden="true">
+                <span className="pass__soon mono">Coming soon</span>
+              </div>
+              <p className="pass__hint">Your barcode isn't ready yet. It shows up right here before the event, so check back.</p>
+            </>
+          )}
+          <button type="button" className="modal__x" onClick={onClose} aria-label="Close" autoFocus>
+            ✕
+          </button>
+        </motion.div>
+      </div>
+    </>
   );
 }
 
@@ -241,20 +313,7 @@ function Bio({ member }) {
 function MemberModal({ member, onClose }) {
   const earned = earnedBadges(member);
   const { char, body } = member.avatar;
-  // Read during render, before the close button's autoFocus takes focus away.
-  const [returnTo] = useState(() => document.activeElement);
-
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-      returnTo?.focus?.({ preventScroll: true });
-    };
-  }, [onClose, returnTo]);
+  useDialog(onClose);
 
   return (
     <>
@@ -310,6 +369,9 @@ function MemberModal({ member, onClose }) {
 
 export default function Members() {
   const [year, setYear] = useState("all");
+  // The pass is opened from the tile but rendered out here: the grid's transforms would trap a fixed modal.
+  const [pass, setPass] = useState(false);
+  const closePass = useCallback(() => setPass(false), []);
   const route = useMemberRoute();
 
   const list = members.filter((m) => year === "all" || m.year === year);
@@ -355,7 +417,7 @@ export default function Members() {
           <AnimatePresence mode="popLayout">
             {items.map((item, i) =>
               item.promo ? (
-                <NextCard key="promo" />
+                <NextCard key="promo" onPass={() => setPass(true)} />
               ) : (
                 <MemberCard key={item.id} member={item} index={i} onOpen={route.open} />
               )
@@ -364,6 +426,7 @@ export default function Members() {
         </motion.ul>
 
         <AnimatePresence>{open && <MemberModal key={open.id} member={open} onClose={route.close} />}</AnimatePresence>
+        <AnimatePresence>{pass && announcement && <PassModal onClose={closePass} />}</AnimatePresence>
       </LayoutGroup>
     </section>
   );

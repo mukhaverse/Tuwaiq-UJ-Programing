@@ -5,6 +5,8 @@
 //   big       1–3 characters printed huge behind the tile
 //   title, body
 //   ctaLabel, ctaUrl   the button; links to other sites open in a new tab
+//   passLabel, passImage   a second button that opens an entry barcode (an uploaded
+//                          image); with no image yet it says the barcode is coming
 export let announcement = null;
 
 export function setAnnouncement(value) {

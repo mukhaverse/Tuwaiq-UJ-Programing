@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { motion, useSpring } from "motion/react";
 import { pointer } from "../../lib/pointer";
 import { palette as c } from "../../lib/palette";
+import { ACCESSORIES } from "../../data/looks";
+import { drawAccessory } from "./accessories";
 
 const INK = c.ink;
 const S = { stroke: INK, strokeWidth: 4.5, strokeLinejoin: "round", strokeLinecap: "round" };
@@ -221,11 +223,42 @@ const shapes = {
 // oxlint-disable-next-line react/only-export-components
 export const CHARACTERS = Object.keys(shapes);
 
-export default function Character({ type, body = c.butter, blink = 0, className = "", style }) {
+/* Where accessories sit on each shape, as [x, y, scale] (see accessories.jsx):
+   head on the crown, face midway between the eyes (scale = eye gap ÷ 48),
+   neck just under the mouth. Check changes on the dev sheet at /#dev/looks. */
+// oxlint-disable-next-line react/only-export-components
+export const ANCHORS = {
+  blob: { head: [100, 44, 1], face: [100, 92, 1], neck: [100, 158, 1] },
+  star: { head: [100, 50, 0.6], face: [100, 104, 1.2], neck: [100, 160, 0.7] },
+  ghost: { head: [100, 50, 1.1], face: [100, 96, 0.92], neck: [100, 160, 1] },
+  robot: { head: [100, 60, 1.15], face: [100, 100, 1], neck: [100, 168, 0.85] },
+  cat: { head: [100, 62, 0.85], face: [100, 108, 1], neck: [100, 164, 0.95] },
+  cloud: { head: [100, 62, 0.9], face: [100, 110, 0.83], neck: [100, 155, 0.9] },
+  sun: { head: [100, 56, 0.95], face: [100, 96, 0.83], neck: [100, 150, 0.9] },
+  planet: { head: [100, 50, 1], face: [100, 78, 0.83], neck: [100, 140, 0.85] },
+  mushroom: { head: [100, 40, 0.9], face: [100, 140, 0.58], neck: [100, 176, 0.7] },
+  flower: { head: [100, 64, 0.85], face: [100, 96, 0.67], neck: [100, 142, 0.8] },
+  // The monitor's face is a dark screen, so face items get light frames.
+  monitor: { head: [100, 42, 1.2], face: [100, 86, 0.83], neck: [100, 158, 0.7], darkFace: true },
+};
+
+// Drawn bottom to top, so a hat brim covers a scarf and glasses sit under a cap.
+const SLOT_ORDER = ["neck", "face", "head"];
+const slotOf = Object.fromEntries(ACCESSORIES.map((a) => [a.id, a.slot]));
+
+export default function Character({ type, body = c.butter, blink = 0, wear = [], className = "", style }) {
   const draw = shapes[type] ?? shapes.blob;
+  const anchors = ANCHORS[type] ?? ANCHORS.blob;
+  // Unknown ids (an accessory since removed, say) are skipped.
+  const worn = SLOT_ORDER.flatMap((slot) => wear.filter((id) => slotOf[id] === slot).map((id) => [id, anchors[slot]]));
   return (
     <svg viewBox="0 0 200 200" className={`char ${className}`} style={style} aria-hidden="true">
       {draw(body, blink)}
+      {worn.map(([id, [x, y, s]]) => (
+        <g key={id} transform={`translate(${x} ${y}) scale(${s})`}>
+          {drawAccessory(id, { dark: anchors.darkFace })}
+        </g>
+      ))}
     </svg>
   );
 }

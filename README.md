@@ -12,6 +12,7 @@ npm run dev        # site + API + local database at http://localhost:5173
 npm run build      # production build into dist/
 npm run lint
 npm run typecheck  # the Worker (TypeScript)
+npm test           # the look rules (src/data/looks.ts)
 ```
 
 ## How it fits together
@@ -32,6 +33,7 @@ worker/                 the API (TypeScript)
   routes/requests.ts    POST /api/requests: the public "request a build" form (only while requests are open)
   routes/media.ts       GET /api/media/<key>: uploaded files
   routes/bios.ts        POST /api/bios/<member id>: anyone writes a member's bio from their profile
+  routes/looks.ts       POST /api/looks/<member id>: anyone suggests a look for a member (waits for an admin)
   routes/admin/         one file per thing the admin panel edits (members, milestones, badges,
                         settings, uploads, survey, projects, tracks); index.ts puts all of them behind requireRole("admin")
   db/schema.ts          the site's tables (Drizzle)
@@ -50,6 +52,8 @@ src/
     members.js          the roster
     badges.js           every badge that can be earned
     milestones.js       the semester journey
+    looks.ts            character looks: shapes, colours, the accessory catalog, and what each badge count
+                        unlocks. Shared with the Worker, which checks suggestions against the same rules
     announcement.js     the purple "Up next" tile in the members grid
     projects.js         builds (in progress and done), the other tracks and their colours,
                         whether requests are open, plus the request kinds and statuses
@@ -86,6 +90,20 @@ src/
 - **Badges** are created in Badges and awarded to people from their page in Members. A badge linked to a milestone also shows on that journey step.
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.
+- **Character looks**: anyone can press **Customize character** on a profile and suggest a new look for that member, within what their badges unlock:
+  - 0 badges: nothing (the editor shows what's locked)
+  - 1 badge: the shape
+  - 2+ badges: shape, colour and accessories
+
+  Sun and planet stay reserved for the leader and co-leader. Nothing goes live until an admin approves it under **Look suggestions** on the member's page in Members ("· 1 new look" in the list). Approving checks the badges again.
+
+  In the admin form you can set any look yourself, with no badge limits.
+- **Accessories**:
+  - The starter set (cap, beanie, bow, headphones, glasses, sunglasses, scarf, bow tie) unlocks at 2 badges.
+  - Extras, marked ★ (like the Push your limits cap), are given out:
+    - one person at a time: "Given to them" on their page in Members
+    - everyone at once: **Badges → Accessories → Give to everyone**. Members added later don't get it automatically.
+  - Taking an extra back also takes it off anyone wearing it.
 
 **Builds** (the section after the members) is PT-OS: a little desktop on a monitor (`src/components/builds/Desktop.jsx`). The top bar counts what's building and what's shipped. One build is open at a time in a window, with the next few peeking out behind it; the taskbar switches between them, grouped into Collabs and Projects (past five builds, its tabs shrink to colour squares). Left alone, the desktop moves to the next build every 6 seconds (a timer fills under the open tab), so no build looks like the main one; it pauses on hover, stops for good once someone clicks, and only runs while the section is on screen. The open build's crew peeks over the monitor (each links to their profile). Finished builds are in the **shipped** folder on the desktop, each with a ✓ and the month it was marked done.
 
@@ -109,6 +127,8 @@ npx wrangler d1 execute pt-db --remote --command "SELECT name, email, role FROM 
 The change applies on their next click. **Locally**, the sign-in page also has an email + password form (on only when `DEV_LOGIN=true` in `.dev.vars`), because GitHub only sends people back to the live site; promote that account with the same command using `--local`.
 
 **New character** — add a key to `shapes` in `src/components/character/Character.jsx` (drawn on a 200×200 canvas; use `<Eye>` for eyes that follow the cursor), then use that key as a member's `avatar.char`.
+
+**New accessory** — add it to `ACCESSORIES` in `src/data/looks.ts` (its spot, and `starter: false` for one you give out). Then draw it in `src/components/character/accessories.jsx`, centred on (0, 0) the way the others are. Check the fit on every shape at `/#dev/looks` while `npm run dev` runs, and adjust that shape's entry in `ANCHORS` (`Character.jsx`) if needed. Run `npm test` after changing the rules in `looks.ts`.
 
 **New page section** — create a folder under `src/components/`, then add it to the section list in `src/App.jsx` (and a link in `Header.jsx` if it needs one).
 

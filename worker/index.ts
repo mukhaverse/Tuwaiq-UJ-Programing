@@ -11,6 +11,7 @@ import { rateLimit, sameOrigin } from "./lib/guard";
 import admin from "./routes/admin";
 import bios from "./routes/bios";
 import content from "./routes/content";
+import looks from "./routes/looks";
 import media from "./routes/media";
 import requests from "./routes/requests";
 
@@ -35,6 +36,8 @@ app.use("/requests/*", sameOrigin, rateLimit("RL_WRITES", "requests"));
 app.route("/requests", requests);
 app.use("/bios/*", sameOrigin, rateLimit("RL_WRITES", "bios"));
 app.route("/bios", bios);
+app.use("/looks/*", sameOrigin, rateLimit("RL_WRITES", "looks"));
+app.route("/looks", looks);
 app.get("/health", (c) => c.json({ ok: true }));
 
 // Login: sign in with GitHub, sign out, sessions (handled by Better Auth).

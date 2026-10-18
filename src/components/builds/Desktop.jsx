@@ -57,7 +57,7 @@ export default function Desktop({ builds, shipped }) {
       <div className="monitor__crew">
         {crewOf(current).map((m) => (
           <a key={`${current.id}-${m.id}`} href={memberHref(m.id)} className="monitor__mate" aria-label={shortName(m)} title={shortName(m)}>
-            <Character type={m.avatar.char} body={color(m.avatar.body)} className="sticker" />
+            <Character type={m.avatar.char} body={color(m.avatar.body)} wear={m.avatar.wear} className="sticker" />
           </a>
         ))}
       </div>
@@ -190,7 +190,7 @@ function BuildWindow({ build, index, total }) {
             <span className="os-win__crew">
               {crew.map((m) => (
                 <a key={m.id} href={memberHref(m.id)} aria-label={shortName(m)} title={shortName(m)}>
-                  <Character type={m.avatar.char} body={color(m.avatar.body)} />
+                  <Character type={m.avatar.char} body={color(m.avatar.body)} wear={m.avatar.wear} />
                 </a>
               ))}
             </span>

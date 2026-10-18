@@ -307,7 +307,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
           {members.map((m) => (
             <label key={m.id} className={`adm-chip adm-chip--member${v.members.includes(m.id) ? " is-on" : ""}`}>
               <input type="checkbox" checked={v.members.includes(m.id)} onChange={() => toggleMember(m.id)} />
-              <Character type={m.avatar.char} body={color(m.avatar.body)} />
+              <Character type={m.avatar.char} body={color(m.avatar.body)} wear={m.avatar.wear} />
               <span lang={nameLang(m.name)}>{shortName(m)}</span>
             </label>
           ))}

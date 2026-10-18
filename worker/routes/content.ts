@@ -2,14 +2,15 @@
 import { Hono } from "hono";
 import { asc, desc, inArray } from "drizzle-orm";
 import { getDb, type AppEnv } from "../db/client";
-import { badges, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings, tracks } from "../db/schema";
+import { badges, memberAccessories, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings, tracks } from "../db/schema";
+import { ACCESSORIES, cleanWear } from "../../src/data/looks";
 
 const content = new Hono<AppEnv>();
 
 content.get("/", async (c) => {
   const db = getDb(c.env);
   // One round trip to D1 for every query.
-  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, trackRows, projectRows, teamRows] = await db.batch([
+  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, trackRows, projectRows, teamRows, accessoryRows] = await db.batch([
     db.select().from(members).orderBy(asc(members.position), asc(members.createdAt)),
     db.select().from(memberBadges).orderBy(asc(memberBadges.awardedAt)),
     db.select().from(milestones).orderBy(asc(milestones.position)),
@@ -34,11 +35,18 @@ content.get("/", async (c) => {
       .where(inArray(projects.status, [...PUBLIC_PROJECT_STATUSES]))
       .orderBy(desc(projects.updatedAt)),
     db.select().from(projectMembers),
+    db.select().from(memberAccessories),
   ]);
 
-  const awarded = new Map<string, string[]>();
+  const badgesOf = new Map<string, string[]>();
   for (const a of awardRows) {
-    awarded.set(a.memberId, [...(awarded.get(a.memberId) ?? []), a.badgeId]);
+    badgesOf.set(a.memberId, [...(badgesOf.get(a.memberId) ?? []), a.badgeId]);
+  }
+  // Awarded accessories still in the catalog (src/data/looks.ts).
+  const known = new Set(ACCESSORIES.map((a) => a.id));
+  const accessoriesOf = new Map<string, string[]>();
+  for (const a of accessoryRows) {
+    if (known.has(a.accessoryId)) accessoriesOf.set(a.memberId, [...(accessoriesOf.get(a.memberId) ?? []), a.accessoryId]);
   }
   const team = new Map<number, string[]>();
   for (const t of teamRows) team.set(t.projectId, [...(team.get(t.projectId) ?? []), t.memberId]);
@@ -59,8 +67,10 @@ content.get("/", async (c) => {
       year: m.year,
       bio: m.bio ?? undefined,
       quote: m.quote ?? undefined,
-      avatar: { char: m.avatarChar, body: m.avatarBody },
-      badges: awarded.get(m.id) ?? [],
+      // Worn extras that were taken back are dropped here, so they vanish from the character.
+      avatar: { char: m.avatarChar, body: m.avatarBody, wear: cleanWear(m.avatarWear, accessoriesOf.get(m.id) ?? []) },
+      badges: badgesOf.get(m.id) ?? [],
+      accessories: accessoriesOf.get(m.id) ?? [],
     })),
     milestones: milestoneRows.map((m) => ({
       id: m.id,

@@ -80,7 +80,7 @@ function Climb() {
             transition={{ type: "spring", stiffness: 420, damping: 16, delay: land + i * 0.08 }}
             whileHover={{ y: -8 }}
           >
-            <Character type={member.avatar.char} body={color(member.avatar.body)} blink={i * 0.7} className="sticker" />
+            <Character type={member.avatar.char} body={color(member.avatar.body)} wear={member.avatar.wear} blink={i * 0.7} className="sticker" />
           </motion.a>
         ))}
         <Leaders

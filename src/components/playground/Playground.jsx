@@ -75,7 +75,7 @@ export default function Playground() {
                 </motion.p>
               )}
             </AnimatePresence>
-            <Character type={g.avatar.char} body={color(g.avatar.body)} blink={i * 0.9} className="sticker" />
+            <Character type={g.avatar.char} body={color(g.avatar.body)} wear={g.avatar.wear} blink={i * 0.9} className="sticker" />
             <span className="gang__name mono" lang={nameLang(g.name)}>
               @{g.name.split(" ")[0].toLowerCase()}
             </span>

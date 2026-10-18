@@ -199,7 +199,7 @@ function Sent({ id, contact, onClose }) {
           transition={{ duration: 0.5, repeat: 2, repeatDelay: 0.25, delay: 0.5 }}
           aria-hidden="true"
         >
-          <Character type={cheer.avatar.char} body={color(cheer.avatar.body)} className="sticker" />
+          <Character type={cheer.avatar.char} body={color(cheer.avatar.body)} wear={cheer.avatar.wear} className="sticker" />
         </motion.div>
       )}
       <Pill as="button" type="button" variant="accent" onClick={onClose}>

@@ -22,7 +22,7 @@ export function Avatar({ person, size = 28 }) {
   const m = person.member;
   return (
     <span className="srv-avatar" style={{ width: size, height: size }} aria-hidden="true">
-      {m ? <Character type={m.avatar.char} body={color(m.avatar.body)} /> : <span className="srv-avatar__blank" />}
+      {m ? <Character type={m.avatar.char} body={color(m.avatar.body)} wear={m.avatar.wear} /> : <span className="srv-avatar__blank" />}
     </span>
   );
 }

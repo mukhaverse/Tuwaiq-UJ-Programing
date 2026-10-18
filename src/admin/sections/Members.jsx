@@ -63,7 +63,7 @@ export default function MembersSection({ data, reload }) {
           render={(m) => (
             <>
               <span className="adm-list__avatar">
-                <Character type={m.avatar.char} body={color(m.avatar.body)} />
+                <Character type={m.avatar.char} body={color(m.avatar.body)} wear={m.avatar.wear} />
               </span>
               <span className="adm-list__text">
                 <span lang={/[؀-ۿ]/.test(m.name) ? "ar" : undefined}>{m.name}</span>

@@ -23,6 +23,8 @@ export const members = sqliteTable("members", {
   quote: text("quote"),
   avatarChar: text("avatar_char").notNull().default("blob"),
   avatarBody: text("avatar_body").notNull().default("butter"),
+  // Accessory ids from src/data/looks.ts, one per spot (head, face, neck).
+  avatarWear: text("avatar_wear", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
   // Roster order: the first few stand on the Commit Mountain in the hero.
   position: integer("position").notNull().default(0),
   ...timestamps,
@@ -85,6 +87,38 @@ export const bioEdits = sqliteTable(
     createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
   },
   (t) => [index("bio_edits_member").on(t.memberId)]
+);
+
+// Accessories an admin has given a member, beyond the starter set. The ids live in
+// src/data/looks.ts, not in a table, so they aren't foreign keys: an id that leaves
+// the catalog is simply ignored when read.
+export const memberAccessories = sqliteTable(
+  "member_accessories",
+  {
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    accessoryId: text("accessory_id").notNull(),
+    awardedAt: text("awarded_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [primaryKey({ columns: [t.memberId, t.accessoryId] })]
+);
+
+// Looks suggested from a member's profile. Nothing goes live until an admin approves one.
+export const lookEdits = sqliteTable(
+  "look_edits",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    char: text("char").notNull(),
+    body: text("body").notNull(),
+    wear: text("wear", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
+    status: text("status", { enum: ["pending", "approved", "discarded"] }).notNull().default("pending"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("look_edits_member").on(t.memberId)]
 );
 
 // Site-wide values stored as JSON under a key: "track" (names and intro copy),

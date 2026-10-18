@@ -9,7 +9,9 @@
 //   year     academic year, 1–5 (the member filters are built from these)
 //   bio      (optional) one or two sentences — profiles say "coming soon" until it's filled
 //   quote    (optional) what their character says on the playground board
-//   avatar   { char, body }: a shape from Character.jsx and a palette key from lib/palette.js
+//   avatar   { char, body, wear }: a shape from Character.jsx, a palette key from lib/palette.js,
+//            and the accessory ids they have on (src/data/looks.ts)
+//   accessories   accessory ids an admin has given them, beyond the starter set
 //   badges   ids of the badges they've earned
 export let members = [];
 

@@ -47,7 +47,7 @@ function MemberCard({ member, onOpen, index }) {
   const rx = useSpring(0, tilt);
   const ry = useSpring(0, tilt);
   const earned = earnedBadges(member);
-  const { char, body } = member.avatar;
+  const { char, body, wear } = member.avatar;
 
   const onMove = (e) => {
     const b = e.currentTarget.getBoundingClientRect();
@@ -88,7 +88,7 @@ function MemberCard({ member, onOpen, index }) {
             }}
             transition={{ type: "spring", stiffness: 400, damping: 22 }}
           >
-            <Character type={char} body={color(body)} blink={index * 0.6} className="sticker" />
+            <Character type={char} body={color(body)} wear={wear} blink={index * 0.6} className="sticker" />
           </motion.div>
           {/* Top-left corner: the leader / co-leader title, then any badges. */}
           {(isLead(member) || earned.length > 0) && (
@@ -323,7 +323,7 @@ function Bio({ member }) {
 
 function MemberModal({ member, onClose }) {
   const earned = earnedBadges(member);
-  const { char, body } = member.avatar;
+  const { char, body, wear } = member.avatar;
   useDialog(onClose);
 
   return (
@@ -367,7 +367,7 @@ function MemberModal({ member, onClose }) {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
           >
-            <Character type={char} body={color(body)} className="sticker" />
+            <Character type={char} body={color(body)} wear={wear} className="sticker" />
           </motion.div>
           <button type="button" className="modal__x" onClick={onClose} aria-label="Close" autoFocus>
             ✕

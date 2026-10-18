@@ -6,6 +6,7 @@ import Footer from "./components/layout/Footer";
 import Splash from "./components/splash/Splash";
 import Hero from "./components/intro/Hero";
 import Members from "./components/members/Members";
+import NextToast from "./components/members/NextToast";
 import Playground from "./components/playground/Playground";
 import Journey from "./components/journey/Journey";
 import Builds from "./components/builds/Builds";
@@ -86,6 +87,7 @@ export default function App() {
               <Playground />
             </main>
             <Footer />
+            <NextToast />
           </>
         )}
       </LayoutGroup>

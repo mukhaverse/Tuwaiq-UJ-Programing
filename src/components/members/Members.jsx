@@ -160,7 +160,7 @@ function NextCard({ onPass }) {
               </Pill>
             )}
             {a.ctaUrl && (
-              <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant={a.passLabel ? "" : "accent"}>
+              <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant={a.passLabel ? "" : "accent"} icon={isMap(a.ctaUrl) && <PinIcon />}>
                 {a.ctaLabel || "Open"}
               </Pill>
             )}
@@ -168,6 +168,17 @@ function NextCard({ onPass }) {
         )}
       </section>
     </motion.li>
+  );
+}
+
+// A map link (Google or Apple Maps) gets a pin on its button.
+const isMap = (url) => /^https:\/\/(maps\.app\.goo\.gl|(www\.)?google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.apple\.com)\b/.test(url);
+
+function PinIcon() {
+  return (
+    <svg className="promo__icon promo__icon--pin" viewBox="0 0 10 12" aria-hidden="true" shapeRendering="crispEdges">
+      <path d="M3 0h4v1h1v1h1v4H8v2H7v2H6v2H4v-2H3V8H2V6H1V2h1V1h1zM4 3v2h2V3z" fill="currentColor" fillRule="evenodd" />
+    </svg>
   );
 }
 

@@ -229,7 +229,8 @@ export const CHARACTERS = Object.keys(shapes);
 // oxlint-disable-next-line react/only-export-components
 export const ANCHORS = {
   blob: { head: [100, 44, 1], face: [100, 92, 1], neck: [100, 158, 1] },
-  star: { head: [100, 50, 0.6], face: [100, 104, 1.2], neck: [100, 160, 0.7] },
+  // One eye: glasses get a single lens, sized to it.
+  star: { head: [100, 50, 0.6], face: [100, 104, 1.1], neck: [100, 160, 0.7], oneEye: true },
   ghost: { head: [100, 50, 1.1], face: [100, 96, 0.92], neck: [100, 160, 1] },
   robot: { head: [100, 60, 1.15], face: [100, 100, 1], neck: [100, 168, 0.85] },
   cat: { head: [100, 62, 0.85], face: [100, 108, 1], neck: [100, 164, 0.95] },
@@ -256,7 +257,7 @@ export default function Character({ type, body = c.butter, blink = 0, wear = [],
       {draw(body, blink)}
       {worn.map(([id, [x, y, s]]) => (
         <g key={id} transform={`translate(${x} ${y}) scale(${s})`}>
-          {drawAccessory(id, { dark: anchors.darkFace })}
+          {drawAccessory(id, { dark: anchors.darkFace, single: anchors.oneEye })}
         </g>
       ))}
     </svg>

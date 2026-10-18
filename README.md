@@ -99,7 +99,7 @@ src/
 
   In the admin form you can set any look yourself, with no badge limits.
 - **Accessories**:
-  - The starter set (cap, beanie, bow, headphones, glasses, sunglasses, scarf, bow tie) unlocks at 2 badges.
+  - The starter set (cap, graduation cap, bow, headphones, glasses, sunglasses, scarf, bow tie) unlocks at 2 badges.
   - Extras, marked ★ (like the Push your limits cap), are given out:
     - one person at a time: "Given to them" on their page in Members
     - everyone at once: **Badges → Accessories → Give to everyone**. Members added later don't get it automatically.

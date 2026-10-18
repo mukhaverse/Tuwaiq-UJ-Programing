@@ -23,7 +23,7 @@ export const COLOURS = [
 // Starter accessories unlock at 2 badges; the rest are awarded by an admin.
 export const ACCESSORIES: { id: string; name: string; slot: Slot; starter: boolean }[] = [
   { id: "cap", name: "Cap", slot: "head", starter: true },
-  { id: "beanie", name: "Beanie", slot: "head", starter: true },
+  { id: "gradcap", name: "Graduation cap", slot: "head", starter: true },
   { id: "bow", name: "Bow", slot: "head", starter: true },
   { id: "headphones", name: "Headphones", slot: "head", starter: true },
   { id: "glasses", name: "Glasses", slot: "face", starter: true },

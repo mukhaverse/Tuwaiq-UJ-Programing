@@ -49,7 +49,7 @@ test("extra needs the award", () => {
 });
 
 test("one per slot", () => {
-  assert.equal(checkLook(base, { ...base.current, wear: ["cap", "beanie"] }), "Only one accessory per spot.");
+  assert.equal(checkLook(base, { ...base.current, wear: ["cap", "gradcap"] }), "Only one accessory per spot.");
 });
 
 test("unknowns", () => {
@@ -77,4 +77,9 @@ test("sameLook ignores wear order", () => {
 test("1 badge: keeps a starter accessory they already wear while changing shape", () => {
   const wearing = { ...base, badges: 1, current: { char: "blob", body: "butter", wear: ["cap"] } };
   assert.equal(checkLook(wearing, { char: "cat", body: "butter", wear: ["cap"] }), null);
+});
+
+test("graduation cap is a starter, the beanie is gone", () => {
+  assert.equal(checkLook(base, { ...base.current, wear: ["gradcap"] }), null);
+  assert.equal(checkLook(base, { ...base.current, wear: ["beanie"] }), "Unknown accessory.");
 });

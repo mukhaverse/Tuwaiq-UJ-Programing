@@ -99,7 +99,7 @@ export function PeopleList({ people, missing }) {
           <ul className="srv-chips">
             {missing.map((m) => (
               <li key={m.id}>
-                <a className="srv-chip" href={`#admin/survey/people/${encodeURIComponent(m.id)}`}>
+                <a className="srv-chip" href={`#/survey/people/${encodeURIComponent(m.id)}`}>
                   <Txt>{m.name}</Txt>
                 </a>
               </li>
@@ -120,7 +120,7 @@ export function Profile({ id, people, missing, stats }) {
     const m = missing.find((x) => x.id === id);
     return (
       <div className="adm-panel adm-panel--form srv-empty">
-        <a className="adm-link adm-small" href="#admin/survey/people">
+        <a className="adm-link adm-small" href="#/survey/people">
           ← All people
         </a>
         <h2>
@@ -144,7 +144,7 @@ export function Profile({ id, people, missing, stats }) {
   return (
     <div className="srv-profile">
       <div className="srv-profile__nav">
-        <a className="adm-link adm-small" href="#admin/survey/people">
+        <a className="adm-link adm-small" href="#/survey/people">
           ← All people
         </a>
         <span className="srv-profile__step">
@@ -181,7 +181,7 @@ export function Profile({ id, people, missing, stats }) {
                 Public profile ↗
               </a>
             ) : (
-              <a className="adm-link" href="#admin/survey/data">
+              <a className="adm-link" href="#/survey/data">
                 Not linked to a roster member: link them
               </a>
             )}

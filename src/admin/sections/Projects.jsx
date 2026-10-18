@@ -272,7 +272,7 @@ function ProjectForm({ project, members, tracks, onSaved, onDeleted }) {
               </Field>
             ) : (
               <p className="adm-error adm-small">
-                No tracks yet. Add them in <a className="adm-link" href="#admin/tracks">Tracks</a> first.
+                No tracks yet. Add them in <a className="adm-link" href="#/tracks">Tracks</a> first.
               </p>
             )
           ) : (

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig } from "motion/react";
 import { ScrollTrigger } from "./lib/gsap";
 import Header from "./components/layout/Header";
@@ -9,10 +9,7 @@ import Members from "./components/members/Members";
 import Playground from "./components/playground/Playground";
 import Journey from "./components/journey/Journey";
 import Builds from "./components/builds/Builds";
-import useAdminRoute from "./admin/useAdminRoute";
-
-// The admin panel (#admin) is its own bundle, downloaded only when opened.
-const AdminApp = lazy(() => import("./admin/AdminApp"));
+// The admin panel is a separate page (see vite.config.js); nothing here links to it.
 
 const BOOTED_KEY = "pt:booted";
 
@@ -31,7 +28,6 @@ function needsSplash() {
 // Page sections, top to bottom. New sections go here.
 export default function App() {
   const [booted, setBooted] = useState(() => !needsSplash());
-  const adminSection = useAdminRoute();
 
   const finishBoot = useCallback(() => {
     try {
@@ -42,15 +38,14 @@ export default function App() {
     setBooted(true);
   }, []);
 
-  // Hold the page at the top while the splash plays. Never in the admin panel:
-  // opening #admin mid-splash would otherwise leave the page unable to scroll.
+  // Hold the page at the top while the splash plays.
   useEffect(() => {
-    if (booted || adminSection !== null) return;
+    if (booted) return;
     window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     document.body.classList.add("is-locked");
     return () => document.body.classList.remove("is-locked");
-  }, [booted, adminSection]);
+  }, [booted]);
 
   // Trigger positions go stale whenever the page height changes without a resize
   // (web fonts landing, the member filter shrinking the grid), so re-measure then.
@@ -74,14 +69,6 @@ export default function App() {
       clearTimeout(timer);
     };
   }, []);
-
-  if (adminSection !== null) {
-    return (
-      <Suspense fallback={null}>
-        <AdminApp section={adminSection} />
-      </Suspense>
-    );
-  }
 
   return (
     <MotionConfig reducedMotion="user">

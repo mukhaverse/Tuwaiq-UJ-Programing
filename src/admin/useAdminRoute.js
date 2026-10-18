@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
-// The admin panel lives at #admin, with one section per hash: #admin/members,
-// #admin/journey… Returns the section, "" for plain #admin, or null on the public site.
+// One admin section per hash: #/members, #/journey, #/survey/people/x…
+// Returns the part after "#/", or "" for none.
 function read() {
   const h = window.location.hash;
-  if (h === "#admin") return "";
-  return h.startsWith("#admin/") ? h.slice("#admin/".length) : null;
+  return h.startsWith("#/") ? h.slice(2) : "";
 }
 
 export default function useAdminRoute() {

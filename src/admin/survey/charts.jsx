@@ -400,7 +400,7 @@ export function ScaleStack({ scales }) {
               </table>
             )}
             {isOpen && (
-              <a className="adm-link adm-small srv-scale__more" href={`#admin/survey/questions/${s.id}`}>
+              <a className="adm-link adm-small srv-scale__more" href={`#/survey/questions/${s.id}`}>
                 Full stats and breakdown for {s.label} →
               </a>
             )}

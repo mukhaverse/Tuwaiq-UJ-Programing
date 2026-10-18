@@ -5,8 +5,13 @@ import type { AppEnv } from "../db/client";
 const media = new Hono<AppEnv>();
 
 media.get("/*", async (c) => {
-  const key = decodeURIComponent(c.req.path.replace(/^\/api\/media\//, ""));
-  const object = await c.env.MEDIA.get(key);
+  let key: string;
+  try {
+    key = decodeURIComponent(c.req.path.replace(/^\/api\/media\//, ""));
+  } catch {
+    return c.json({ error: "Not found" }, 404);
+  }
+  const object = key && key.length <= 300 ? await c.env.MEDIA.get(key) : null;
   if (!object) return c.json({ error: "Not found" }, 404);
   const headers = new Headers();
   object.writeHttpMetadata(headers);

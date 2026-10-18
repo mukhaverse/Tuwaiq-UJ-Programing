@@ -19,6 +19,14 @@ export default function MembersSection({ data, reload }) {
   const [query, setQuery] = useState("");
   const [, run] = useAction();
   const picks = useSurveyColours();
+  const [suggested, setSuggested] = useState({});
+  const loadSuggested = () =>
+    api("/admin/members/bio-suggestions")
+      .then((d) => setSuggested(d.counts))
+      .catch(() => {});
+  useEffect(() => {
+    loadSuggested();
+  }, [data]);
 
   const q = query.trim().toLowerCase();
   const list = q ? data.members.filter((m) => `${m.name} ${m.id} ${m.major}`.toLowerCase().includes(q)) : data.members;
@@ -61,6 +69,7 @@ export default function MembersSection({ data, reload }) {
                 <span lang={/[؀-ۿ]/.test(m.name) ? "ar" : undefined}>{m.name}</span>
                 <span className="adm-muted adm-small">
                   {roleLabel[m.role]} · {m.major} · {yearLabel(m.year)}
+                  {suggested[m.id] ? <strong> · {suggested[m.id]} new bio{suggested[m.id] > 1 ? "s" : ""}</strong> : null}
                 </span>
               </span>
             </>
@@ -77,6 +86,7 @@ export default function MembersSection({ data, reload }) {
             surveyPick={picks.get(selected) ?? null}
             onSaved={(id) => reload().then(() => setSelected(id))}
             onDeleted={() => reload().then(() => setSelected(null))}
+            onHistoryCleared={loadSuggested}
           />
         ) : (
           <p className="adm-muted">Pick a member to edit, or add a new one.</p>
@@ -108,23 +118,36 @@ function useSurveyColours() {
   }, [responses]);
 }
 
-/* Every bio submitted for this member from their profile card, newest first.
-   "Use this" puts one back in the Bio field (then Save changes). */
-function BioHistory({ memberId, current, onUse }) {
+/* Bios suggested for this member from their profile card, newest first. Nothing
+   goes live on its own: "Use this" puts one in the Bio field, then Save changes. */
+function BioHistory({ memberId, current, onUse, onCleared }) {
   const [edits, setEdits] = useState(null);
+  const [busy, run] = useAction();
   useEffect(() => {
     api(`/admin/members/${encodeURIComponent(memberId)}/bio-edits`)
       .then((d) => setEdits(d.edits))
       .catch(() => setEdits([]));
   }, [memberId]);
   if (!edits?.length) return null;
+  const fresh = edits.filter((e) => e.isNew).length;
+  const clear = () =>
+    run(() => api(`/admin/members/${encodeURIComponent(memberId)}/bio-edits`, { method: "DELETE" }), "Bio history cleared").then((ok) => {
+      if (ok === undefined) return;
+      setEdits([]);
+      onCleared();
+    });
   return (
-    <details className="adm-field adm-field--wide adm-bio-log">
-      <summary className="adm-field__label">Bio history · {edits.length} from the site</summary>
+    <details className="adm-field adm-field--wide adm-bio-log" open={fresh > 0}>
+      <summary className="adm-field__label">
+        Bio suggestions · {edits.length} from the site{fresh ? `, ${fresh} new` : ""}
+      </summary>
       <ol>
         {edits.map((e) => (
           <li key={e.id}>
-            <span className="adm-muted adm-small">{new Date(`${e.createdAt.replace(" ", "T")}Z`).toLocaleString()}</span>
+            <span className="adm-muted adm-small">
+              {e.isNew && <strong>New · </strong>}
+              {new Date(`${e.createdAt.replace(" ", "T")}Z`).toLocaleString()}
+            </span>
             <p dir="auto">{e.bio}</p>
             {e.bio === current.trim() ? (
               <span className="adm-muted adm-small">In the Bio field</span>
@@ -134,11 +157,14 @@ function BioHistory({ memberId, current, onUse }) {
           </li>
         ))}
       </ol>
+      <ConfirmButton onConfirm={clear} disabled={busy}>
+        Clear history
+      </ConfirmButton>
     </details>
   );
 }
 
-function MemberForm({ member, badges, surveyPick, onSaved, onDeleted }) {
+function MemberForm({ member, badges, surveyPick, onSaved, onDeleted, onHistoryCleared }) {
   const isNew = !member;
   const [v, set] = useForm({
     id: member?.id ?? "",
@@ -186,7 +212,7 @@ function MemberForm({ member, badges, surveyPick, onSaved, onDeleted }) {
                 Open their profile ↗
               </a>
               {/* Admin only: their answers and stats from the members survey. */}
-              <a className="adm-link" href={`#admin/survey/people/${encodeURIComponent(member.id)}`}>
+              <a className="adm-link" href={`#/survey/people/${encodeURIComponent(member.id)}`}>
                 Survey answers & stats →
               </a>
             </p>
@@ -237,7 +263,7 @@ function MemberForm({ member, badges, surveyPick, onSaved, onDeleted }) {
         <Field label="Bio" hint="One or two sentences. Profiles say “coming soon” until it's filled." wide>
           <textarea id="m-bio" rows={3} value={v.bio} onChange={(e) => set("bio", e.target.value)} maxLength={600} />
         </Field>
-        {!isNew && <BioHistory memberId={member.id} current={v.bio} onUse={(bio) => set("bio", bio)} />}
+        {!isNew && <BioHistory memberId={member.id} current={v.bio} onUse={(bio) => set("bio", bio)} onCleared={onHistoryCleared} />}
         <Field label="Playground quote" hint="What their character says on the playground board." wide>
           <input id="m-quote" value={v.quote} onChange={(e) => set("quote", e.target.value)} maxLength={160} />
         </Field>

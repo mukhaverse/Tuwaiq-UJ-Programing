@@ -43,7 +43,7 @@ export default function Overview({ stats: s, people, missing, members, questions
             {unlinked.length > 0 && (
               <p>
                 <strong>{unlinked.length}</strong> {unlinked.length === 1 ? "response isn't" : "responses aren't"} linked to a roster member.{" "}
-                <a className="adm-link" href="#admin/survey/data">
+                <a className="adm-link" href="#/survey/data">
                   Link them →
                 </a>
               </p>
@@ -54,7 +54,7 @@ export default function Overview({ stats: s, people, missing, members, questions
                 <ul className="srv-chips">
                   {missing.map((m) => (
                     <li key={m.id}>
-                      <a className="srv-chip" href={`#admin/survey/people/${encodeURIComponent(m.id)}`}>
+                      <a className="srv-chip" href={`#/survey/people/${encodeURIComponent(m.id)}`}>
                         <Txt>{m.name}</Txt>
                       </a>
                     </li>

@@ -4,7 +4,7 @@ import Character from "../character/Character";
 import BadgeShelf, { BadgeMark } from "../badges/Badge";
 import Pill from "../ui/Pill";
 import SplitHeading from "../ui/SplitHeading";
-import { members, getMember, setMemberBio, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
+import { members, getMember, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
 import { getBadge } from "../../data/badges";
 import { announcement } from "../../data/announcement";
 import { color } from "../../lib/palette";
@@ -169,16 +169,16 @@ async function sendBio(id, bio) {
     body: JSON.stringify({ bio }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "Couldn't save it. Try again in a moment.");
-  return data.bio;
+  if (!res.ok) throw new Error(data.error || "Couldn't send it. Try again in a moment.");
 }
 
-/* The bio on a profile, which anyone can write or change. It goes live at once;
-   every version is kept in a log in the admin panel (Members → Bio history). */
+/* The bio on a profile. Anyone can suggest a new one; it goes live once an admin
+   approves it in the admin panel (Members → Bio suggestions). */
 function Bio({ member }) {
-  const [bio, setBio] = useState(member.bio ?? "");
+  const bio = member.bio ?? "";
   const [draft, setDraft] = useState(null); // null = not editing
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
 
   const save = async (e) => {
@@ -186,9 +186,8 @@ function Bio({ member }) {
     setSending(true);
     setError(null);
     try {
-      const saved = await sendBio(member.id, draft);
-      setMemberBio(member.id, saved);
-      setBio(saved);
+      await sendBio(member.id, draft);
+      setSent(true);
       setDraft(null);
     } catch (err) {
       setError(err.message);
@@ -201,9 +200,15 @@ function Bio({ member }) {
     return (
       <>
         {bio ? <p className="modal__line">{bio}</p> : <p className="modal__line modal__line--soon">Bio coming soon.</p>}
-        <button type="button" className="modal__edit mono" onClick={() => setDraft(bio)}>
-          {bio ? "Edit bio" : "Is this you? Write your bio"}
-        </button>
+        {sent ? (
+          <p className="modal__edit mono" role="status">
+            Thanks! It shows up here once it's approved.
+          </p>
+        ) : (
+          <button type="button" className="modal__edit mono" onClick={() => setDraft(bio)}>
+            {bio ? "Suggest a new bio" : "Is this you? Write your bio"}
+          </button>
+        )}
       </>
     );
 
@@ -223,7 +228,7 @@ function Bio({ member }) {
       {error && <p className="modal__error">{error}</p>}
       <div className="modal__bio-actions">
         <Pill as="button" type="submit" variant="accent" disabled={sending || !draft.trim()}>
-          {sending ? "Saving…" : "Save bio"}
+          {sending ? "Sending…" : "Send for approval"}
         </Pill>
         <button type="button" className="modal__edit mono" onClick={() => setDraft(null)}>
           Cancel

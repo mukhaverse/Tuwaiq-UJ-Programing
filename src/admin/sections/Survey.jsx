@@ -51,7 +51,7 @@ export default function SurveySection({ data, path = "" }) {
       <div className="adm-panel adm-panel--form srv-empty">
         <h2>No survey responses yet</h2>
         <p className="adm-muted">Import the survey's spreadsheet export (.xlsx or .csv) to see the stats and each member's profile.</p>
-        <a className="adm-btn adm-btn--primary" href="#admin/survey/data">
+        <a className="adm-btn adm-btn--primary" href="#/survey/data">
           Import responses
         </a>
       </div>
@@ -68,7 +68,7 @@ export default function SurveySection({ data, path = "" }) {
       <div className="srv-top">
         <nav className="srv-tabs" aria-label="Survey views">
           {VIEWS.map((v) => (
-            <a key={v.id} href={`#admin/survey${v.id ? `/${v.id}` : ""}`} className="srv-tab" aria-current={v.id === current.id ? "page" : undefined}>
+            <a key={v.id} href={`#/survey${v.id ? `/${v.id}` : ""}`} className="srv-tab" aria-current={v.id === current.id ? "page" : undefined}>
               {v.label}
             </a>
           ))}

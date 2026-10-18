@@ -2,24 +2,23 @@
 // Anyone can submit, no sign-in, but only while an admin has requests open. It
 // lands in the admin panel as "new" and stays off the public site until accepted.
 import { Hono } from "hono";
-import { csrf } from "hono/csrf";
 import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type AppEnv } from "../db/client";
 import { projects } from "../db/schema";
-import { body, kind, optionalText, requestsOpen, requiredText, trackExists } from "./admin/shared";
+import { body, kind, optionalPlainText, plainText, requestsOpen, slug, trackExists } from "./admin/shared";
 
 const requestInput = z
   .object({
-    name: requiredText(80),
+    name: plainText(80),
     // Their track: one from the list, or typed in when it isn't there.
-    trackId: optionalText(60),
-    track: optionalText(60),
-    contact: requiredText(120),
+    trackId: slug.max(60).nullish().or(z.literal("")).transform((v) => v || null),
+    track: optionalPlainText(60),
+    contact: plainText(120),
     kind,
-    title: requiredText(80),
-    details: requiredText(3000),
-    deadline: optionalText(60),
+    title: plainText(80),
+    details: plainText(3000),
+    deadline: optionalPlainText(60),
     // Honeypot: the form hides this field, so only bots fill it in.
     website: z.string().max(200).optional(),
   })
@@ -31,9 +30,7 @@ const INBOX_LIMIT = 100;
 
 const route = new Hono<AppEnv>();
 
-// Turns away form posts from other sites (and their scripts can't send JSON here either: no CORS).
-route.use("*", csrf());
-
+// Cross-site posts are refused and each visitor is rate limited (worker/index.ts).
 route.post("/", body(requestInput), async (c) => {
   const r = c.req.valid("json");
   if (!(await requestsOpen(c.env))) return c.json({ error: "We're not taking requests right now. Check back soon!" }, 403);

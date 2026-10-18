@@ -23,6 +23,24 @@ export const optionalText = (max: number) =>
 
 export const requiredText = (max: number) => z.string().trim().min(1, "Required").max(max);
 
+// Markup, script-ish text, control characters and direction-flipping characters.
+// React escapes everything it shows anyway; this keeps public input to plain sentences.
+// oxlint-disable-next-line no-control-regex
+const NOT_PLAIN = /[<>{}`\\]|&#|javascript:|data:|vbscript:|\bon[a-z]+\s*=|[\u0000-\u0009\u000B-\u001F\u007F\u202A-\u202E\u2066-\u2069]/i;
+
+/** Required text from the public site: plain sentences only. */
+export const plainText = (max: number) => requiredText(max).refine((s) => !NOT_PLAIN.test(s), "Plain text only, no code or special characters");
+
+/** Optional text from the public site: plain sentences only, null when empty. */
+export const optionalPlainText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine((s) => !NOT_PLAIN.test(s), "Plain text only, no code or special characters")
+    .nullish()
+    .transform((v) => v || null);
+
 /** A project's kind, like "survey" or "website", or "" for none. The choices live in src/data/projects.js. */
 export const kind = z
   .string()
@@ -31,7 +49,7 @@ export const kind = z
   .default("");
 
 /** A new order for a list: every id, first to last. */
-export const orderInput = z.object({ ids: z.array(z.string()).min(1) });
+export const orderInput = z.object({ ids: z.array(z.string().max(100)).min(1).max(500) });
 
 /** Validates the request body and answers 400 with the first problem, in words. */
 export const body = <T extends z.ZodType>(schema: T, target: keyof ValidationTargets = "json") =>

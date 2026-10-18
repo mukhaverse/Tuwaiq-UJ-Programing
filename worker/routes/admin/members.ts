@@ -1,7 +1,7 @@
 // Admin: add, edit, reorder and remove members, set which badges they've earned,
 // and read the log of bios submitted from the site.
 import { Hono } from "hono";
-import { and, desc, eq, max, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, max, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type AppEnv } from "../../db/client";
 import { bioEdits, memberBadges, members } from "../../db/schema";
@@ -85,14 +85,36 @@ route.put("/:id", body(updateInput), async (c) => {
   return c.json({ ok: true });
 });
 
-// Every bio submitted for this member from the site, newest first.
+// How many bios were suggested from the site since each member was last saved: { counts: { id: n } }.
+route.get("/bio-suggestions", async (c) => {
+  const rows = await getDb(c.env)
+    .select({ id: bioEdits.memberId, n: count() })
+    .from(bioEdits)
+    .innerJoin(members, eq(members.id, bioEdits.memberId))
+    .where(gt(bioEdits.createdAt, members.updatedAt))
+    .groupBy(bioEdits.memberId);
+  return c.json({ counts: Object.fromEntries(rows.map((r) => [r.id, r.n])) });
+});
+
+// Every bio suggested for this member from the site, newest first (the latest 200).
+// `isNew`: sent after the member was last saved, so nobody has looked at it yet.
 route.get("/:id/bio-edits", async (c) => {
-  const edits = await getDb(c.env)
+  const db = getDb(c.env);
+  const [member] = await db.select({ updatedAt: members.updatedAt }).from(members).where(eq(members.id, c.req.param("id")));
+  if (!member) return c.json({ error: "Member not found" }, 404);
+  const edits = await db
     .select({ id: bioEdits.id, bio: bioEdits.bio, createdAt: bioEdits.createdAt })
     .from(bioEdits)
     .where(eq(bioEdits.memberId, c.req.param("id")))
-    .orderBy(desc(bioEdits.id));
-  return c.json({ edits });
+    .orderBy(desc(bioEdits.id))
+    .limit(200);
+  return c.json({ edits: edits.map((e) => ({ ...e, isNew: e.createdAt > member.updatedAt })) });
+});
+
+// Clears this member's bio history (e.g. after spam). Their current bio stays.
+route.delete("/:id/bio-edits", async (c) => {
+  await getDb(c.env).delete(bioEdits).where(eq(bioEdits.memberId, c.req.param("id")));
+  return c.json({ ok: true });
 });
 
 route.delete("/:id", async (c) => {

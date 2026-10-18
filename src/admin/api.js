@@ -14,7 +14,7 @@ export async function api(path, { method = "GET", body, form } = {}) {
 export async function signInWithGitHub() {
   const { url } = await api("/auth/sign-in/social", {
     method: "POST",
-    body: { provider: "github", callbackURL: "/#admin", errorCallbackURL: "/#admin" },
+    body: { provider: "github", callbackURL: location.pathname, errorCallbackURL: location.pathname },
   });
   window.location.href = url;
 }

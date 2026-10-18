@@ -1,4 +1,4 @@
-// The admin panel (#admin). Loaded only when opened, so visitors never download it.
+// The admin panel: its own page (see main.jsx), so visitors never download it.
 import { useCallback, useEffect, useState } from "react";
 import { api, signInWithGitHub, signOut } from "./api";
 import { Button, ToastProvider } from "./ui";
@@ -12,6 +12,7 @@ import SiteTextSection from "./sections/SiteText";
 import FilesSection from "./sections/Files";
 import SurveySection from "./sections/Survey";
 import TracksSection from "./sections/Tracks";
+import useAdminRoute from "./useAdminRoute";
 import "./admin.css";
 
 // A new section is one entry here plus its file in sections/.
@@ -27,7 +28,8 @@ const SECTIONS = [
   { id: "files", label: "Files", Component: FilesSection },
 ];
 
-export default function AdminApp({ section }) {
+export default function AdminApp() {
+  const section = useAdminRoute();
   const [me, setMe] = useState(undefined); // undefined = loading, null = signed out
   const [error, setError] = useState(null);
 
@@ -75,9 +77,20 @@ function Gate({ title, children }) {
   );
 }
 
+// GitHub sign-in sends people back here with ?error=… when it turns them away.
+function takeSignInError() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("error")) return null;
+  url.searchParams.delete("error");
+  url.searchParams.delete("error_description");
+  window.history.replaceState(null, "", url);
+  return "That GitHub account can't sign in here.";
+}
+const signInError = takeSignInError();
+
 function SignIn({ onSignedIn }) {
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(signInError);
   const go = async () => {
     setBusy(true);
     try {
@@ -138,7 +151,7 @@ function SignOutButton({ onDone }) {
 }
 
 function Shell({ me, section, onSignedOut }) {
-  // "#admin/survey/people/x" → section "survey", path "people/x" (for sections with their own pages).
+  // "#/survey/people/x" → section "survey", path "people/x" (for sections with their own pages).
   const [sectionId, ...rest] = (section ?? "").split("/");
   const current = SECTIONS.find((s) => s.id === sectionId) ?? SECTIONS[0];
   const site = useSiteData();
@@ -147,12 +160,12 @@ function Shell({ me, section, onSignedOut }) {
   return (
     <div className="adm">
       <header className="adm-top">
-        <a className="adm-top__brand mono" href="#admin">
+        <a className="adm-top__brand mono" href="#/">
           PT admin
         </a>
         <nav className="adm-nav" aria-label="Sections">
           {SECTIONS.map((s) => (
-            <a key={s.id} href={`#admin/${s.id}`} className="adm-nav__link" aria-current={s.id === current.id ? "page" : undefined}>
+            <a key={s.id} href={`#/${s.id}`} className="adm-nav__link" aria-current={s.id === current.id ? "page" : undefined}>
               {s.label}
             </a>
           ))}

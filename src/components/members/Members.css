@@ -845,3 +845,134 @@
   color: #ff8a8e;
   font-size: 0.9rem;
 }
+
+/* ---------- Customize (LookEditor.jsx) ---------- */
+.modal__customize {
+  display: inline-block;
+  margin: 18px 0 0;
+}
+
+.look {
+  display: grid;
+  gap: 16px;
+}
+
+.look .modal__label {
+  margin: 0;
+}
+
+.look__section {
+  display: grid;
+  gap: 8px;
+}
+
+.look__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--fg);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.look__lock {
+  width: 0.8rem;
+  height: 1rem;
+  color: var(--orange);
+}
+
+.look__hint {
+  margin: 0;
+  color: var(--orange);
+  font-size: 0.75rem;
+}
+
+.look__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 6px;
+}
+
+.look__tile {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 4px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .look__tile:not(:disabled):hover {
+    border-color: var(--violet);
+  }
+}
+
+.look__tile[aria-pressed="true"] {
+  border-color: var(--cyan);
+  box-shadow: inset 0 0 0 1px var(--cyan);
+  color: var(--fg);
+}
+
+.look__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.look__swatch {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.look__swatch[aria-pressed="true"] {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.look__tile:disabled,
+.look__swatch:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.look__row {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.look__slot {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.look__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.look__actions .modal__edit {
+  margin: 0;
+}
+
+/* Nothing changed yet (or nothing may): the button rests flat and dim. */
+.look__actions .pill:disabled {
+  --lift: 0px;
+  opacity: 0.45;
+  cursor: not-allowed;
+}

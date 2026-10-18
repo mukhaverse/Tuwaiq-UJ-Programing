@@ -8,6 +8,7 @@ import { members, getMember, shortName, nameLang, yearLabel, roleLabel } from ".
 import { getBadge } from "../../data/badges";
 import { announcement } from "../../data/announcement";
 import { color } from "../../lib/palette";
+import LookEditor from "./LookEditor";
 import useMemberRoute from "./useMemberRoute";
 import "./Members.css";
 
@@ -325,6 +326,10 @@ function MemberModal({ member, onClose }) {
   const earned = earnedBadges(member);
   const { char, body, wear } = member.avatar;
   useDialog(onClose);
+  // The look being edited (null when not customizing), which the big character previews.
+  const [draft, setDraft] = useState(null);
+  const [lookSent, setLookSent] = useState(false);
+  const look = draft ?? { char, body, wear };
 
   return (
     <>
@@ -352,14 +357,37 @@ function MemberModal({ member, onClose }) {
             <h3 id="modal-title" className="display" lang={nameLang(member.name)}>
               {member.name}
             </h3>
-            <Bio member={member} />
-            <div className="modal__facts">
-              <p className="modal__slot mono">{member.major}</p>
-              <p className="modal__slot mono">{yearLabel(member.year)}</p>
-            </div>
+            {draft ? (
+              <LookEditor
+                member={member}
+                draft={draft}
+                onDraft={setDraft}
+                onDone={(sent) => {
+                  setDraft(null);
+                  if (sent) setLookSent(true);
+                }}
+              />
+            ) : (
+              <>
+                <Bio member={member} />
+                <div className="modal__facts">
+                  <p className="modal__slot mono">{member.major}</p>
+                  <p className="modal__slot mono">{yearLabel(member.year)}</p>
+                </div>
 
-            <p className="modal__label mono">Badges · {earned.length}</p>
-            <BadgeShelf earned={earned} />
+                <p className="modal__label mono">Badges · {earned.length}</p>
+                <BadgeShelf earned={earned} />
+                {lookSent ? (
+                  <p className="modal__edit modal__customize mono" role="status">
+                    Thanks! It shows up once it's approved.
+                  </p>
+                ) : (
+                  <button type="button" className="modal__edit modal__customize mono" onClick={() => setDraft({ char, body, wear: wear ?? [] })}>
+                    Customize character
+                  </button>
+                )}
+              </>
+            )}
           </motion.div>
           <motion.div
             className="modal__char"
@@ -367,7 +395,7 @@ function MemberModal({ member, onClose }) {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
           >
-            <Character type={char} body={color(body)} wear={wear} className="sticker" />
+            <Character type={look.char} body={color(look.body)} wear={look.wear} className="sticker" />
           </motion.div>
           <button type="button" className="modal__x" onClick={onClose} aria-label="Close" autoFocus>
             ✕

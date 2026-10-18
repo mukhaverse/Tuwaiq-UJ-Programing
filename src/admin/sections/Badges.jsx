@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { BadgeMark } from "../../components/badges/Badge";
+import Character from "../../components/character/Character";
+import { ACCESSORIES } from "../../data/looks";
+import { palette } from "../../lib/palette";
 import { api } from "../api";
 import { Button, ConfirmButton, Field, ItemList } from "../ui";
 import { moved, useAction, useForm } from "../hooks";
@@ -17,49 +20,101 @@ export default function BadgesSection({ data, reload }) {
   };
 
   return (
-    <div className="adm-split">
-      <section className="adm-panel" aria-label="Badges">
-        <div className="adm-panel__head">
-          <p className="adm-muted adm-small">Award badges to people from their page in Members.</p>
-          <Button variant="primary" onClick={() => setSelected("new")}>
-            + Add
-          </Button>
-        </div>
-        <ItemList
-          label="Badges"
-          items={list}
-          selected={selected}
-          onSelect={setSelected}
-          onMove={move}
-          empty="No badges yet."
-          render={(b) => (
-            <>
-              <BadgeMark badge={b} size="2rem" />
-              <span className="adm-list__text">
-                <span>{b.name}</span>
-                <span className="adm-muted adm-small">
-                  {earned(b.id)} earned{b.milestone ? ` · on “${data.milestones.find((m) => m.id === b.milestone)?.title ?? b.milestone}”` : ""}
+    <>
+      <div className="adm-split">
+        <section className="adm-panel" aria-label="Badges">
+          <div className="adm-panel__head">
+            <p className="adm-muted adm-small">Award badges to people from their page in Members.</p>
+            <Button variant="primary" onClick={() => setSelected("new")}>
+              + Add
+            </Button>
+          </div>
+          <ItemList
+            label="Badges"
+            items={list}
+            selected={selected}
+            onSelect={setSelected}
+            onMove={move}
+            empty="No badges yet."
+            render={(b) => (
+              <>
+                <BadgeMark badge={b} size="2rem" />
+                <span className="adm-list__text">
+                  <span>{b.name}</span>
+                  <span className="adm-muted adm-small">
+                    {earned(b.id)} earned{b.milestone ? ` · on “${data.milestones.find((m) => m.id === b.milestone)?.title ?? b.milestone}”` : ""}
+                  </span>
                 </span>
-              </span>
-            </>
-          )}
-        />
-      </section>
-
-      <section className="adm-panel adm-panel--form">
-        {selected ? (
-          <BadgeForm
-            key={selected}
-            badge={selected === "new" ? null : current}
-            milestones={data.milestones}
-            onSaved={(id) => reload().then(() => setSelected(id))}
-            onDeleted={() => reload().then(() => setSelected(null))}
+              </>
+            )}
           />
-        ) : (
-          <p className="adm-muted">Pick a badge to edit, or add a new one.</p>
-        )}
-      </section>
-    </div>
+        </section>
+
+        <section className="adm-panel adm-panel--form">
+          {selected ? (
+            <BadgeForm
+              key={selected}
+              badge={selected === "new" ? null : current}
+              milestones={data.milestones}
+              onSaved={(id) => reload().then(() => setSelected(id))}
+              onDeleted={() => reload().then(() => setSelected(null))}
+            />
+          ) : (
+            <p className="adm-muted">Pick a badge to edit, or add a new one.</p>
+          )}
+        </section>
+      </div>
+      <Extras members={data.members} reload={reload} />
+    </>
+  );
+}
+
+/* Accessories beyond the starter set: give one to every member at once (an event
+   cap, say), or take it back from everyone. One person at a time is on their page
+   in Members. Members added later don't get it automatically. */
+function Extras({ members, reload }) {
+  const [busy, run] = useAction();
+  const extras = ACCESSORIES.filter((a) => !a.starter);
+  const everyone = (a, method) =>
+    run(
+      () => api(`/admin/accessories/${a.id}/everyone`, { method }),
+      method === "POST" ? `${a.name}: given to everyone` : `${a.name}: taken back from everyone`
+    ).then((ok) => ok && reload());
+
+  return (
+    <section className="adm-panel adm-extras" aria-label="Accessories">
+      <h2>Accessories</h2>
+      <p className="adm-muted adm-small">
+        Extras beyond the starter set. Whoever has one can wear it (from 2 badges, like the starters). Taking one back also
+        takes it off anyone wearing it.
+      </p>
+      <ul>
+        {extras.map((a) => {
+          const have = members.filter((m) => m.accessories?.includes(a.id)).length;
+          return (
+            <li key={a.id}>
+              <span className="adm-looks__char">
+                <Character type="blob" body={palette.mint} wear={[a.id]} />
+              </span>
+              <span>
+                <strong>{a.name}</strong>
+                <span className="adm-muted adm-small"> · {have} {have === 1 ? "has" : "have"} it</span>
+              </span>
+              <span className="adm-actions">
+                <Button onClick={() => everyone(a, "POST")} disabled={busy}>
+                  Give to everyone
+                </Button>
+                {have > 0 && (
+                  <ConfirmButton onConfirm={() => everyone(a, "DELETE")} disabled={busy}>
+                    Take back from everyone
+                  </ConfirmButton>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

@@ -613,6 +613,62 @@
   white-space: pre-wrap;
 }
 
+/* Look suggestions: the character now, then the suggested one. */
+.adm-looks > ol {
+  margin-bottom: 12px;
+}
+
+.adm-looks__pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-looks__char {
+  width: 52px;
+}
+
+/* Accessory pickers reuse the chip look on buttons, which bring their own background and font. */
+button.adm-chip {
+  background: none;
+  font-family: inherit;
+}
+
+/* Badges tab: the extras that can be given to everyone. */
+.adm-extras {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.adm-extras h2,
+.adm-extras p {
+  margin: 0;
+}
+
+.adm-extras ul {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adm-extras li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+}
+
+.adm-extras li .adm-looks__char {
+  width: 44px;
+}
+
 .adm-field__hint {
   font-size: 0.75rem;
   color: var(--muted);

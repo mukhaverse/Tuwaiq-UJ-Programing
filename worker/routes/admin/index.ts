@@ -2,6 +2,7 @@
 import { Hono } from "hono";
 import { requireAdmin } from "../../auth";
 import type { AppEnv } from "../../db/client";
+import accessories from "./accessories";
 import badges from "./badges";
 import members from "./members";
 import milestones from "./milestones";
@@ -23,6 +24,7 @@ admin.route("/milestones", milestones);
 admin.route("/projects", projects);
 admin.route("/tracks", tracks);
 admin.route("/badges", badges);
+admin.route("/accessories", accessories);
 admin.route("/settings", settings);
 admin.route("/uploads", uploads);
 admin.route("/survey", survey);

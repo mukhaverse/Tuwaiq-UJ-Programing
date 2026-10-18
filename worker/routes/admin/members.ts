@@ -20,28 +20,30 @@ const fields = {
     char: requiredText(30),
     body: requiredText(30),
     // Admins aren't held to badge limits, only to known accessories, one per spot.
+    // Left out (an admin tab from before accessories existed): what they wear stays as it is.
     wear: z
       .array(z.string())
       .max(3)
-      .default([])
       .superRefine((wear, ctx) => {
         const problem = checkWear(wear);
         if (problem) ctx.addIssue({ code: "custom", message: problem });
-      }),
+      })
+      .optional(),
   }),
   badges: z.array(z.string()).default([]),
-  // Awarded accessories: only the ones beyond the starter set.
+  // Awarded accessories: only the ones beyond the starter set. Left out: unchanged, as above.
   accessories: z
     .array(z.string())
-    .default([])
-    .refine((ids) => ids.every((id) => EXTRAS.has(id)), "Unknown accessory"),
+    .refine((ids) => ids.every((id) => EXTRAS.has(id)), "Unknown accessory")
+    .optional(),
 };
 const EXTRAS = new Set(ACCESSORIES.filter((a) => !a.starter).map((a) => a.id));
 const createInput = z.object({ id: slug, ...fields });
 const updateInput = z.object(fields);
 
 type Fields = z.infer<typeof updateInput>;
-const columns = (m: Fields) => ({
+// `awarded`: the extras they'll have after this save, so one that isn't theirs comes off.
+const columns = (m: Fields, awarded: string[]) => ({
   name: m.name,
   short: m.short,
   role: m.role,
@@ -51,8 +53,7 @@ const columns = (m: Fields) => ({
   quote: m.quote,
   avatarChar: m.avatar.char,
   avatarBody: m.avatar.body,
-  // An extra that isn't (or is no longer) theirs comes off.
-  avatarWear: cleanWear(m.avatar.wear, m.accessories),
+  ...(m.avatar.wear && { avatarWear: cleanWear(m.avatar.wear, awarded) }),
 });
 
 const route = new Hono<AppEnv>();
@@ -63,9 +64,9 @@ route.post("/", body(createInput), async (c) => {
   const [{ last }] = await db.select({ last: max(members.position) }).from(members);
   try {
     await db.batch([
-      db.insert(members).values({ id: m.id, position: (last ?? -1) + 1, ...columns(m) }),
+      db.insert(members).values({ id: m.id, position: (last ?? -1) + 1, ...columns(m, m.accessories ?? []) }),
       ...m.badges.map((badgeId) => db.insert(memberBadges).values({ memberId: m.id, badgeId })),
-      ...m.accessories.map((accessoryId) => db.insert(memberAccessories).values({ memberId: m.id, accessoryId })),
+      ...(m.accessories ?? []).map((accessoryId) => db.insert(memberAccessories).values({ memberId: m.id, accessoryId })),
     ]);
   } catch (err) {
     if (isDuplicate(err)) return c.json({ error: `The id "${m.id}" is already taken` }, 409);
@@ -86,20 +87,21 @@ route.put("/:id", body(updateInput), async (c) => {
   const id = c.req.param("id");
   const m = c.req.valid("json");
   const db = getDb(c.env);
-  const [updated] = await db
-    .update(members)
-    .set({ ...columns(m), updatedAt: sql`(datetime('now'))` })
-    .where(eq(members.id, id))
-    .returning({ id: members.id });
-  if (!updated) return c.json({ error: "Member not found" }, 404);
   // Badges and accessories: replace each whole set, keeping the award date of ones they already had.
   const [had, hadAccessories] = await db.batch([
     db.select().from(memberBadges).where(eq(memberBadges.memberId, id)),
     db.select().from(memberAccessories).where(eq(memberAccessories.memberId, id)),
   ]);
+  const awarded = m.accessories ?? hadAccessories.map((h) => h.accessoryId);
+  const [updated] = await db
+    .update(members)
+    .set({ ...columns(m, awarded), updatedAt: sql`(datetime('now'))` })
+    .where(eq(members.id, id))
+    .returning({ id: members.id });
+  if (!updated) return c.json({ error: "Member not found" }, 404);
   const keep = new Set(m.badges);
   const hadIds = new Set(had.map((h) => h.badgeId));
-  const keepAccessories = new Set(m.accessories);
+  const keepAccessories = new Set(awarded);
   const hadAccessoryIds = new Set(hadAccessories.map((h) => h.accessoryId));
   const writes = [
     ...had.filter((h) => !keep.has(h.badgeId)).map((h) => db.delete(memberBadges).where(and(eq(memberBadges.memberId, id), eq(memberBadges.badgeId, h.badgeId)))),
@@ -107,7 +109,7 @@ route.put("/:id", body(updateInput), async (c) => {
     ...hadAccessories
       .filter((h) => !keepAccessories.has(h.accessoryId))
       .map((h) => db.delete(memberAccessories).where(and(eq(memberAccessories.memberId, id), eq(memberAccessories.accessoryId, h.accessoryId)))),
-    ...m.accessories.filter((a) => !hadAccessoryIds.has(a)).map((accessoryId) => db.insert(memberAccessories).values({ memberId: id, accessoryId })),
+    ...awarded.filter((a) => !hadAccessoryIds.has(a)).map((accessoryId) => db.insert(memberAccessories).values({ memberId: id, accessoryId })),
   ];
   if (writes.length) {
     const [first, ...rest] = writes;

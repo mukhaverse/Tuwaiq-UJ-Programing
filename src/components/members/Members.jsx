@@ -357,7 +357,7 @@ function MemberModal({ member, onClose }) {
             <h3 id="modal-title" className="display" lang={nameLang(member.name)}>
               {member.name}
             </h3>
-            {draft ? (
+            {draft && (
               <LookEditor
                 member={member}
                 draft={draft}
@@ -367,27 +367,27 @@ function MemberModal({ member, onClose }) {
                   if (sent) setLookSent(true);
                 }}
               />
-            ) : (
-              <>
-                <Bio member={member} />
-                <div className="modal__facts">
-                  <p className="modal__slot mono">{member.major}</p>
-                  <p className="modal__slot mono">{yearLabel(member.year)}</p>
-                </div>
-
-                <p className="modal__label mono">Badges · {earned.length}</p>
-                <BadgeShelf earned={earned} />
-                {lookSent ? (
-                  <p className="modal__edit modal__customize mono" role="status">
-                    Thanks! It shows up once it's approved.
-                  </p>
-                ) : (
-                  <button type="button" className="modal__edit modal__customize mono" onClick={() => setDraft({ char, body, wear: wear ?? [] })}>
-                    Customize character
-                  </button>
-                )}
-              </>
             )}
+            {/* Hidden, not removed, while customizing: a half-written bio survives a trip to the editor. */}
+            <div hidden={Boolean(draft)}>
+              <Bio member={member} />
+              <div className="modal__facts">
+                <p className="modal__slot mono">{member.major}</p>
+                <p className="modal__slot mono">{yearLabel(member.year)}</p>
+              </div>
+
+              <p className="modal__label mono">Badges · {earned.length}</p>
+              <BadgeShelf earned={earned} />
+              {lookSent ? (
+                <p className="modal__edit modal__customize mono" role="status">
+                  Thanks! It shows up once it's approved.
+                </p>
+              ) : (
+                <button type="button" className="modal__edit modal__customize mono" onClick={() => setDraft({ char, body, wear: wear ?? [] })}>
+                  Customize character
+                </button>
+              )}
+            </div>
           </motion.div>
           <motion.div
             className="modal__char"

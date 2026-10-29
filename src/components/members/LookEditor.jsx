@@ -58,8 +58,10 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
 
   // Starters always show (locked below 2 badges); extras only for whoever was given them.
   const shown = ACCESSORIES.filter((a) => a.starter || member.accessories?.includes(a.id) || current.wear.includes(a.id));
-  const unlocked = (id) => canAll && (current.wear.includes(id) || canWear({ badges, accessories: member.accessories ?? [] }, id));
   const slotOf = Object.fromEntries(ACCESSORIES.map((a) => [a.id, a.slot]));
+  // One badge opens the hats; two open every spot.
+  const slotOpen = (slot) => canAll || (canShape && slot === "head");
+  const unlocked = (id) => slotOpen(slotOf[id]) && (current.wear.includes(id) || canWear({ badges, accessories: member.accessories ?? [] }, id));
   const put = (slot, id) => onDraft({ ...draft, wear: [...draft.wear.filter((w) => slotOf[w] !== slot), ...(id ? [id] : [])] });
 
   const send = async () => {
@@ -78,7 +80,7 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
     <div className="look">
       <p className="modal__label mono">Customize</p>
 
-      <Section title="Shape" locked={!canShape} hint={!canShape && "Earn 1 badge to change your shape"}>
+      <Section title="Shape" locked={!canShape} hint={!canShape && "Earn 1 badge to change your shape and wear a hat"}>
         <div className="look__tiles">
           {shapesFor(member.role).map((s) => (
             <button
@@ -116,7 +118,7 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
         </div>
       </Section>
 
-      <Section title="Accessories" locked={!canAll}>
+      <Section title="Accessories" locked={!canAll} hint={canShape && !canAll && "Hats are yours! The rest unlock at 2 badges"}>
         {SLOTS.map(([slot, label]) => {
           const items = shown.filter((a) => a.slot === slot);
           const on = draft.wear.find((w) => slotOf[w] === slot) ?? null;
@@ -124,7 +126,7 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
             <div key={slot} className="look__row">
               <span className="look__slot mono">{label}</span>
               <div className="look__tiles">
-                <button type="button" className="look__tile look__tile--none mono" aria-pressed={!on} disabled={!canAll} onClick={() => put(slot, null)}>
+                <button type="button" className="look__tile look__tile--none mono" aria-pressed={!on} disabled={!slotOpen(slot)} onClick={() => put(slot, null)}>
                   None
                 </button>
                 {items.map((a) => (

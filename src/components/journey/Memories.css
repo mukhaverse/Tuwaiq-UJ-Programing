@@ -24,8 +24,7 @@
   overflow: hidden;
   background:
     radial-gradient(ellipse at 50% 45%, rgb(79 41 183 / 0.28), transparent 60%),
-    radial-gradient(ellipse at center, rgb(8 6 15 / 0.7), rgb(4 3 8 / 0.96) 75%);
-  backdrop-filter: blur(10px) saturate(0.6);
+    radial-gradient(ellipse at center, rgb(8 6 15 / 0.84), rgb(4 3 8 / 0.97) 75%);
 }
 
 /* Film grain, flickering. */
@@ -65,16 +64,6 @@
   background: radial-gradient(ellipse at center, rgb(244 166 100 / 0.75), rgb(242 82 79 / 0.35) 40%, rgb(163 128 255 / 0.2) 65%, transparent 72%);
   filter: blur(40px);
   mix-blend-mode: screen;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.mem__flash {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  background: radial-gradient(circle at 50% 50%, #fff, #fffaf0 60%, #ffe9c9);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -313,7 +302,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: sepia(1) brightness(0.32) contrast(0.6) saturate(0.3) blur(4px);
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -441,6 +429,15 @@
 
   .mem__stamp .badge-mark {
     width: 2.6rem !important;
+  }
+}
+
+/* Phones: no grain, dust or light leak, which repaint the whole screen (LITE in Memories.jsx). */
+@media (max-width: 700px), (pointer: coarse) {
+  .mem__grain,
+  .mem__dust,
+  .mem__leak {
+    display: none;
   }
 }
 

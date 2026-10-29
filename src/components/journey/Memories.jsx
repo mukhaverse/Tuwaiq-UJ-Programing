@@ -7,9 +7,8 @@ import "./Memories.css";
 
 const ARABIC = /[؀-ۿ]/;
 
-// Undeveloped film: dark, brown, soft. Developing tweens every function to its clear value.
-const FOGGY = "sepia(1) brightness(0.32) contrast(0.6) saturate(0.3) blur(4px)";
-const CLEAR = "sepia(0) brightness(1) contrast(1) saturate(1) blur(0px)";
+// Phones and small screens skip the extras that repaint the whole screen (dust, light leak, grain).
+const LITE = "(max-width: 700px), (pointer: coarse)";
 
 // Where the photo at `pos` in the pile sits: the top one nearly straight, the rest
 // fanned out a little. Deterministic, so the pile looks the same every time.
@@ -34,7 +33,7 @@ const DUST = Array.from({ length: 18 }, (_, i) => ({
 }));
 
 /**
- * A milestone's memories: the camera flashes, Polaroids shoot out of its node and
+ * A milestone's memories: Polaroids shoot out of its node and
  * pile up, and each one develops as it reaches the top. Drag (or the arrows) to
  * flip through them. `mode` is "photos", or "blank" for a milestone without photos.
  */
@@ -72,7 +71,8 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
     setOrder(next);
   };
 
-  /* A photo comes up: the fog clears, it gets a shake, the caption writes itself in. */
+  /* A photo comes up: the fog clears, it gets a shake, the caption writes itself in.
+     Only the fog's opacity changes (never a filter on the photo), so it stays smooth on phones. */
   const develop = (idx, instant = reduced()) => {
     if (developed.current.has(idx)) return;
     developed.current.add(idx);
@@ -83,7 +83,6 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
     // Blank film never clears all the way.
     const fogTo = blank ? 0.55 : 0;
     if (instant) {
-      gsap.set(q(".mem-photo__img"), { filter: CLEAR });
       gsap.set(q(".mem-photo__fog"), { autoAlpha: fogTo });
       gsap.set(q(".mem-pol__caption"), { clipPath: "inset(0% 0% 0% 0%)" });
       return;
@@ -91,7 +90,6 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
     gsap
       .timeline()
       .to(q(".mem-photo__fog"), { autoAlpha: fogTo, duration: 2.4, ease: "power1.inOut" }, 0)
-      .fromTo(q(".mem-photo__img"), { filter: FOGGY }, { filter: CLEAR, duration: 2.6, ease: "power2.inOut" }, 0)
       // Everyone shakes a Polaroid.
       .to(q(".mem-pol"), { keyframes: { rotation: [0, -4, 3.5, -2.5, 2, -1, 0] }, duration: 0.7, ease: "none" }, 0.05)
       .fromTo(q(".mem-pol__caption"), { clipPath: hidden }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.1, ease: "power1.inOut" }, 1.1);
@@ -115,8 +113,10 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
         return;
       }
 
+      const lite = window.matchMedia(LITE).matches;
+
       // Dust drifting in the light, all the while it's open.
-      gsap.utils.toArray(".mem__dust", root.current).forEach((d) => {
+      if (!lite) gsap.utils.toArray(".mem__dust", root.current).forEach((d) => {
         gsap.to(d, {
           x: "random(-40, 40)",
           y: "random(-90, -30)",
@@ -137,12 +137,15 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
       const gap = Math.min(0.14, 1.3 / n);
       const tl = gsap.timeline();
       intro.current = tl;
-      // Flash, and a film light leak sweeping across.
-      tl.fromTo(".mem__flash", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05, ease: "power1.in" }, 0)
-        .to(".mem__flash", { autoAlpha: 0, duration: 0.8, ease: "power2.out" }, 0.07)
-        .fromTo(".mem__backdrop", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, 0)
-        .fromTo(".mem__leak", { xPercent: -80, autoAlpha: 0 }, { xPercent: 70, autoAlpha: 0.85, duration: 1.5, ease: "power2.inOut" }, 0.05)
-        .to(".mem__leak", { autoAlpha: 0, duration: 0.7 }, 1.1);
+      // The table dims in, and a film light leak sweeps across.
+      tl.fromTo(".mem__backdrop", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, 0);
+      if (!lite) {
+        tl.fromTo(".mem__leak", { xPercent: -80, autoAlpha: 0 }, { xPercent: 70, autoAlpha: 0.85, duration: 1.5, ease: "power2.inOut" }, 0.05).to(
+          ".mem__leak",
+          { autoAlpha: 0, duration: 0.7 },
+          1.1
+        );
+      }
 
       // Out of the node, bottom of the pile first, so the top photo lands last.
       [...initial].reverse().forEach((idx, k) => {
@@ -513,8 +516,6 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
           )}
         </footer>
       )}
-
-      <span className="mem__flash" aria-hidden="true" />
     </div>,
     document.body
   );

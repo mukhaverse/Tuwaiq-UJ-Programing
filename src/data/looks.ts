@@ -20,7 +20,7 @@ export const COLOURS = [
   "grape", "bubblegum", "cobalt", "aqua", "leaf", "lemon", "cherry", "snow",
 ];
 
-// Starter accessories unlock at 2 badges; the rest are awarded by an admin.
+// Starter accessories unlock at 2 badges, hats (the head spot) already at 1; the rest are awarded by an admin.
 export const ACCESSORIES: { id: string; name: string; slot: Slot; starter: boolean }[] = [
   { id: "gradcap", name: "Graduation cap", slot: "head", starter: true },
   { id: "headphones", name: "Headphones", slot: "head", starter: true },
@@ -50,7 +50,7 @@ export const ACCESSORIES: { id: string; name: string; slot: Slot; starter: boole
 
 const byId = new Map(ACCESSORIES.map((a) => [a.id, a]));
 
-/** How much a member with this many badges may change: nothing, the shape, or everything. */
+/** How much a member with this many badges may change: nothing, the shape and hat, or everything. */
 export function allowedChanges(badges: number): "none" | "shape" | "all" {
   if (badges >= 2) return "all";
   return badges === 1 ? "shape" : "none";
@@ -61,12 +61,15 @@ export function shapesFor(role: Role): string[] {
   return SHAPES.filter((s) => !RESERVED[s] || RESERVED[s] === role);
 }
 
-/** Whether a member may put this accessory on: starters need 2 badges, extras need the award. */
+/** Whether a member may put this accessory on: starter hats need 1 badge, other starters 2, extras the award. */
 export function canWear(m: { badges: number; accessories: string[] }, id: string): boolean {
   const a = byId.get(id);
   if (!a) return false;
-  return a.starter ? m.badges >= 2 : m.accessories.includes(id);
+  return a.starter ? m.badges >= (a.slot === "head" ? 1 : 2) : m.accessories.includes(id);
 }
+
+// Everything worn but the hat.
+const notHats = (wear: string[]) => wear.filter((id) => byId.get(id)?.slot !== "head");
 
 /** Only what any look must satisfy: known accessories, one per spot. Admins are held to just this. */
 export function checkWear(wear: string[]): string | null {
@@ -110,8 +113,8 @@ export function checkLook(m: LookMember, look: Look): string | null {
 
   const tier = allowedChanges(m.badges);
   if (tier === "none") return "Earn a badge first to change this character.";
-  const sameRest = sameLook({ ...look, char: m.current.char }, m.current);
-  if (tier === "shape" && !sameRest) return "With one badge, only the shape can change.";
+  const sameRest = sameLook({ ...look, char: m.current.char, wear: notHats(look.wear) }, { ...m.current, wear: notHats(m.current.wear) });
+  if (tier === "shape" && !sameRest) return "With one badge, only the shape and hat can change.";
   // Accessories they already had on stay allowed; anything new must be theirs to wear.
   if (look.wear.some((id) => !m.current.wear.includes(id) && !canWear(m, id))) return "They don't have that accessory yet.";
   return null;

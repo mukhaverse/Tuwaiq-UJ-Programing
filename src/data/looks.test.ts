@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { palette } from "../lib/palette.js";
-import { COLOURS, allowedChanges, checkLook, cleanWear, sameLook, shapesFor, type LookMember } from "./looks.ts";
+import { COLOURS, allowedChanges, canWear, checkLook, cleanWear, sameLook, shapesFor, type LookMember } from "./looks.ts";
 
 const base: LookMember = { role: "member", badges: 2, accessories: [], current: { char: "blob", body: "butter", wear: [] } };
 
@@ -32,11 +32,30 @@ test("1 badge: shape ok", () => {
 });
 
 test("1 badge: colour refused", () => {
-  assert.equal(checkLook({ ...base, badges: 1 }, { char: "cat", body: "mint", wear: [] }), "With one badge, only the shape can change.");
+  assert.equal(checkLook({ ...base, badges: 1 }, { char: "cat", body: "mint", wear: [] }), "With one badge, only the shape and hat can change.");
 });
 
-test("1 badge: accessory refused", () => {
-  assert.equal(checkLook({ ...base, badges: 1 }, { char: "blob", body: "butter", wear: ["crown"] }), "With one badge, only the shape can change.");
+test("1 badge: a hat ok, with a new shape too", () => {
+  assert.equal(checkLook({ ...base, badges: 1 }, { char: "blob", body: "butter", wear: ["crown"] }), null);
+  assert.equal(checkLook({ ...base, badges: 1 }, { char: "cat", body: "butter", wear: ["gradcap"] }), null);
+});
+
+test("1 badge: other accessories refused", () => {
+  assert.equal(checkLook({ ...base, badges: 1 }, { char: "blob", body: "butter", wear: ["shades"] }), "With one badge, only the shape and hat can change.");
+  assert.equal(checkLook({ ...base, badges: 1 }, { char: "blob", body: "butter", wear: ["crown", "smile"] }), "With one badge, only the shape and hat can change.");
+});
+
+test("1 badge: swapping a hat keeps what else they already wear", () => {
+  const wearing = { ...base, badges: 1, current: { char: "blob", body: "butter", wear: ["crown", "shades"] } };
+  assert.equal(checkLook(wearing, { char: "blob", body: "butter", wear: ["sprout", "shades"] }), null);
+  assert.equal(checkLook(wearing, { char: "blob", body: "butter", wear: ["sprout"] }), "With one badge, only the shape and hat can change.");
+});
+
+test("hats unlock at 1 badge, the rest at 2", () => {
+  assert.ok(canWear({ badges: 1, accessories: [] }, "crown"));
+  assert.ok(!canWear({ badges: 0, accessories: [] }, "crown"));
+  assert.ok(!canWear({ badges: 1, accessories: [] }, "glasses"));
+  assert.ok(canWear({ badges: 2, accessories: [] }, "glasses"));
 });
 
 test("2 badges: starter ok", () => {

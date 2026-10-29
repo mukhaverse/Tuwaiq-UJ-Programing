@@ -92,7 +92,7 @@ src/
 - **Up next tile**: hide it when there's nothing to announce.
 - **Character looks**: anyone can press **Customize character** on a profile and suggest a new look for that member, within what their badges unlock:
   - 0 badges: nothing (the editor shows what's locked)
-  - 1 badge: the shape
+  - 1 badge: the shape and a hat (the head spot)
   - 2+ badges: shape, colour and accessories
 
   Sun and planet stay reserved for the leader and co-leader. Nothing goes live until an admin approves it under **Look suggestions** on the member's page in Members ("· 1 new look" in the list). Approving checks the badges again.
@@ -100,7 +100,7 @@ src/
   In the admin form you can set any look yourself, with no badge limits.
 - **Accessories**:
   - Five spots, one piece each: head, face, mustache, mouth and beside. A mouth replaces the character's own.
-  - The starter set unlocks at 2 badges: graduation cap, headphones, crown, flower crown, sprout, glasses, sunglasses, hero mask, mustache, and the mouths (big smile, toothy grin, tongue out, pout, fang, two fangs, buck teeth, cat smile, smirk, gasp, wobbly).
+  - The starter set: the hats (graduation cap, headphones, crown, flower crown, sprout) unlock at 1 badge, the rest at 2: glasses, sunglasses, hero mask, mustache, and the mouths (big smile, toothy grin, tongue out, pout, fang, two fangs, buck teeth, cat smile, smirk, gasp, wobbly).
   - Extras, marked ★ (like the Push your limits cap, or the Baby stroller: a stroller at their feet with a sleeping baby in their colour), are given out:
     - one person at a time: "Given to them" on their page in Members
     - everyone at once: **Badges → Accessories → Give to everyone**. Members added later don't get it automatically.

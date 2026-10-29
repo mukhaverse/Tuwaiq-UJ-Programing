@@ -238,7 +238,7 @@ export const CHARACTERS = Object.keys(shapes);
    head on the crown, face midway between the eyes (scale = eye gap ÷ 48),
    mustache just above the mouth, mouth on the shape's own mouth (scale ≈ its width ÷ 36).
    ears adds [w, h]: the half-width to the sides of the head and the rise to its top,
-   in this 200×200 space.
+   in this 200×200 space. beside, when set, moves and shrinks what stands beside the shape.
    Check changes on the dev sheet at /#dev/looks. */
 // oxlint-disable-next-line react/only-export-components
 export const ANCHORS = {
@@ -258,8 +258,16 @@ export const ANCHORS = {
   cloud: { head: [100, 62, 0.9], face: [100, 110, 0.83], mustache: [100, 127, 0.75], mouth: [100, 135, 0.7], ears: [100, 112, 0.85, 79, 68] },
   sun: { head: [100, 56, 0.95], face: [100, 96, 0.83], mustache: [100, 116, 0.8], mouth: [100, 127, 0.85], ears: [100, 100, 0.85, 56, 58] },
   planet: { head: [100, 50, 1], face: [100, 78, 0.83], mustache: [100, 93, 0.6], mouth: [100, 100, 0.6], ears: [100, 90, 0.85, 58, 54] },
-  // The face is on the stem, under the cap: ear items hug the stem.
-  mushroom: { head: [100, 40, 0.9], face: [100, 140, 0.58], mustache: [100, 157, 0.55], mouth: [100, 163, 0.5], ears: [100, 140, 0.6, 42, 26] },
+  // The face is on the stem, under the cap: ear items hug the stem, and what's beside it
+  // shrinks into the bottom corner (198, 195) so it clears the face.
+  mushroom: {
+    head: [100, 40, 0.9],
+    face: [100, 140, 0.58],
+    mustache: [100, 157, 0.55],
+    mouth: [100, 163, 0.5],
+    ears: [100, 140, 0.6, 42, 26],
+    beside: [55, 55, 0.72],
+  },
   flower: { head: [100, 60, 0.85], face: [100, 96, 0.67], mustache: [100, 113, 0.6], mouth: [100, 120, 0.65], ears: [100, 96, 0.75, 46, 44] },
   // The monitor's face is a dark screen, so face items and mouths get light lines.
   monitor: {
@@ -275,40 +283,27 @@ export const ANCHORS = {
 /* Where accessory `id` goes on a shape with these anchors: [x, y, scale] and what to draw there.
    A hat too tall for the room above the head is shrunk to fit inside the frame. */
 // oxlint-disable-next-line react/only-export-components
-export function placeAccessory(id, slot, anchors) {
-  const [x, y, s, w, h] = anchors[ANCHOR_OF[id] ?? slot];
+export function placeAccessory(id, slot, anchors, body) {
+  // Beside items are drawn in the character's own space already, unless the shape shrinks them.
+  const [x, y, s, w, h] = slot === "beside" ? (anchors.beside ?? [0, 0, 1]) : anchors[ANCHOR_OF[id] ?? slot];
   const fit = w ? { w: w / s, h: h / s } : {};
   const scale = RISE[id] ? Math.min(s, (y - 2) / RISE[id]) : s;
-  return [x, y, scale, drawAccessory(id, { dark: anchors.darkFace, single: anchors.oneEye, ...fit })];
+  return [x, y, scale, drawAccessory(id, { dark: anchors.darkFace, single: anchors.oneEye, body, ...fit })];
 }
 
-// Drawn bottom to top, so a mustache covers the top of a mouth and glasses sit under a cap.
-const SLOT_ORDER = ["mouth", "mustache", "face", "head"];
+// Drawn bottom to top, so a mustache covers the top of a mouth, glasses sit under a cap,
+// and what's beside the character stands in front of it.
+const SLOT_ORDER = ["mouth", "mustache", "face", "head", "beside"];
 const slotOf = Object.fromEntries(ACCESSORIES.map((a) => [a.id, a.slot]));
-
-// The little sibling: a baby version of the character (same shape and colour) with a
-// pacifier and a curl of hair, standing in front of it at its feet.
-function Baby({ draw, anchors, body, blink }) {
-  // The pacifier and curl are drawn a size up, so they still read at this scale.
-  const at = ([x, y, s]) => `translate(${x} ${y}) scale(${s * 1.3})`;
-  return (
-    <g transform="translate(122 122) scale(0.4)">
-      {draw(body, blink + 0.4, { mouth: true })}
-      <g transform={at(anchors.head)}>{drawAccessory("curl")}</g>
-      <g transform={at(anchors.mouth)}>{drawAccessory("pacifier")}</g>
-    </g>
-  );
-}
 
 export default function Character({ type, body = c.butter, blink = 0, wear = [], className = "", style }) {
   const draw = shapes[type] ?? shapes.blob;
   const anchors = ANCHORS[type] ?? ANCHORS.blob;
   // Unknown ids (an accessory since removed, say) are skipped.
-  const worn = SLOT_ORDER.flatMap((slot) => wear.filter((id) => slotOf[id] === slot).map((id) => [id, placeAccessory(id, slot, anchors)]));
+  const worn = SLOT_ORDER.flatMap((slot) => wear.filter((id) => slotOf[id] === slot).map((id) => [id, placeAccessory(id, slot, anchors, body)]));
   // Something on top of the head (headphones sit on its sides instead).
   const hat = worn.some(([id]) => slotOf[id] === "head" && !ANCHOR_OF[id]);
   const mouth = worn.some(([id]) => slotOf[id] === "mouth");
-  const baby = wear.includes("baby");
   return (
     <svg viewBox="0 0 200 200" className={`char ${className}`} style={style} aria-hidden="true">
       {draw(body, blink, { hat, mouth })}
@@ -317,7 +312,6 @@ export default function Character({ type, body = c.butter, blink = 0, wear = [],
           {drawing}
         </g>
       ))}
-      {baby && <Baby draw={draw} anchors={anchors} body={body} blink={blink} />}
     </svg>
   );
 }

@@ -11,6 +11,7 @@ const CAP_BLACK = "#2b2838";
      face  (0, 0) is midway between the eyes, which are 48 apart
      mustache  (0, 0) is just above the mouth, where a mustache's top edge goes
      mouth     (0, 0) is the middle of the mouth; a worn mouth replaces the shape's own
+     beside    drawn straight in the character's 200×200 space, at its feet, in front of it
    Headphones sit on a finer point of the head instead (ANCHOR_OF):
      ears  (0, 0) is midway between the sides of the head; w is the half-width
            to each side and h the rise to the top of the head */
@@ -72,6 +73,37 @@ function Cap({ fill, mark }) {
       {mark}
       <circle cx="0" cy="-44" r="5" fill={fill} {...S} strokeWidth={3.5} />
     </>
+  );
+}
+
+// The stroller's parts, at its smaller size: thinner lines than the characters'.
+const LINE = { ...S, strokeWidth: 3.5 };
+const FINE = { ...S, strokeWidth: 2.2 };
+const BASKET = "M114 146H190C190 166 178 177 152 177C126 177 114 166 114 146Z";
+
+// oxlint-disable-next-line react/only-export-components
+function Wheel({ x, y, r }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <circle r={r} fill={c.cream} {...LINE} />
+      <path d={`M${-r * 0.7} 0H${r * 0.7}M${-r * 0.35} ${-r * 0.6}L${r * 0.35} ${r * 0.6}M${r * 0.35} ${-r * 0.6}L${-r * 0.35} ${r * 0.6}`} {...FINE} strokeWidth={1.6} />
+      <circle r={r * 0.25} fill={c.aqua} {...FINE} strokeWidth={1.6} />
+    </g>
+  );
+}
+
+// A newborn asleep: closed eyes, blush, a tiny mouth and one curl of hair.
+// oxlint-disable-next-line react/only-export-components
+function SleepingFace({ x, y, r, body }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <circle r={r} fill={body} {...LINE} />
+      <path d={`M${-r * 0.55} ${-r * 0.05}q${r * 0.22} ${r * 0.22} ${r * 0.44} 0M${r * 0.11} ${-r * 0.05}q${r * 0.22} ${r * 0.22} ${r * 0.44} 0`} fill="none" {...FINE} />
+      <ellipse cx={-r * 0.58} cy={r * 0.36} rx={r * 0.2} ry={r * 0.12} fill={c.tomato} opacity=".45" />
+      <ellipse cx={r * 0.58} cy={r * 0.36} rx={r * 0.2} ry={r * 0.12} fill={c.tomato} opacity=".45" />
+      <circle cx="0" cy={r * 0.42} r={r * 0.1} fill={INK} />
+      <path d={`M-1 ${-r}c-2 -6 5 -9 7 -5c1.5 3 -2 5 -4 3`} fill="none" {...FINE} />
+    </g>
   );
 }
 
@@ -252,21 +284,34 @@ const drawings = {
   ),
   wobbly: ({ frame }) => <path d="M-18 2L-12 -3L-6 2L0 -3L6 2L12 -3L18 2" fill="none" {...S} stroke={frame} />,
 
-  // Parts of the little sibling (see Character), not worn on their own: a pacifier on the
-  // mouth anchor and a curl of hair on the head anchor.
-  pacifier: () => (
+  // A stroller at the character's feet, drawn in its own 200×200 space (see beside, above),
+  // with a sleeping baby whose face is the character's colour, and z z z drifting up.
+  stroller: ({ body }) => (
     <>
-      <circle cx="0" cy="12" r="8" fill="none" stroke={INK} strokeWidth="4.5" />
-      <ellipse cx="0" cy="0" rx="17" ry="9" fill={c.lemon} {...S} />
-      <circle cx="0" cy="0" r="4" fill="#fff" {...S} strokeWidth={3} />
+      <path d="M134 172L128 184M174 172L176 182M134 172Q154 182 174 172" fill="none" {...LINE} strokeWidth={3} />
+      <Wheel x={127} y={186} r={9} />
+      <Wheel x={176} y={184} r={11} />
+      <path d="M186 150Q194 140 190 124" fill="none" {...LINE} strokeWidth={4} />
+      <path d="M185 122L196 124" fill="none" stroke={INK} strokeWidth="7" strokeLinecap="round" />
+      <SleepingFace x={139} y={137} r={12} body={body} />
+      <circle cx="124" cy="135" r="4" fill={body} {...FINE} />
+      <path d={BASKET} fill={c.lemon} {...LINE} />
+      <path d="M115.5 157H188.5" stroke={c.cream} strokeWidth="5" />
+      <path d={BASKET} fill="none" {...LINE} />
+      <path d="M118 145Q128 141 138 145Q148 141 158 145L157 153Q147 157 137 153Q127 157 118 153Z" fill={c.cream} {...FINE} />
+      <circle cx="128" cy="149" r="1.4" fill={c.aqua} />
+      <circle cx="146" cy="149" r="1.4" fill={c.aqua} />
+      <path d="M152 146A36 36 0 0 1 188 110L188 146Z" fill={c.aqua} {...LINE} />
+      <path d="M188 146L156.8 128M188 146L170 114.8" fill="none" {...FINE} />
+      <path d="M152 146A36 36 0 0 1 188 110" fill="none" {...LINE} strokeWidth={5} />
+      <path d="M166 100h6l-6 6h6M175 88h8l-8 8h8M185 74h10l-10 10h10" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </>
   ),
-  curl: () => <path d="M-2 6C-6 -10 10 -20 16 -10C20 -3 12 3 7 -2" fill="none" {...S} strokeWidth={6} />,
 };
 
 /** The accessory's drawing, or null for an id nobody has drawn. `dark`: it sits on a dark
     face, so frames go light. `single`: the face has one eye, so glasses get one lens.
-    `w`, `h`: an ear-side item's reach (see the top of this file). */
-export function drawAccessory(id, { dark = false, single = false, w = 60, h = 60 } = {}) {
-  return drawings[id]?.({ frame: dark ? c.cream : INK, single, w, h }) ?? null;
+    `w`, `h`: an ear-side item's reach (see the top of this file). `body`: the character's colour. */
+export function drawAccessory(id, { dark = false, single = false, w = 60, h = 60, body = c.butter } = {}) {
+  return drawings[id]?.({ frame: dark ? c.cream : INK, single, w, h, body }) ?? null;
 }

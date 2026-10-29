@@ -93,7 +93,7 @@ test("cap, bow, scarf and bow tie are gone", () => {
   for (const id of ["cap", "bow", "scarf", "bowtie"]) assert.equal(checkLook(base, { ...base.current, wear: [id] }), "Unknown accessory.");
 });
 
-test("the little sibling is only for whoever it's given to", () => {
-  assert.equal(checkLook(base, { ...base.current, wear: ["baby"] }), "They don't have that accessory yet.");
-  assert.equal(checkLook({ ...base, accessories: ["baby"] }, { ...base.current, wear: ["crown", "baby"] }), null);
+test("the baby stroller is only for whoever it's given to", () => {
+  assert.equal(checkLook(base, { ...base.current, wear: ["stroller"] }), "They don't have that accessory yet.");
+  assert.equal(checkLook({ ...base, accessories: ["stroller"] }, { ...base.current, wear: ["crown", "stroller"] }), null);
 });

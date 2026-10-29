@@ -44,8 +44,8 @@ export const ACCESSORIES: { id: string; name: string; slot: Slot; starter: boole
   { id: "gasp", name: "Gasp", slot: "mouth", starter: true },
   { id: "wobbly", name: "Wobbly", slot: "mouth", starter: true },
   { id: "push-cap", name: "Push your limits cap", slot: "head", starter: false },
-  // A baby version of their own character at their feet, for a member with a new sibling.
-  { id: "baby", name: "Little sibling", slot: "beside", starter: false },
+  // For a member with a new baby sibling: a stroller at their feet, the baby asleep inside.
+  { id: "stroller", name: "Baby stroller", slot: "beside", starter: false },
 ];
 
 const byId = new Map(ACCESSORIES.map((a) => [a.id, a]));

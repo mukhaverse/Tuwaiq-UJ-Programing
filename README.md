@@ -101,7 +101,7 @@ src/
 - **Accessories**:
   - Five spots, one piece each: head, face, mustache, mouth and beside. A mouth replaces the character's own.
   - The starter set unlocks at 2 badges: graduation cap, headphones, crown, flower crown, sprout, glasses, sunglasses, hero mask, mustache, and the mouths (big smile, toothy grin, tongue out, pout, fang, two fangs, buck teeth, cat smile, smirk, gasp, wobbly).
-  - Extras, marked ★ (like the Push your limits cap, or the Little sibling: a baby version of their character at their feet), are given out:
+  - Extras, marked ★ (like the Push your limits cap, or the Baby stroller: a stroller at their feet with a sleeping baby in their colour), are given out:
     - one person at a time: "Given to them" on their page in Members
     - everyone at once: **Badges → Accessories → Give to everyone**. Members added later don't get it automatically.
   - Taking an extra back also takes it off anyone wearing it.

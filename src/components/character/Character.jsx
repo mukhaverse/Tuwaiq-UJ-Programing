@@ -286,6 +286,20 @@ export function placeAccessory(id, slot, anchors) {
 const SLOT_ORDER = ["mouth", "mustache", "face", "head"];
 const slotOf = Object.fromEntries(ACCESSORIES.map((a) => [a.id, a.slot]));
 
+// The little sibling: a baby version of the character (same shape and colour) with a
+// pacifier and a curl of hair, standing in front of it at its feet.
+function Baby({ draw, anchors, body, blink }) {
+  // The pacifier and curl are drawn a size up, so they still read at this scale.
+  const at = ([x, y, s]) => `translate(${x} ${y}) scale(${s * 1.3})`;
+  return (
+    <g transform="translate(122 122) scale(0.4)">
+      {draw(body, blink + 0.4, { mouth: true })}
+      <g transform={at(anchors.head)}>{drawAccessory("curl")}</g>
+      <g transform={at(anchors.mouth)}>{drawAccessory("pacifier")}</g>
+    </g>
+  );
+}
+
 export default function Character({ type, body = c.butter, blink = 0, wear = [], className = "", style }) {
   const draw = shapes[type] ?? shapes.blob;
   const anchors = ANCHORS[type] ?? ANCHORS.blob;
@@ -294,6 +308,7 @@ export default function Character({ type, body = c.butter, blink = 0, wear = [],
   // Something on top of the head (headphones sit on its sides instead).
   const hat = worn.some(([id]) => slotOf[id] === "head" && !ANCHOR_OF[id]);
   const mouth = worn.some(([id]) => slotOf[id] === "mouth");
+  const baby = wear.includes("baby");
   return (
     <svg viewBox="0 0 200 200" className={`char ${className}`} style={style} aria-hidden="true">
       {draw(body, blink, { hat, mouth })}
@@ -302,6 +317,7 @@ export default function Character({ type, body = c.butter, blink = 0, wear = [],
           {drawing}
         </g>
       ))}
+      {baby && <Baby draw={draw} anchors={anchors} body={body} blink={blink} />}
     </svg>
   );
 }

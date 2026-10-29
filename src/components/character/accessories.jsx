@@ -251,6 +251,17 @@ const drawings = {
     </>
   ),
   wobbly: ({ frame }) => <path d="M-18 2L-12 -3L-6 2L0 -3L6 2L12 -3L18 2" fill="none" {...S} stroke={frame} />,
+
+  // Parts of the little sibling (see Character), not worn on their own: a pacifier on the
+  // mouth anchor and a curl of hair on the head anchor.
+  pacifier: () => (
+    <>
+      <circle cx="0" cy="12" r="8" fill="none" stroke={INK} strokeWidth="4.5" />
+      <ellipse cx="0" cy="0" rx="17" ry="9" fill={c.lemon} {...S} />
+      <circle cx="0" cy="0" r="4" fill="#fff" {...S} strokeWidth={3} />
+    </>
+  ),
+  curl: () => <path d="M-2 6C-6 -10 10 -20 16 -10C20 -3 12 3 7 -2" fill="none" {...S} strokeWidth={6} />,
 };
 
 /** The accessory's drawing, or null for an id nobody has drawn. `dark`: it sits on a dark

@@ -21,6 +21,7 @@ const SLOTS = [
   ["face", "Face"],
   ["mustache", "Mustache"],
   ["mouth", "Mouth"],
+  ["beside", "Beside"],
 ];
 const SLOT_OF = Object.fromEntries(ACCESSORIES.map((a) => [a.id, a.slot]));
 const EXTRAS = ACCESSORIES.filter((a) => !a.starter);

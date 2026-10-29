@@ -4,7 +4,7 @@
 // Plain TypeScript with no imports, so Node can run its tests directly.
 
 export type Role = "leader" | "co-leader" | "member";
-export type Slot = "head" | "face" | "mustache" | "mouth";
+export type Slot = "head" | "face" | "mustache" | "mouth" | "beside";
 export type Look = { char: string; body: string; wear: string[] };
 export type LookMember = { role: Role; badges: number; accessories: string[]; current: Look };
 
@@ -44,6 +44,8 @@ export const ACCESSORIES: { id: string; name: string; slot: Slot; starter: boole
   { id: "gasp", name: "Gasp", slot: "mouth", starter: true },
   { id: "wobbly", name: "Wobbly", slot: "mouth", starter: true },
   { id: "push-cap", name: "Push your limits cap", slot: "head", starter: false },
+  // A baby version of their own character at their feet, for a member with a new sibling.
+  { id: "baby", name: "Little sibling", slot: "beside", starter: false },
 ];
 
 const byId = new Map(ACCESSORIES.map((a) => [a.id, a]));

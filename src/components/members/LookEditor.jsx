@@ -9,6 +9,7 @@ const SLOTS = [
   ["face", "Face"],
   ["mustache", "Mustache"],
   ["mouth", "Mouth"],
+  ["beside", "Beside"],
 ];
 
 async function sendLook(id, look) {

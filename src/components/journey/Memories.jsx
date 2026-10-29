@@ -370,10 +370,14 @@ export default function Memories({ milestone, photos, mode, caption, note, badge
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // The page underneath stops its blinking and spinning (see Memories.css), so it isn't
+    // repainted behind the photos on every frame.
+    document.documentElement.classList.add("mem-open");
     closeBtn.current?.focus({ preventScroll: true });
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      document.documentElement.classList.remove("mem-open");
     };
   }, []);
 

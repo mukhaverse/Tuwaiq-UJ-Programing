@@ -1,4 +1,14 @@
 /* A milestone's memories: a pile of Polaroids over a dimmed, grainy page. */
+
+/* While it's open, everything on the page behind it holds still: dozens of
+   blinking eyes and spinning rays would otherwise be repainted under the photos
+   on every frame, which is what made it lag on phones. */
+.mem-open #root *,
+.mem-open #root *::before,
+.mem-open #root *::after {
+  animation-play-state: paused !important;
+}
+
 .mem {
   /* Polaroid widths, one per film format; capped by the screen's height too. */
   --sq-w: min(330px, 74vw, 46vh);

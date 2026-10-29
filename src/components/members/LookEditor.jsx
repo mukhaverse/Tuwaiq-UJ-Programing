@@ -118,13 +118,17 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
         </div>
       </Section>
 
-      <Section title="Accessories" locked={!canAll} hint={canShape && !canAll && "Hats are yours! The rest unlock at 2 badges"}>
+      {/* No padlock on the heading: each locked row gets its own, so open hats don't look shut. */}
+      <Section title="Accessories" hint={canShape && !canAll && "Hats are yours! The rest unlock at 2 badges"}>
         {SLOTS.map(([slot, label]) => {
           const items = shown.filter((a) => a.slot === slot);
           const on = draft.wear.find((w) => slotOf[w] === slot) ?? null;
           return (
             <div key={slot} className="look__row">
-              <span className="look__slot mono">{label}</span>
+              <span className="look__slot mono">
+                {!slotOpen(slot) && <Lock />}
+                {label}
+              </span>
               <div className="look__tiles">
                 <button type="button" className="look__tile look__tile--none mono" aria-pressed={!on} disabled={!slotOpen(slot)} onClick={() => put(slot, null)}>
                   None

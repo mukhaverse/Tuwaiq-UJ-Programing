@@ -984,14 +984,23 @@ p.modal__customize {
 
 .look__row {
   display: grid;
-  grid-template-columns: 3rem 1fr;
+  grid-template-columns: 4.75rem 1fr;
   align-items: center;
   gap: 8px;
 }
 
 .look__slot {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--muted);
   font-size: 0.72rem;
+}
+
+.look__slot .look__lock {
+  flex: none;
+  width: 0.6rem;
+  height: 0.75rem;
 }
 
 .look__actions {

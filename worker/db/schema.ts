@@ -104,7 +104,8 @@ export const memberAccessories = sqliteTable(
   (t) => [primaryKey({ columns: [t.memberId, t.accessoryId] })]
 );
 
-// Looks suggested from a member's profile. Nothing goes live until an admin approves one.
+// Looks chosen from a member's profile. Those go live straight away (logged as approved);
+// "pending" ones are from before that, waiting for an admin.
 export const lookEdits = sqliteTable(
   "look_edits",
   {

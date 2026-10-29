@@ -4,7 +4,7 @@ import Character from "../character/Character";
 import BadgeShelf, { BadgeMark } from "../badges/Badge";
 import Pill from "../ui/Pill";
 import SplitHeading from "../ui/SplitHeading";
-import { members, getMember, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
+import { members, getMember, updateMember, shortName, nameLang, yearLabel, roleLabel } from "../../data/members";
 import { getBadge } from "../../data/badges";
 import { announcement } from "../../data/announcement";
 import { color } from "../../lib/palette";
@@ -280,8 +280,8 @@ async function sendBio(id, bio) {
   if (!res.ok) throw new Error(data.error || "Couldn't send it. Try again in a moment.");
 }
 
-/* The bio on a profile. Anyone can suggest a new one; it goes live once an admin
-   approves it in the admin panel (Members → Bio suggestions). */
+/* The bio on a profile. Anyone can write a new one, and it's live straight away;
+   admins can see every one sent in the admin panel (Members → Bio suggestions). */
 function Bio({ member }) {
   const bio = member.bio ?? "";
   const [draft, setDraft] = useState(null); // null = not editing
@@ -295,6 +295,8 @@ function Bio({ member }) {
     setError(null);
     try {
       await sendBio(member.id, draft);
+      // Live already: show it here without a reload.
+      updateMember(member.id, { bio: draft.trim() });
       setSent(true);
       setDraft(null);
     } catch (err) {
@@ -310,7 +312,7 @@ function Bio({ member }) {
         {bio ? <p className="modal__line">{bio}</p> : <p className="modal__line modal__line--soon">Bio coming soon.</p>}
         {sent ? (
           <p className="modal__edit mono" role="status">
-            Thanks! It shows up here once it's approved.
+            Saved! Your bio is live.
           </p>
         ) : (
           <button type="button" className="modal__edit mono" onClick={() => setDraft(bio)}>
@@ -336,7 +338,7 @@ function Bio({ member }) {
       {error && <p className="modal__error">{error}</p>}
       <div className="modal__bio-actions">
         <Pill as="button" type="submit" variant="accent" disabled={sending || !draft.trim()}>
-          {sending ? "Sending…" : "Send for approval"}
+          {sending ? "Saving…" : "Save"}
         </Pill>
         <button type="button" className="modal__edit mono" onClick={() => setDraft(null)}>
           Cancel
@@ -387,6 +389,8 @@ function MemberModal({ member, onClose }) {
                 draft={draft}
                 onDraft={setDraft}
                 onDone={(sent) => {
+                  // Live already: the profile, and the card once it closes, wear it without a reload.
+                  if (sent) updateMember(member.id, { avatar: { ...member.avatar, ...draft } });
                   setDraft(null);
                   if (sent) setLookSent(true);
                 }}
@@ -404,7 +408,7 @@ function MemberModal({ member, onClose }) {
               <BadgeShelf earned={earned} />
               {lookSent ? (
                 <p className="modal__edit modal__customize mono" role="status">
-                  Thanks! It shows up once it's approved.
+                  Saved! Your new look is live.
                 </p>
               ) : (
                 <Pill

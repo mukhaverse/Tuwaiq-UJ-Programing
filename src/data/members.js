@@ -46,3 +46,9 @@ export function nameLang(name) {
 export function getMember(id) {
   return members.find((m) => m.id === id);
 }
+
+/** Applies a change saved from the site (a bio, a look), so it shows without a reload. */
+export function updateMember(id, changes) {
+  const m = getMember(id);
+  if (m) Object.assign(m, changes);
+}

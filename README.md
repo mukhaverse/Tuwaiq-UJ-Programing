@@ -90,12 +90,12 @@ src/
 - **Badges** are created in Badges and awarded to people from their page in Members. A badge linked to a milestone also shows on that journey step.
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
 - **Up next tile**: hide it when there's nothing to announce.
-- **Character looks**: anyone can press **Customize character** on a profile and suggest a new look for that member, within what their badges unlock:
+- **Character looks**: anyone can press **Customize character** on a profile and change that member's look, within what their badges unlock:
   - 0 badges: nothing (the editor shows what's locked)
   - 1 badge: the shape and a hat (the head spot)
   - 2+ badges: shape, colour and accessories
 
-  Sun and planet stay reserved for the leader and co-leader. Nothing goes live until an admin approves it under **Look suggestions** on the member's page in Members ("· 1 new look" in the list). Approving checks the badges again.
+  Sun and planet stay reserved for the leader and co-leader. It's live at once, with no review. Every look saved is kept under **Look suggestions** on the member's page in Members; to undo one, set the look back in the admin form and **Save changes**.
 
   In the admin form you can set any look yourself, with no badge limits.
 - **Accessories**:

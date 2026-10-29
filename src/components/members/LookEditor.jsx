@@ -46,7 +46,7 @@ function Section({ title, locked, hint, children }) {
 
 /* The Customize panel on a profile. What can change depends on the member's
    badges (src/data/looks.ts); locked parts show in full, padlocked, so people
-   see what's next. The look goes to an admin for approval, it isn't live straight away. */
+   see what's next. Saving puts the look live straight away. */
 export default function LookEditor({ member, draft, onDraft, onDone }) {
   const badges = member.badges.length;
   const tier = allowedChanges(badges);
@@ -153,7 +153,7 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
       {error && <p className="modal__error">{error}</p>}
       <div className="look__actions">
         <Pill as="button" type="button" variant="accent" onClick={send} disabled={sending || !canShape || sameLook(draft, current)}>
-          {sending ? "Sending…" : "Send for approval"}
+          {sending ? "Saving…" : "Save look"}
         </Pill>
         <button type="button" className="modal__edit mono" onClick={() => onDone(false)}>
           Cancel

@@ -1,7 +1,7 @@
-// POST /api/looks/<member id>: anyone can suggest a new look (shape, colour,
-// accessories) for a member from their profile. No sign-in, so nothing goes live:
-// the suggestion waits in look_edits until an admin approves it (Members → Look
-// suggestions). It's checked against the member's badges now, and again on approval.
+// POST /api/looks/<member id>: anyone can change a member's look (shape, colour,
+// accessories) from their profile, within what their badges unlock. It goes live
+// straight away, and is also kept in look_edits (as approved), the log admins see
+// under Members → Look suggestions.
 // Rate limited per visitor in worker/index.ts, and capped per member and per day here.
 import { Hono } from "hono";
 import { and, count, eq, gt, sql } from "drizzle-orm";
@@ -46,7 +46,13 @@ route.post("/:id", body(lookInput), async (c) => {
     return c.json({ error: "We've had a lot of suggestions today. Try again tomorrow." }, 429);
   }
 
-  await db.insert(lookEdits).values({ memberId: id.data, char: look.char, body: look.body, wear: look.wear });
+  await db.batch([
+    db.insert(lookEdits).values({ memberId: id.data, char: look.char, body: look.body, wear: look.wear, status: "approved" }),
+    db
+      .update(members)
+      .set({ avatarChar: look.char, avatarBody: look.body, avatarWear: look.wear, updatedAt: sql`(datetime('now'))` })
+      .where(eq(members.id, id.data)),
+  ]);
   return c.json({ ok: true }, 201);
 });
 

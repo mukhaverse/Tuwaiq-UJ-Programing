@@ -45,8 +45,8 @@ function Section({ title, locked, hint, children }) {
 }
 
 /* The Customize panel on a profile. What can change depends on the member's
-   badges (src/data/looks.ts); locked parts stay visible so people see what's
-   next. The look goes to an admin for approval, it isn't live straight away. */
+   badges (src/data/looks.ts); locked parts show in full, padlocked, so people
+   see what's next. The look goes to an admin for approval, it isn't live straight away. */
 export default function LookEditor({ member, draft, onDraft, onDone }) {
   const badges = member.badges.length;
   const tier = allowedChanges(badges);
@@ -92,6 +92,7 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
               aria-label={s}
             >
               <Character type={s} body={color(draft.body)} />
+              {!canShape && <Lock />}
             </button>
           ))}
         </div>
@@ -138,6 +139,7 @@ export default function LookEditor({ member, draft, onDraft, onDone }) {
                     aria-label={a.name}
                   >
                     <Character type={draft.char} body={color(draft.body)} wear={[a.id]} />
+                    {!unlocked(a.id) && <Lock />}
                   </button>
                 ))}
               </div>

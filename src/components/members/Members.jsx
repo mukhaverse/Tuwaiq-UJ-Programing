@@ -195,6 +195,15 @@ function PhotoIcon() {
   );
 }
 
+// The Customize character button's paintbrush.
+function BrushIcon() {
+  return (
+    <svg className="promo__icon modal__customize-icon" viewBox="0 0 12 12" aria-hidden="true" shapeRendering="crispEdges">
+      <path d="M10 0h2v2h-1v1h-1v1H9v1H8v1H6V4h1V3h1V2h1V1h1zM2 7h3v3H4v1H3v1H0v-1h1V8h1z" fill="currentColor" />
+    </svg>
+  );
+}
+
 function BarcodeIcon() {
   return (
     <svg className="promo__icon" viewBox="0 0 16 12" aria-hidden="true" shapeRendering="crispEdges">
@@ -395,9 +404,16 @@ function MemberModal({ member, onClose }) {
                   Thanks! It shows up once it's approved.
                 </p>
               ) : (
-                <button type="button" className="modal__edit modal__customize mono" onClick={() => setDraft({ char, body, wear: wear ?? [] })}>
+                <Pill
+                  as="button"
+                  type="button"
+                  variant="accent"
+                  className="modal__customize"
+                  icon={<BrushIcon />}
+                  onClick={() => setDraft({ char, body, wear: wear ?? [] })}
+                >
                   Customize character
-                </button>
+                </Pill>
               )}
             </div>
           </motion.div>

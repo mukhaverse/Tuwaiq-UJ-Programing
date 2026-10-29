@@ -848,8 +848,17 @@
 
 /* ---------- Customize (LookEditor.jsx) ---------- */
 .modal__customize {
-  display: inline-block;
   margin: 18px 0 0;
+}
+
+.modal__customize-icon {
+  width: 1em;
+  height: 1em;
+}
+
+/* "Thanks! It shows up once it's approved." in the button's place. */
+p.modal__customize {
+  display: inline-block;
 }
 
 .look {
@@ -940,10 +949,28 @@
   outline-offset: 2px;
 }
 
+/* Locked: shown in full, so people see what they're working toward, with a
+   padlock in the corner. Only "None" (nothing to look at) still dims. */
 .look__tile:disabled,
 .look__swatch:disabled {
   cursor: not-allowed;
+}
+
+.look__tile--none:disabled {
   opacity: 0.35;
+}
+
+.look__tile {
+  position: relative;
+}
+
+.look__tile .look__lock {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 0.6rem;
+  height: 0.75rem;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.8));
 }
 
 .look__row {

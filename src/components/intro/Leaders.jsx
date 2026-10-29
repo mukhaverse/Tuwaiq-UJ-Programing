@@ -8,8 +8,10 @@ const S = { stroke: INK, strokeWidth: 4.5, strokeLinejoin: "round", strokeLineca
 const line = { fill: "none", strokeLinecap: "round" };
 // Dark brown marble (Emperador): a polished stone, warm but not wood.
 const MARBLE = "#5a4038";
+// Dark blue marble (lapis), for the President's knight.
+const LAPIS = "#22408f";
 
-/* A marble chess set: the Knight in white, the Rook in dark brown. Same outline
+/* A marble chess set: the Knight in dark blue, the Rook in dark brown. Same outline
    as the members' characters, but on a taller 200 × 240 grid so the pieces stand
    tall and slim. They aren't in CHARACTERS, so the admin can't hand one to a
    member. Each base ends 19 units above the bottom (8%), which Hero.css nudges
@@ -21,24 +23,24 @@ const pieces = {
         {/* Horse head in profile, facing left, on a long neck */}
         <path
           d="M62 198Q56 150 80 104Q64 98 48 108Q32 106 34 90L70 46Q80 30 96 28L104 8L118 30Q152 46 152 96Q154 150 140 198Z"
-          fill={c.cream}
+          fill={LAPIS}
           {...S}
         />
         {/* Mane */}
         <path d="M120 32Q152 54 150 118" {...line} stroke={INK} strokeWidth="9" />
-        <path d="M120 32Q152 54 150 118" {...line} stroke="#4a4166" strokeWidth="4" />
+        <path d="M120 32Q152 54 150 118" {...line} stroke={c.sky} strokeWidth="4" />
         {/* Marble veins */}
-        <path d="M84 186Q92 162 102 150M110 70Q120 80 128 78" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
+        <path d="M84 186Q92 162 102 150M110 70Q120 80 128 78" {...line} stroke={c.cream} strokeOpacity=".22" strokeWidth="2" />
         {/* Mini crown, tilted to sit on the forehead in front of the ear */}
         <g transform="translate(86 34) rotate(-34) scale(1.6)">
           <path d="M-14 0L-16 -16L-7 -8L0 -20L7 -8L16 -16L14 0Z" fill={c.butter} {...S} strokeWidth="2.8" />
           <circle cx="0" cy="-6" r="2.6" fill={c.tomato} />
         </g>
-        <circle cx="46" cy="94" r="3.5" fill={INK} />
-        <path d="M40 104Q52 110 62 104" fill="none" {...S} strokeWidth="3.5" />
+        <circle cx="46" cy="94" r="3.5" fill={c.cream} />
+        <path d="M40 104Q52 110 62 104" fill="none" {...S} stroke={c.cream} strokeWidth="3.5" />
         <Eye cx={90} cy={62} r={13} />
-        <rect x="42" y="195" width="116" height="26" rx="10" fill={c.cream} {...S} />
-        <path d="M60 213Q76 203 92 209" {...line} stroke={INK} strokeOpacity=".2" strokeWidth="2" />
+        <rect x="42" y="195" width="116" height="26" rx="10" fill={LAPIS} {...S} />
+        <path d="M60 213Q76 203 92 209" {...line} stroke={c.cream} strokeOpacity=".22" strokeWidth="2" />
       </>
     ),
   },

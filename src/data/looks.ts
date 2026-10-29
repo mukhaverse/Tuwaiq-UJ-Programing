@@ -4,7 +4,7 @@
 // Plain TypeScript with no imports, so Node can run its tests directly.
 
 export type Role = "leader" | "co-leader" | "member";
-export type Slot = "head" | "face" | "neck";
+export type Slot = "head" | "face" | "mustache" | "mouth";
 export type Look = { char: string; body: string; wear: string[] };
 export type LookMember = { role: Role; badges: number; accessories: string[]; current: Look };
 
@@ -22,14 +22,27 @@ export const COLOURS = [
 
 // Starter accessories unlock at 2 badges; the rest are awarded by an admin.
 export const ACCESSORIES: { id: string; name: string; slot: Slot; starter: boolean }[] = [
-  { id: "cap", name: "Cap", slot: "head", starter: true },
   { id: "gradcap", name: "Graduation cap", slot: "head", starter: true },
-  { id: "bow", name: "Bow", slot: "head", starter: true },
   { id: "headphones", name: "Headphones", slot: "head", starter: true },
+  { id: "crown", name: "Crown", slot: "head", starter: true },
+  { id: "flowercrown", name: "Flower crown", slot: "head", starter: true },
+  { id: "sprout", name: "Sprout", slot: "head", starter: true },
   { id: "glasses", name: "Glasses", slot: "face", starter: true },
   { id: "shades", name: "Sunglasses", slot: "face", starter: true },
-  { id: "scarf", name: "Scarf", slot: "neck", starter: true },
-  { id: "bowtie", name: "Bow tie", slot: "neck", starter: true },
+  { id: "mask", name: "Hero mask", slot: "face", starter: true },
+  { id: "mustache", name: "Mustache", slot: "mustache", starter: true },
+  // Mouths replace the shape's own mouth.
+  { id: "smile", name: "Big smile", slot: "mouth", starter: true },
+  { id: "grin", name: "Toothy grin", slot: "mouth", starter: true },
+  { id: "tongue", name: "Tongue out", slot: "mouth", starter: true },
+  { id: "pout", name: "Pout", slot: "mouth", starter: true },
+  { id: "fang", name: "Fang", slot: "mouth", starter: true },
+  { id: "fangs", name: "Two fangs", slot: "mouth", starter: true },
+  { id: "bucktooth", name: "Buck teeth", slot: "mouth", starter: true },
+  { id: "catmouth", name: "Cat smile", slot: "mouth", starter: true },
+  { id: "smirk", name: "Smirk", slot: "mouth", starter: true },
+  { id: "gasp", name: "Gasp", slot: "mouth", starter: true },
+  { id: "wobbly", name: "Wobbly", slot: "mouth", starter: true },
   { id: "push-cap", name: "Push your limits cap", slot: "head", starter: false },
 ];
 

@@ -7,7 +7,8 @@ import { color, palette } from "../../lib/palette";
 const SLOTS = [
   ["head", "Head"],
   ["face", "Face"],
-  ["neck", "Neck"],
+  ["mustache", "Mustache"],
+  ["mouth", "Mouth"],
 ];
 
 async function sendLook(id, look) {

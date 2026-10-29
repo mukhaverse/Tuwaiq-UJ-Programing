@@ -19,7 +19,8 @@ const COLOUR_ROWS = [
 const SLOTS = [
   ["head", "Head"],
   ["face", "Face"],
-  ["neck", "Neck"],
+  ["mustache", "Mustache"],
+  ["mouth", "Mouth"],
 ];
 const SLOT_OF = Object.fromEntries(ACCESSORIES.map((a) => [a.id, a.slot]));
 const EXTRAS = ACCESSORIES.filter((a) => !a.starter);

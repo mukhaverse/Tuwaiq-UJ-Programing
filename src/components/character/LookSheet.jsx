@@ -35,7 +35,7 @@ export default function LookSheet() {
           <tr>
             <th style={cell}>combo · junk</th>
             <td>
-              <Character type="blob" body={palette.butter} wear={["cap", "shades", "scarf"]} style={{ width: 92, height: 92 }} />
+              <Character type="blob" body={palette.butter} wear={["gradcap", "shades", "mustache", "grin"]} style={{ width: 92, height: 92 }} />
             </td>
             <td>
               <Character type="blob" body={palette.butter} wear={["jetpack"]} style={{ width: 92, height: 92 }} />

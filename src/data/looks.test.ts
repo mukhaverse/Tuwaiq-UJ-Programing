@@ -36,11 +36,11 @@ test("1 badge: colour refused", () => {
 });
 
 test("1 badge: accessory refused", () => {
-  assert.equal(checkLook({ ...base, badges: 1 }, { char: "blob", body: "butter", wear: ["cap"] }), "With one badge, only the shape can change.");
+  assert.equal(checkLook({ ...base, badges: 1 }, { char: "blob", body: "butter", wear: ["crown"] }), "With one badge, only the shape can change.");
 });
 
 test("2 badges: starter ok", () => {
-  assert.equal(checkLook(base, { char: "cat", body: "mint", wear: ["cap", "shades"] }), null);
+  assert.equal(checkLook(base, { char: "cat", body: "mint", wear: ["crown", "shades"] }), null);
 });
 
 test("extra needs the award", () => {
@@ -49,7 +49,7 @@ test("extra needs the award", () => {
 });
 
 test("one per slot", () => {
-  assert.equal(checkLook(base, { ...base.current, wear: ["cap", "gradcap"] }), "Only one accessory per spot.");
+  assert.equal(checkLook(base, { ...base.current, wear: ["crown", "gradcap"] }), "Only one accessory per spot.");
 });
 
 test("unknowns", () => {
@@ -63,7 +63,7 @@ test("reserved shape for a member", () => {
 });
 
 test("cleanWear drops unknown, unawarded and duplicates", () => {
-  assert.deepEqual(cleanWear(["jetpack", "push-cap", "cap", "beanie"], []), ["cap"]);
+  assert.deepEqual(cleanWear(["jetpack", "push-cap", "crown", "gradcap", "cap"], []), ["crown"]);
 });
 
 test("cleanWear tolerates junk", () => {
@@ -71,15 +71,24 @@ test("cleanWear tolerates junk", () => {
 });
 
 test("sameLook ignores wear order", () => {
-  assert.ok(sameLook({ char: "a", body: "b", wear: ["cap", "shades"] }, { char: "a", body: "b", wear: ["shades", "cap"] }));
+  assert.ok(sameLook({ char: "a", body: "b", wear: ["crown", "shades"] }, { char: "a", body: "b", wear: ["shades", "crown"] }));
 });
 
 test("1 badge: keeps a starter accessory they already wear while changing shape", () => {
-  const wearing = { ...base, badges: 1, current: { char: "blob", body: "butter", wear: ["cap"] } };
-  assert.equal(checkLook(wearing, { char: "cat", body: "butter", wear: ["cap"] }), null);
+  const wearing = { ...base, badges: 1, current: { char: "blob", body: "butter", wear: ["crown"] } };
+  assert.equal(checkLook(wearing, { char: "cat", body: "butter", wear: ["crown"] }), null);
 });
 
 test("graduation cap is a starter, the beanie is gone", () => {
   assert.equal(checkLook(base, { ...base.current, wear: ["gradcap"] }), null);
   assert.equal(checkLook(base, { ...base.current, wear: ["beanie"] }), "Unknown accessory.");
+});
+
+test("mustache and mouth have their own spots", () => {
+  assert.equal(checkLook(base, { ...base.current, wear: ["glasses", "mustache", "fangs"] }), null);
+  assert.equal(checkLook(base, { ...base.current, wear: ["smile", "fang"] }), "Only one accessory per spot.");
+});
+
+test("cap, bow, scarf and bow tie are gone", () => {
+  for (const id of ["cap", "bow", "scarf", "bowtie"]) assert.equal(checkLook(base, { ...base.current, wear: [id] }), "Unknown accessory.");
 });

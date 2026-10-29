@@ -99,7 +99,8 @@ src/
 
   In the admin form you can set any look yourself, with no badge limits.
 - **Accessories**:
-  - The starter set (cap, graduation cap, bow, headphones, glasses, sunglasses, scarf, bow tie) unlocks at 2 badges.
+  - Four spots, one piece each: head, face, mustache and mouth. A mouth replaces the character's own.
+  - The starter set unlocks at 2 badges: graduation cap, headphones, crown, flower crown, sprout, glasses, sunglasses, hero mask, mustache, and the mouths (big smile, toothy grin, tongue out, pout, fang, two fangs, buck teeth, cat smile, smirk, gasp, wobbly).
   - Extras, marked ★ (like the Push your limits cap), are given out:
     - one person at a time: "Given to them" on their page in Members
     - everyone at once: **Badges → Accessories → Give to everyone**. Members added later don't get it automatically.
@@ -128,7 +129,7 @@ The change applies on their next click. **Locally**, the sign-in page also has a
 
 **New character** — add a key to `shapes` in `src/components/character/Character.jsx` (drawn on a 200×200 canvas; use `<Eye>` for eyes that follow the cursor), then use that key as a member's `avatar.char`.
 
-**New accessory** — add it to `ACCESSORIES` in `src/data/looks.ts` (its spot, and `starter: false` for one you give out). Then draw it in `src/components/character/accessories.jsx`, centred on (0, 0) the way the others are. Check the fit on every shape at `/#dev/looks` while `npm run dev` runs, and adjust that shape's entry in `ANCHORS` (`Character.jsx`) if needed. Run `npm test` after changing the rules in `looks.ts`.
+**New accessory** — add it to `ACCESSORIES` in `src/data/looks.ts` (its spot, and `starter: false` for one you give out). Then draw it in `src/components/character/accessories.jsx`, centred on (0, 0) the way the others are. For a hat, add its height above the crown to `RISE` so it shrinks instead of being cut off on tall shapes; for something worn on the sides of the head, list it in `ANCHOR_OF`. A mouth is centred on the mouth and gets `frame` for its lines, so it shows on the monitor's dark screen. Check the fit on every shape at `/#dev/looks` while `npm run dev` runs, and adjust that shape's entry in `ANCHORS` (`Character.jsx`) if needed. Run `npm test` after changing the rules in `looks.ts`.
 
 **New page section** — create a folder under `src/components/`, then add it to the section list in `src/App.jsx` (and a link in `Header.jsx` if it needs one).
 

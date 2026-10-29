@@ -23,7 +23,7 @@ export const members = sqliteTable("members", {
   quote: text("quote"),
   avatarChar: text("avatar_char").notNull().default("blob"),
   avatarBody: text("avatar_body").notNull().default("butter"),
-  // Accessory ids from src/data/looks.ts, one per spot (head, face, neck).
+  // Accessory ids from src/data/looks.ts, one per spot (head, face, mustache, mouth).
   avatarWear: text("avatar_wear", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
   // Roster order: the first few stand on the Commit Mountain in the hero.
   position: integer("position").notNull().default(0),

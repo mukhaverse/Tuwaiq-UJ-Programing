@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap, useGSAP, MOTION_OK } from "../../lib/gsap";
 import { milestones, milestoneStatus, LOCKED_SHOWN } from "../../data/milestones";
 import { badges } from "../../data/badges";
@@ -31,6 +31,15 @@ function fillTo(shown, i) {
 function photosOf(m) {
   if (m.photos?.length) return m.photos;
   return import.meta.env.DEV && m.done ? devPhotos() : [];
+}
+
+// A link to #memories/<milestone id> (like the announcement's "See memories" button)
+// scrolls down to that milestone and opens its photos.
+const MEMORIES = "#memories/";
+
+function memoriesInHash() {
+  const h = window.location.hash;
+  return h.startsWith(MEMORIES) ? decodeURIComponent(h.slice(MEMORIES.length)) : null;
 }
 
 function earnedCount(badgeId) {
@@ -98,9 +107,43 @@ export default function Journey() {
     setOpen({ milestone: m, node });
   };
 
+  // True when #memories/… came from a link on the page (so there's a history entry to step back over).
+  const cameIn = useRef(false);
+  const openRef = useRef(openMemories);
+  useEffect(() => {
+    openRef.current = openMemories;
+  });
+
+  useEffect(() => {
+    let timer;
+    const sync = (fromLink) => {
+      const m = milestones.find((x) => x.id === memoriesInHash());
+      const li = m && root.current?.querySelector(`.ms--openable[data-id="${CSS.escape(m.id)}"]`);
+      if (!li) return;
+      cameIn.current = fromLink;
+      // Scroll there first, so the photos fly out of the node where it ends up.
+      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      li.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+      clearTimeout(timer);
+      timer = setTimeout(() => openRef.current(m, li), smooth ? 800 : 0);
+    };
+    const onHash = () => sync(true);
+    sync(false);
+    window.addEventListener("hashchange", onHash);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("hashchange", onHash);
+    };
+  }, []);
+
   const closeMemories = () => {
     const node = open?.node;
     setOpen(null);
+    if (memoriesInHash()) {
+      if (cameIn.current) window.history.back();
+      else window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      cameIn.current = false;
+    }
     opener.current?.focus({ preventScroll: true });
     // The node swallows the photos back with a little gulp.
     if (node) tween(() => gsap.fromTo(node, { scale: 1.25 }, { scale: 1, duration: 0.6, ease: "elastic.out(1.1, 0.4)" }));
@@ -168,6 +211,7 @@ export default function Journey() {
               <li
                 className={`ms ms--${status} ms--openable`}
                 key={m.id}
+                data-id={m.id}
                 // The whole step opens it for a mouse; the button below is the keyboard way in.
                 onClick={(e) => !e.target.closest("button") && openMemories(m, e.currentTarget)}
               >

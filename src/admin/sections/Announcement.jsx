@@ -58,7 +58,7 @@ export default function AnnouncementSection({ data, reload }) {
           <Field label="Button label">
             <input id="a-cta-label" value={v.ctaLabel} onChange={(e) => set("ctaLabel", e.target.value)} maxLength={30} placeholder="Take the survey" />
           </Field>
-          <Field label="Button link" hint="A full link (https://…) opens in a new tab; #journey jumps to a section. Leave empty for no button.">
+          <Field label="Button link" hint="A full link (https://…) opens in a new tab; #journey jumps to a section; #memories/<milestone id> opens a milestone's photos. Leave empty for no button.">
             <input id="a-cta-url" value={v.ctaUrl} onChange={(e) => set("ctaUrl", e.target.value)} maxLength={500} placeholder="https://…" />
           </Field>
         </div>

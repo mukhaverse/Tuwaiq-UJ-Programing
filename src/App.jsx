@@ -15,7 +15,7 @@ import Builds from "./components/builds/Builds";
 const BOOTED_KEY = "pt:booted";
 
 // The boot splash plays once per browser session. It's skipped for deep links
-// (#members, #member/<id>, #request) and for people who prefer reduced motion.
+// (#members, #member/<id>, #memories/<id>, #request) and for people who prefer reduced motion.
 function needsSplash() {
   if (window.location.hash) return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;

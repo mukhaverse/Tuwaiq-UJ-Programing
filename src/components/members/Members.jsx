@@ -161,7 +161,7 @@ function NextCard({ onPass }) {
               </Pill>
             )}
             {a.ctaUrl && (
-              <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant={a.passLabel ? "" : "accent"} icon={isMap(a.ctaUrl) && <PinIcon />}>
+              <Pill href={a.ctaUrl} {...external(a.ctaUrl)} variant={a.passLabel ? "" : "accent"} icon={(isMap(a.ctaUrl) && <PinIcon />) || (isMemories(a.ctaUrl) && <PhotoIcon />)}>
                 {a.ctaLabel || "Open"}
               </Pill>
             )}
@@ -179,6 +179,18 @@ function PinIcon() {
   return (
     <svg className="promo__icon promo__icon--pin" viewBox="0 0 10 12" aria-hidden="true" shapeRendering="crispEdges">
       <path d="M3 0h4v1h1v1h1v4H8v2H7v2H6v2H4v-2H3V8H2V6H1V2h1V1h1zM4 3v2h2V3z" fill="currentColor" fillRule="evenodd" />
+    </svg>
+  );
+}
+
+// A link to a milestone's photos (#memories/<id>, see Journey) gets a little Polaroid.
+const isMemories = (url) => url.startsWith("#memories/");
+
+function PhotoIcon() {
+  return (
+    <svg className="promo__icon" viewBox="0 0 10 12" aria-hidden="true" shapeRendering="crispEdges">
+      <path d="M0 0h10v12H0zM1 1v7h8V1z" fill="currentColor" fillRule="evenodd" />
+      <path d="M2 7l2-3 1 2 1-1 2 2z" fill="currentColor" />
     </svg>
   );
 }

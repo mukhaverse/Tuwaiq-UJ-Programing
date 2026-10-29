@@ -221,9 +221,12 @@ function useDialog(onClose) {
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // The page behind holds its animations still (see Members.css).
+    document.documentElement.classList.add("dialog-open");
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      document.documentElement.classList.remove("dialog-open");
       returnTo?.focus?.({ preventScroll: true });
     };
   }, [onClose, returnTo]);

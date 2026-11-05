@@ -2,6 +2,7 @@
 // write a migration into migrations/, then apply it (see README → Database).
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { COMMITTEES } from "../../src/data/crew";
 
 const timestamps = {
   createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
@@ -46,6 +47,24 @@ export const milestones = sqliteTable("milestones", {
 
 // w and h: the image's size in pixels, which picks its Polaroid's shape (wide, square or tall).
 export type MilestonePhoto = { url: string; caption: string; w?: number; h?: number };
+
+// People from other committees who worked at an event, shown on that event's playground.
+// Added per event, so someone at two events is two rows. The character ids and which
+// committee may use them live in src/data/crew.ts.
+export const eventCrew = sqliteTable(
+  "event_crew",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    milestoneId: text("milestone_id")
+      .notNull()
+      .references(() => milestones.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    committee: text("committee", { enum: COMMITTEES }).notNull(),
+    character: text("character").notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("event_crew_milestone").on(t.milestoneId)]
+);
 
 export const badges = sqliteTable("badges", {
   id: text("id").primaryKey(),

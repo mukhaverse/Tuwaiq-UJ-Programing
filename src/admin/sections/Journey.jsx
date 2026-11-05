@@ -2,6 +2,8 @@ import { useState } from "react";
 import { api } from "../api";
 import { Button, ConfirmButton, Field, ItemList } from "../ui";
 import { moved, useAction, useForm, useToast } from "../hooks";
+import CrewCharacter from "../../components/character/crew";
+import { COMMITTEES, COMMITTEE_NAMES, setsFor } from "../../data/crew";
 
 // Same rule as the site: the first milestone that isn't done is "up next".
 function statusOf(milestones, index) {
@@ -54,12 +56,15 @@ export default function JourneySection({ data, reload }) {
 
       <section className="adm-panel adm-panel--form">
         {selected ? (
-          <MilestoneForm
-            key={selected}
-            milestone={selected === "new" ? null : current}
-            onSaved={(id) => reload().then(() => setSelected(id))}
-            onDeleted={() => reload().then(() => setSelected(null))}
-          />
+          <>
+            <MilestoneForm
+              key={selected}
+              milestone={selected === "new" ? null : current}
+              onSaved={(id) => reload().then(() => setSelected(id))}
+              onDeleted={() => reload().then(() => setSelected(null))}
+            />
+            {current && <Crew key={`crew-${selected}`} milestone={current} badges={data.badges} reload={reload} />}
+          </>
         ) : (
           <p className="adm-muted">Pick a milestone to edit, or add a new one. Tick “Done” when the track gets there.</p>
         )}
@@ -135,6 +140,91 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
           </ConfirmButton>
         )}
       </div>
+    </form>
+  );
+}
+
+/* People from other committees who worked at this event. Unlike the form above, this
+   saves as you go: adding or removing someone is live at once. */
+function Crew({ milestone, badges, reload }) {
+  const firstOf = (committee) => setsFor(committee)[0].characters[0].id;
+  const [name, setName] = useState("");
+  const [committee, setCommittee] = useState(COMMITTEES[0]);
+  const [character, setCharacter] = useState(firstOf(COMMITTEES[0]));
+  const [busy, run] = useAction();
+
+  const pickCommittee = (next) => {
+    setCommittee(next);
+    setCharacter(firstOf(next));
+  };
+  const add = (e) => {
+    e.preventDefault();
+    run(
+      () =>
+        api("/admin/crew", { method: "POST", body: { milestoneId: milestone.id, name, committee, character } })
+          .then(reload)
+          .then(() => true),
+      `${name.trim()} added`
+    ).then((ok) => ok && setName(""));
+  };
+  const remove = (person) => run(() => api(`/admin/crew/${person.id}`, { method: "DELETE" }).then(reload), `${person.name} removed`);
+
+  return (
+    <form className="adm-crew adm-form" onSubmit={add}>
+      <fieldset className="adm-fieldset">
+        <legend>Committee characters</legend>
+        <p className="adm-muted adm-small">Operations and Media people who worked at this event. They appear on its playground straight away.</p>
+        {!(milestone.done && badges.some((b) => b.milestone === milestone.id)) && (
+          <p className="adm-small adm-crew__note">This event has no playground yet: it needs a badge linked to it in Badges, and “Done” ticked above.</p>
+        )}
+        {milestone.crew.length > 0 && (
+          <ul className="adm-crew__people">
+            {milestone.crew.map((p) => (
+              <li key={p.id}>
+                <CrewCharacter character={p.character} className="adm-looks__char" />
+                <span>
+                  {p.name} <span className="adm-muted adm-small">{COMMITTEE_NAMES[p.committee].name}</span>
+                </span>
+                <Button variant="danger" onClick={() => remove(p)} disabled={busy} aria-label={`Remove ${p.name}`}>
+                  ✕
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="adm-grid">
+          <Field label="Name">
+            <input id="crew-name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={40} />
+          </Field>
+          <Field label="Committee">
+            <select id="crew-committee" value={committee} onChange={(e) => pickCommittee(e.target.value)}>
+              {COMMITTEES.map((id) => (
+                <option key={id} value={id}>
+                  {COMMITTEE_NAMES[id].name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        {setsFor(committee).map((set) => (
+          <div key={set.name} className="adm-crew__set">
+            <p className="adm-small adm-muted">{set.name}</p>
+            <div className="adm-chars">
+              {set.characters.map((c) => (
+                <button key={c.id} type="button" className={`adm-char${c.id === character ? " is-on" : ""}`} aria-pressed={c.id === character} onClick={() => setCharacter(c.id)}>
+                  <CrewCharacter character={c.id} />
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="adm-actions">
+          <Button type="submit" variant="primary" disabled={busy}>
+            {busy ? "Adding…" : "+ Add character"}
+          </Button>
+        </div>
+      </fieldset>
     </form>
   );
 }

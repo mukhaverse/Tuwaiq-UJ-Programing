@@ -760,6 +760,39 @@ button.adm-chip {
   color: var(--fg);
 }
 
+/* Committee characters on a milestone */
+.adm-crew {
+  margin-top: 20px;
+}
+
+.adm-crew__note {
+  color: var(--orange);
+}
+
+.adm-crew__people {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adm-crew__people li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border: var(--line);
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+
+.adm-crew__set {
+  display: grid;
+  gap: 6px;
+}
+
 .adm-swatches {
   display: flex;
   flex-wrap: wrap;

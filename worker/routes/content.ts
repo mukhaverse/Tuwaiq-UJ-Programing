@@ -2,7 +2,7 @@
 import { Hono } from "hono";
 import { asc, desc, inArray } from "drizzle-orm";
 import { getDb, type AppEnv } from "../db/client";
-import { badges, memberAccessories, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings, tracks } from "../db/schema";
+import { badges, eventCrew, memberAccessories, memberBadges, members, milestones, projectMembers, projects, PUBLIC_PROJECT_STATUSES, settings, tracks } from "../db/schema";
 import { ACCESSORIES, cleanWear } from "../../src/data/looks";
 
 const content = new Hono<AppEnv>();
@@ -10,7 +10,7 @@ const content = new Hono<AppEnv>();
 content.get("/", async (c) => {
   const db = getDb(c.env);
   // One round trip to D1 for every query.
-  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, trackRows, projectRows, teamRows, accessoryRows] = await db.batch([
+  const [memberRows, awardRows, milestoneRows, badgeRows, settingRows, trackRows, projectRows, teamRows, accessoryRows, crewRows] = await db.batch([
     db.select().from(members).orderBy(asc(members.position), asc(members.createdAt)),
     db.select().from(memberBadges).orderBy(asc(memberBadges.awardedAt)),
     db.select().from(milestones).orderBy(asc(milestones.position)),
@@ -36,6 +36,7 @@ content.get("/", async (c) => {
       .orderBy(desc(projects.updatedAt)),
     db.select().from(projectMembers),
     db.select().from(memberAccessories),
+    db.select().from(eventCrew).orderBy(asc(eventCrew.id)),
   ]);
 
   const badgesOf = new Map<string, string[]>();
@@ -50,6 +51,10 @@ content.get("/", async (c) => {
   }
   const team = new Map<number, string[]>();
   for (const t of teamRows) team.set(t.projectId, [...(team.get(t.projectId) ?? []), t.memberId]);
+  const crewOf = new Map<string, { id: number; name: string; committee: string; character: string }[]>();
+  for (const { id, milestoneId, name, committee, character } of crewRows) {
+    crewOf.set(milestoneId, [...(crewOf.get(milestoneId) ?? []), { id, name, committee, character }]);
+  }
   const setting = Object.fromEntries(settingRows.map((s) => [s.key, s.value]));
 
   // Short browser cache: edits show up within seconds, repeat visits stay fast.
@@ -79,6 +84,7 @@ content.get("/", async (c) => {
       note: m.note,
       done: m.done,
       photos: m.photos,
+      crew: crewOf.get(m.id) ?? [],
     })),
     badges: badgeRows.map((b) => ({
       id: b.id,

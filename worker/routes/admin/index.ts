@@ -4,6 +4,7 @@ import { requireAdmin } from "../../auth";
 import type { AppEnv } from "../../db/client";
 import accessories from "./accessories";
 import badges from "./badges";
+import crew from "./crew";
 import members from "./members";
 import milestones from "./milestones";
 import projects from "./projects";
@@ -21,6 +22,7 @@ admin.use("*", requireAdmin, async (c, next) => {
 });
 admin.route("/members", members);
 admin.route("/milestones", milestones);
+admin.route("/crew", crew);
 admin.route("/projects", projects);
 admin.route("/tracks", tracks);
 admin.route("/badges", badges);

@@ -22,6 +22,33 @@
   color: var(--violet);
 }
 
+.gang__boards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.gang__board {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.gang__board:hover {
+  color: var(--fg);
+}
+
+.gang__board[aria-pressed="true"] {
+  border-color: var(--violet);
+  background: var(--violet);
+  color: var(--bg);
+}
+
 .board {
   --sw: clamp(72px, 8.5vw, 132px);
   position: relative;
@@ -57,6 +84,24 @@
 
 .gang__name::first-letter {
   color: var(--orange);
+}
+
+.gang__committee {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gang__committee--operations {
+  color: var(--orange);
+}
+
+.gang__committee--media {
+  color: var(--cyan);
 }
 
 .bubble {

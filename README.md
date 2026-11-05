@@ -34,7 +34,7 @@ worker/                 the API (TypeScript)
   routes/media.ts       GET /api/media/<key>: uploaded files
   routes/bios.ts        POST /api/bios/<member id>: anyone writes a member's bio from their profile
   routes/looks.ts       POST /api/looks/<member id>: anyone suggests a look for a member (waits for an admin)
-  routes/admin/         one file per thing the admin panel edits (members, milestones, badges,
+  routes/admin/         one file per thing the admin panel edits (members, milestones, crew, badges,
                         settings, uploads, survey, projects, tracks); index.ts puts all of them behind requireRole("admin")
   db/schema.ts          the site's tables (Drizzle)
   db/auth-schema.ts     login tables (users, sessions, accounts)
@@ -54,6 +54,7 @@ src/
     milestones.js       the semester journey
     looks.ts            character looks: shapes, colours, the accessory catalog, and what each badge count
                         unlocks. Shared with the Worker, which checks suggestions against the same rules
+    crew.ts             the other committees and the characters each can be. Shared with the Worker
     announcement.js     the purple "Up next" tile in the members grid
     projects.js         builds (in progress and done), the other tracks and their colours,
                         whether requests are open, plus the request kinds and statuses
@@ -64,11 +65,12 @@ src/
     layout/             Header, Footer
     intro/              Hero (title, intro, and the typed-out shell session)
     members/            filters, card grid, profile modal, #member/<id> link handling
-    playground/         draggable sticker board of every member
+    playground/         draggable sticker board: every member, or who was at an event
     journey/            milestone timeline
     builds/             Builds: the PT-OS desktop (Desktop.jsx) and the request form (#request)
     character/          the cartoon characters (blob, star, ghost, robot, cat, cloud, mushroom,
-                        flower, monitor; sun and planet for the leader and co-leader)
+                        flower, monitor; sun and planet for the leader and co-leader), and crew.jsx
+                        for the other committees' characters
     badges/             Badge + BadgeMark (the medal graphic)
     ui/                 small shared pieces (Pill, SplitHeading)
   lib/
@@ -89,6 +91,8 @@ src/
 - **Bios**: anyone can write or change a bio from a member's profile ("Write your bio" / "Edit bio"). No sign-in and no review: it's live at once. Every submission is kept, and an admin sees them under **Bio history** on that member's page in Members, newest first. If someone changed another person's bio, press **Use this** on the version they really wrote, then **Save changes**. (Edits made in the admin panel aren't logged.)
 - **Badges** are created in Badges and awarded to people from their page in Members. A badge linked to a milestone also shows on that journey step.
 - **Journey**: the first milestone that isn't done is "Up next"; the next two show as locked steps with no details, the trail fades out after them, and the rest aren't shown at all.
+- **Playgrounds**: the buttons above the playground switch from everyone to who was at one event. A finished milestone gets a button once a badge is linked to it, and having that badge counts as attending.
+- **Committee characters**: open a milestone in Journey and use **Committee characters** at the bottom: name, committee, character, **+ Add character**. It's live at once, on that event's playground only (they never show under Everyone). Someone at two events is added twice. The characters are listed in `src/data/crew.ts` and drawn in `src/components/character/crew.jsx`; Operations also has an Industrial engineering set.
 - **Up next tile**: hide it when there's nothing to announce.
 - **Character looks**: anyone can press **Customize character** on a profile and change that member's look, within what their badges unlock:
   - 0 badges: nothing (the editor shows what's locked)

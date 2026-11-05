@@ -84,6 +84,12 @@ export const CREW_SETS: { name: string; committee: Committee; characters: { id: 
   },
 ];
 
+// What they can wear over their eyes (drawn by components/character/accessories.jsx).
+export const CREW_GLASSES: { id: string; name: string }[] = [
+  { id: "glasses", name: "Glasses" },
+  { id: "shades", name: "Sunglasses" },
+];
+
 /** The sets this committee picks from. */
 export function setsFor(committee: Committee) {
   return CREW_SETS.filter((s) => s.committee === committee);

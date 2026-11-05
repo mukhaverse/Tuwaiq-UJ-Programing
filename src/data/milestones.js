@@ -9,7 +9,8 @@
 //   when   free-form label: a week, a date, "TBA"…
 //   note   one line of detail
 //   done   true once it has happened
-//   crew   people from other committees who worked at it: { id, name, committee, character }
+//   crew   people from other committees who worked at it: { id, name, committee, character,
+//          colour?, glasses? } (colour is a palette key; without one, the character's own)
 export let milestones = [];
 
 export function setMilestones(list) {

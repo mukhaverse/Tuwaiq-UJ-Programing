@@ -769,6 +769,15 @@ button.adm-chip {
   color: var(--orange);
 }
 
+.adm-crew__people li.is-editing {
+  border-color: var(--violet);
+}
+
+.adm-crew__tools {
+  display: flex;
+  gap: 6px;
+}
+
 .adm-crew__people {
   display: grid;
   gap: 8px;

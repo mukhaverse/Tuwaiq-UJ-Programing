@@ -78,6 +78,13 @@
       "when": 1793900079223,
       "tag": "0010_event_crew",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793913360959,
+      "tag": "0011_crew_looks",
+      "breakpoints": true
     }
   ]
 }

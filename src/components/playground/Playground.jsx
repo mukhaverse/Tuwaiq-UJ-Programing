@@ -31,14 +31,15 @@ function place(i, n) {
 }
 
 // The boards to choose from: everyone, then each finished event with a linked badge. Having
-// the badge means they were there; the event's own crew from other committees join them.
+// the badge means they were there, and the leader and co-leader are at every event; the
+// event's own crew from other committees join them.
 function boards() {
   const events = milestones.flatMap((m) => {
     const badge = m.done && badges.find((b) => b.milestone === m.id);
     if (!badge) return [];
     // Right after a deploy, the browser's cached content can be from before crews existed.
     const crew = (m.crew ?? []).map((p) => ({ ...p, id: `crew-${p.id}` }));
-    const people = [...members.filter((x) => x.badges.includes(badge.id)), ...crew];
+    const people = [...members.filter((x) => x.role !== "member" || x.badges.includes(badge.id)), ...crew];
     return people.length ? [{ id: m.id, label: badge.name, people }] : [];
   });
   return [{ id: "everyone", label: "Everyone", people: members }, ...events];

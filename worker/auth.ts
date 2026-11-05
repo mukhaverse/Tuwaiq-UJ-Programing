@@ -6,7 +6,7 @@
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { github } from "better-auth/social-providers";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { getDb, type AppEnv } from "./db/client";
 import * as schema from "./db/schema";
@@ -69,7 +69,18 @@ export function createAuth(env: Env) {
     },
     databaseHooks: {
       // Second lock: no session for anyone outside the list, whatever route they came in by.
-      session: { create: { before: async (session) => (await isAllowed(env, session.userId)) ? undefined : false } },
+      // One session at a time: signing in ends every other one for that account, so a
+      // forgotten browser (or one someone else got into) is logged out by the next sign-in.
+      session: {
+        create: {
+          before: async (session) => ((await isAllowed(env, session.userId)) ? undefined : false),
+          after: async (session) => {
+            await getDb(env)
+              .delete(schema.session)
+              .where(and(eq(schema.session.userId, session.userId), ne(schema.session.id, session.id)));
+          },
+        },
+      },
     },
     user: {
       additionalFields: {

@@ -1,6 +1,6 @@
-// POST /api/bios/<member id>: anyone can write a member's bio from their profile card.
-// It goes live straight away, and is also kept in bio_edits, the log admins check in
-// the admin panel (Members → Bio suggestions), e.g. to put back what someone really wrote.
+// POST /api/bios/<member id>: anyone can suggest a bio from a member's profile card.
+// No sign-in, so nothing goes live: the suggestion is kept in bio_edits and shows
+// up in the admin panel (Members → Bio suggestions), where an admin can use it.
 // Rate limited per visitor in worker/index.ts, and capped per member and per day here,
 // so a flood can't fill the database.
 import { Hono } from "hono";
@@ -32,10 +32,7 @@ route.post("/:id", body(z.object({ bio: plainText(600) })), async (c) => {
     return c.json({ error: "We've had a lot of suggestions today. Try again tomorrow." }, 429);
   }
 
-  await db.batch([
-    db.insert(bioEdits).values({ memberId: id.data, bio }),
-    db.update(members).set({ bio, updatedAt: sql`(datetime('now'))` }).where(eq(members.id, id.data)),
-  ]);
+  await db.insert(bioEdits).values({ memberId: id.data, bio });
   return c.json({ ok: true }, 201);
 });
 

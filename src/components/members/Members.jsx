@@ -280,8 +280,8 @@ async function sendBio(id, bio) {
   if (!res.ok) throw new Error(data.error || "Couldn't send it. Try again in a moment.");
 }
 
-/* The bio on a profile. Anyone can write a new one, and it's live straight away;
-   admins can see every one sent in the admin panel (Members → Bio suggestions). */
+/* The bio on a profile. Anyone can suggest a new one; it goes live once an admin
+   approves it in the admin panel (Members → Bio suggestions). */
 function Bio({ member }) {
   const bio = member.bio ?? "";
   const [draft, setDraft] = useState(null); // null = not editing
@@ -295,8 +295,6 @@ function Bio({ member }) {
     setError(null);
     try {
       await sendBio(member.id, draft);
-      // Live already: show it here without a reload.
-      updateMember(member.id, { bio: draft.trim() });
       setSent(true);
       setDraft(null);
     } catch (err) {
@@ -312,7 +310,7 @@ function Bio({ member }) {
         {bio ? <p className="modal__line">{bio}</p> : <p className="modal__line modal__line--soon">Bio coming soon.</p>}
         {sent ? (
           <p className="modal__edit mono" role="status">
-            Saved! Your bio is live.
+            Thanks! It shows up here once it's approved.
           </p>
         ) : (
           <button type="button" className="modal__edit mono" onClick={() => setDraft(bio)}>
@@ -338,7 +336,7 @@ function Bio({ member }) {
       {error && <p className="modal__error">{error}</p>}
       <div className="modal__bio-actions">
         <Pill as="button" type="submit" variant="accent" disabled={sending || !draft.trim()}>
-          {sending ? "Saving…" : "Save"}
+          {sending ? "Sending…" : "Send for approval"}
         </Pill>
         <button type="button" className="modal__edit mono" onClick={() => setDraft(null)}>
           Cancel

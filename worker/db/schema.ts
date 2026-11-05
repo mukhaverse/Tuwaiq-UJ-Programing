@@ -92,9 +92,8 @@ export const memberBadges = sqliteTable(
   (t) => [primaryKey({ columns: [t.memberId, t.badgeId] })]
 );
 
-// Every bio submitted from a profile card on the site, oldest first. A submission
-// goes live straight away (it's also written to members.bio); this is the log
-// admins check, e.g. to put back what someone really wrote.
+// Every bio suggested from a profile card on the site, oldest first. Nothing goes
+// live until an admin uses one (Members → Bio suggestions), which writes it to members.bio.
 export const bioEdits = sqliteTable(
   "bio_edits",
   {

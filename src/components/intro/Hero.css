@@ -146,6 +146,8 @@
 .climb__piece {
   position: relative;
   display: block;
+  /* Its own layer, so moving it doesn't redraw its shadow every frame. */
+  will-change: transform;
 }
 
 .climb__leader:hover,

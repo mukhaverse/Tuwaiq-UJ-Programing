@@ -142,6 +142,12 @@
   cursor: default;
 }
 
+/* What the knock-off animation moves (Leaders.jsx); the tag hangs from it. */
+.climb__piece {
+  position: relative;
+  display: block;
+}
+
 .climb__leader:hover,
 .climb__leader:focus {
   z-index: 2;

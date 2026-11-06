@@ -5,7 +5,9 @@
 //   name   always shown above the piece, as "@name"
 //   title  their club role, shown on hover
 //   piece  "knight" | "rook" (see components/intro/Leaders.jsx)
+//   knockedOff  true on the second: they land with everyone, then the first's piece
+//               leaps over and knocks them off the mountain. Delete it to keep them.
 export const leaders = [
   { name: "Jana", title: "President", piece: "knight" },
-  { name: "Albaraa", title: "Vice President", piece: "rook" },
+  { name: "Albaraa", title: "Vice President", piece: "rook", knockedOff: true },
 ];

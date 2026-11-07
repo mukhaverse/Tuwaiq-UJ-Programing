@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { motion } from "motion/react";
+import { gsap, useGSAP, MOTION_OK } from "../../lib/gsap";
 import { Eye } from "../character/Character";
 import { palette as c } from "../../lib/palette";
 import { leaders } from "../../data/leaders";
@@ -60,15 +62,68 @@ const pieces = {
   },
 };
 
+/* The first piece leaps over the summit, bumps the second, which tips over and
+   drops off the mountain's edge, then hops back home. Runs on the inner
+   .climb__piece, so it doesn't fight motion's drop-in on the buttons. With
+   reduced motion, the second is simply not there. Only runs when the second is
+   marked knockedOff in src/data/leaders.js. */
+function useKnockOff(buttons, start) {
+  useGSAP(() => {
+    const [hitter, target] = buttons.current;
+    if (!leaders[1]?.knockedOff || !hitter || !target) return;
+    const mover = hitter.querySelector(".climb__piece");
+    const victim = target.querySelector(".climb__piece");
+    const mm = gsap.matchMedia();
+    mm.add(MOTION_OK, () => {
+      const gap = () => target.offsetLeft - hitter.offsetLeft - hitter.offsetWidth * 0.7;
+      const high = () => -hitter.offsetParent.offsetHeight * 0.85;
+      const leap = (x) =>
+        gsap
+          .timeline()
+          .to(mover, { scaleY: 0.8, duration: 0.08, transformOrigin: "50% 100%", ease: "power1.out" })
+          .to(mover, { scaleY: 1, duration: 0.06 })
+          .to(mover, { x, duration: 0.6, ease: "power2.inOut" }, "<")
+          .to(mover, { keyframes: [{ y: high, ease: "power2.out" }, { y: 0, ease: "power3.in" }], duration: 0.6 }, "<");
+      gsap
+        .timeline({ delay: start })
+        .set(hitter, { zIndex: 3 })
+        .add(leap(gap))
+        // A split-second wind-up, leaning back, then a swing that sends the rook off in one
+        // unbroken arc: up high, easing over the top, then dropping faster and faster off
+        // the bottom, spinning all the way.
+        .to(mover, { x: () => gap() - 10, rotate: -14, duration: 0.15, ease: "power2.out" })
+        .to(mover, { x: () => gap() + 24, rotate: 28, duration: 0.08, ease: "power2.in" })
+        .to(victim, { scaleX: 0.75, scaleY: 1.1, duration: 0.05, transformOrigin: "0% 100%" }, ">-0.02")
+        .to(mover, { x: gap, rotate: 0, duration: 0.2, ease: "power2.out" })
+        .to(victim, { scaleX: 1, scaleY: 1, duration: 0.1 }, "<")
+        .to(victim, { x: 260, rotate: 900, duration: 1, ease: "none", transformOrigin: "50% 60%" }, "<")
+        .to(victim, { keyframes: [{ y: -190, duration: 0.34, ease: "power2.out" }, { y: 650, duration: 0.66, ease: "power2.in" }] }, "<")
+        .to(victim, { autoAlpha: 0, duration: 0.15 }, ">-0.15")
+        .add(leap(0), "<-0.6")
+        .set(hitter, { zIndex: "" })
+        // Gone for keyboards and screen readers too, not just out of sight.
+        .set(target, { autoAlpha: 0 });
+    });
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(target, { autoAlpha: 0 });
+    });
+    return () => mm.revert();
+  }, []);
+}
+
 /* The President and Vice President on the mountain's end blocks (`spots`, as
    left/bottom styles), each under an "@name" tag that rolls to their role on
    hover or tap. They land after the climbers (`delay`). */
 export default function Leaders({ spots, delay = 0 }) {
+  const buttons = useRef([]);
+  useKnockOff(buttons, delay + 1);
   return leaders.map((l, i) => {
+    if (l.hidden) return null;
     const piece = pieces[l.piece];
     return (
       <motion.button
         key={l.name}
+        ref={(el) => (buttons.current[i] = el)}
         type="button"
         className={`climb__leader climb__leader--${i === 0 ? "first" : "second"}`}
         style={spots[i]}
@@ -78,13 +133,15 @@ export default function Leaders({ spots, delay = 0 }) {
         transition={{ type: "spring", stiffness: 420, damping: 16, delay: delay + i * 0.1 }}
         whileHover={{ y: -8 }}
       >
-        <span className="climb__tag mono" aria-hidden="true">
-          <span>@{l.name}</span>
-          <span>{l.title}</span>
+        <span className="climb__piece">
+          <span className="climb__tag mono" aria-hidden="true">
+            <span>@{l.name}</span>
+            <span>{l.title}</span>
+          </span>
+          <svg viewBox="0 0 200 240" className="char sticker" aria-hidden="true">
+            {piece.draw()}
+          </svg>
         </span>
-        <svg viewBox="0 0 200 240" className="char sticker" aria-hidden="true">
-          {piece.draw()}
-        </svg>
       </motion.button>
     );
   });

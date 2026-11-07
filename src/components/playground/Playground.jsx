@@ -117,7 +117,7 @@ export default function Playground() {
                 )}
               </AnimatePresence>
               {g.character ? (
-                <CrewCharacter character={g.character} blink={i * 0.9} className="sticker" />
+                <CrewCharacter character={g.character} colour={g.colour} glasses={g.glasses} blink={i * 0.9} className="sticker" />
               ) : (
                 <Character type={g.avatar.char} body={color(g.avatar.body)} wear={g.avatar.wear} blink={i * 0.9} className="sticker" />
               )}

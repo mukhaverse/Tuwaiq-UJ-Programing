@@ -51,9 +51,11 @@ content.get("/", async (c) => {
   }
   const team = new Map<number, string[]>();
   for (const t of teamRows) team.set(t.projectId, [...(team.get(t.projectId) ?? []), t.memberId]);
-  const crewOf = new Map<string, { id: number; name: string; committee: string; character: string }[]>();
-  for (const { id, milestoneId, name, committee, character } of crewRows) {
-    crewOf.set(milestoneId, [...(crewOf.get(milestoneId) ?? []), { id, name, committee, character }]);
+  type CrewPerson = { id: number; name: string; committee: string; character: string; colour?: string; glasses?: string };
+  const crewOf = new Map<string, CrewPerson[]>();
+  for (const { id, milestoneId, name, committee, character, colour, glasses } of crewRows) {
+    const person = { id, name, committee, character, colour: colour ?? undefined, glasses: glasses ?? undefined };
+    crewOf.set(milestoneId, [...(crewOf.get(milestoneId) ?? []), person]);
   }
   const setting = Object.fromEntries(settingRows.map((s) => [s.key, s.value]));
 

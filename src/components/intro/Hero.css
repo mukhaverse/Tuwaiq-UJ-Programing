@@ -142,6 +142,14 @@
   cursor: default;
 }
 
+/* What the knock-off animation moves (Leaders.jsx); the tag hangs from it. */
+.climb__piece {
+  position: relative;
+  display: block;
+  /* Its own layer, so moving it doesn't redraw its shadow every frame. */
+  will-change: transform;
+}
+
 .climb__leader:hover,
 .climb__leader:focus {
   z-index: 2;

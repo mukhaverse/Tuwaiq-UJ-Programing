@@ -1,7 +1,8 @@
 // Rules for who can be which committee character. Run with `npm test`.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { COMMITTEES, COMMITTEE_NAMES, CREW_SETS, canBeCharacter, setsFor } from "./crew.ts";
+import { COMMITTEES, COMMITTEE_NAMES, CREW_GLASSES, CREW_SETS, canBeCharacter, setsFor } from "./crew.ts";
+import { ACCESSORIES } from "./looks.ts";
 
 test("every committee has a name and at least one set", () => {
   for (const c of COMMITTEES) {
@@ -23,6 +24,10 @@ test("operations can use both of its sets", () => {
 test("a committee can't use another committee's characters", () => {
   assert.ok(!canBeCharacter("operations", "camera"));
   assert.ok(!canBeCharacter("media", "tent"));
+});
+
+test("the glasses on offer are face accessories that are drawn already", () => {
+  for (const g of CREW_GLASSES) assert.equal(ACCESSORIES.find((a) => a.id === g.id)?.slot, "face");
 });
 
 test("unknown characters are refused", () => {

@@ -25,6 +25,18 @@ CREATE TABLE `email_codes` (
 --> statement-breakpoint
 CREATE INDEX `email_codes_user` ON `email_codes` (`user_id`);--> statement-breakpoint
 CREATE INDEX `email_codes_roster` ON `email_codes` (`roster_id`);--> statement-breakpoint
+CREATE TABLE `member_signins` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`roster_id` integer,
+	`email` text NOT NULL,
+	`ok` integer NOT NULL,
+	`ip` text DEFAULT '' NOT NULL,
+	`created_at` text DEFAULT (datetime('now')) NOT NULL,
+	FOREIGN KEY (`roster_id`) REFERENCES `roster`(`id`) ON UPDATE no action ON DELETE set null
+);
+--> statement-breakpoint
+CREATE INDEX `member_signins_created` ON `member_signins` (`created_at`);--> statement-breakpoint
+CREATE INDEX `member_signins_ip` ON `member_signins` (`ip`,`created_at`);--> statement-breakpoint
 CREATE TABLE `notification_reads` (
 	`notification_id` integer NOT NULL,
 	`user_id` text NOT NULL,
@@ -121,11 +133,14 @@ CREATE TABLE `roster` (
 	`name` text NOT NULL,
 	`email` text NOT NULL,
 	`active` integer DEFAULT true NOT NULL,
+	`member_id` text,
 	`created_at` text DEFAULT (datetime('now')) NOT NULL,
-	`updated_at` text DEFAULT (datetime('now')) NOT NULL
+	`updated_at` text DEFAULT (datetime('now')) NOT NULL,
+	FOREIGN KEY (`member_id`) REFERENCES `members`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `roster_email_unique` ON `roster` (`email`);--> statement-breakpoint
+CREATE UNIQUE INDEX `roster_member_id_unique` ON `roster` (`member_id`);--> statement-breakpoint
 CREATE TABLE `roster_links` (
 	`roster_id` integer PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,

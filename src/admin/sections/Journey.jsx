@@ -3,7 +3,9 @@ import { api } from "../api";
 import { Button, ConfirmButton, Field, ItemList } from "../ui";
 import { moved, useAction, useForm, useToast } from "../hooks";
 import CrewCharacter from "../../components/character/crew";
-import { COMMITTEES, COMMITTEE_NAMES, setsFor } from "../../data/crew";
+import { COMMITTEES, COMMITTEE_NAMES, CREW_GLASSES, setsFor } from "../../data/crew";
+import { COLOURS } from "../../data/looks";
+import { palette } from "../../lib/palette";
 
 // Same rule as the site: the first milestone that isn't done is "up next".
 function statusOf(milestones, index) {
@@ -144,60 +146,76 @@ function MilestoneForm({ milestone, onSaved, onDeleted }) {
   );
 }
 
+const firstOf = (committee) => setsFor(committee)[0].characters[0].id;
+const blank = (committee = COMMITTEES[0]) => ({ name: "", committee, character: firstOf(committee), colour: null, glasses: null });
+
 /* People from other committees who worked at this event. Unlike the form above, this
-   saves as you go: adding or removing someone is live at once. */
+   saves as you go: adding, changing or removing someone is live at once. */
 function Crew({ milestone, badges, reload }) {
-  const firstOf = (committee) => setsFor(committee)[0].characters[0].id;
-  const [name, setName] = useState("");
-  const [committee, setCommittee] = useState(COMMITTEES[0]);
-  const [character, setCharacter] = useState(firstOf(COMMITTEES[0]));
+  const [v, set, setValues] = useForm(blank());
+  // The person being changed, or null while adding someone new.
+  const [editing, setEditing] = useState(null);
   const [busy, run] = useAction();
 
-  const pickCommittee = (next) => {
-    setCommittee(next);
-    setCharacter(firstOf(next));
+  const pickCommittee = (committee) => setValues((prev) => ({ ...prev, committee, character: firstOf(committee) }));
+  const edit = (p) => {
+    setEditing(p);
+    setValues({ name: p.name, committee: p.committee, character: p.character, colour: p.colour ?? null, glasses: p.glasses ?? null });
+    document.getElementById("crew-name")?.focus();
   };
-  const add = (e) => {
+  const reset = () => {
+    setEditing(null);
+    setValues(blank(v.committee));
+  };
+  const save = (e) => {
     e.preventDefault();
     run(
       () =>
-        api("/admin/crew", { method: "POST", body: { milestoneId: milestone.id, name, committee, character } })
+        (editing ? api(`/admin/crew/${editing.id}`, { method: "PUT", body: v }) : api("/admin/crew", { method: "POST", body: { milestoneId: milestone.id, ...v } }))
           .then(reload)
           .then(() => true),
-      `${name.trim()} added`
-    ).then((ok) => ok && setName(""));
+      editing ? `${v.name.trim()} saved` : `${v.name.trim()} added`
+    ).then((ok) => ok && reset());
   };
-  const remove = (person) => run(() => api(`/admin/crew/${person.id}`, { method: "DELETE" }).then(reload), `${person.name} removed`);
+  const remove = (person) =>
+    run(() => api(`/admin/crew/${person.id}`, { method: "DELETE" }).then(reload), `${person.name} removed`).then(() => editing?.id === person.id && reset());
+  const look = { colour: v.colour, glasses: v.glasses };
 
   return (
-    <form className="adm-crew adm-form" onSubmit={add}>
+    <form className="adm-crew adm-form" onSubmit={save}>
       <fieldset className="adm-fieldset">
         <legend>Committee characters</legend>
-        <p className="adm-muted adm-small">Operations and Media people who worked at this event. They appear on its playground straight away.</p>
+        <p className="adm-muted adm-small">Operations and Media people who worked at this event. Adding or changing someone shows on its playground straight away.</p>
         {!(milestone.done && badges.some((b) => b.milestone === milestone.id)) && (
           <p className="adm-small adm-crew__note">This event has no playground yet: it needs a badge linked to it in Badges, and “Done” ticked above.</p>
         )}
         {milestone.crew.length > 0 && (
           <ul className="adm-crew__people">
             {milestone.crew.map((p) => (
-              <li key={p.id}>
-                <CrewCharacter character={p.character} className="adm-looks__char" />
+              <li key={p.id} className={editing?.id === p.id ? "is-editing" : undefined}>
+                <CrewCharacter character={p.character} colour={p.colour} glasses={p.glasses} className="adm-looks__char" />
                 <span>
                   {p.name} <span className="adm-muted adm-small">{COMMITTEE_NAMES[p.committee].name}</span>
                 </span>
-                <Button variant="danger" onClick={() => remove(p)} disabled={busy} aria-label={`Remove ${p.name}`}>
-                  ✕
-                </Button>
+                <span className="adm-crew__tools">
+                  <Button onClick={() => edit(p)} disabled={busy}>
+                    Edit
+                  </Button>
+                  <Button variant="danger" onClick={() => remove(p)} disabled={busy} aria-label={`Remove ${p.name}`}>
+                    ✕
+                  </Button>
+                </span>
               </li>
             ))}
           </ul>
         )}
+        {editing && <p className="adm-small adm-crew__note">Changing {editing.name}. Save to put it live, or cancel.</p>}
         <div className="adm-grid">
           <Field label="Name">
-            <input id="crew-name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={40} />
+            <input id="crew-name" value={v.name} onChange={(e) => set("name", e.target.value)} required maxLength={40} />
           </Field>
           <Field label="Committee">
-            <select id="crew-committee" value={committee} onChange={(e) => pickCommittee(e.target.value)}>
+            <select id="crew-committee" value={v.committee} onChange={(e) => pickCommittee(e.target.value)}>
               {COMMITTEES.map((id) => (
                 <option key={id} value={id}>
                   {COMMITTEE_NAMES[id].name}
@@ -206,13 +224,44 @@ function Crew({ milestone, badges, reload }) {
             </select>
           </Field>
         </div>
-        {setsFor(committee).map((set) => (
-          <div key={set.name} className="adm-crew__set">
-            <p className="adm-small adm-muted">{set.name}</p>
+        <div className="adm-swatch-row">
+          <span className="adm-muted adm-small">Colour</span>
+          <div className="adm-swatches" role="radiogroup" aria-label="Colour">
+            <button type="button" role="radio" aria-checked={!v.colour} className={`adm-chip${!v.colour ? " is-on" : ""}`} onClick={() => set("colour", null)}>
+              Its own
+            </button>
+            {COLOURS.map((k) => (
+              <button
+                type="button"
+                key={k}
+                role="radio"
+                aria-checked={v.colour === k}
+                className={`adm-swatch${v.colour === k ? " is-on" : ""}`}
+                style={{ background: palette[k] }}
+                onClick={() => set("colour", k)}
+                title={k}
+                aria-label={k}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="adm-swatch-row">
+          <span className="adm-muted adm-small">Glasses</span>
+          <div className="adm-chips" role="radiogroup" aria-label="Glasses">
+            {[{ id: null, name: "None" }, ...CREW_GLASSES].map((g) => (
+              <button key={g.name} type="button" role="radio" aria-checked={v.glasses === g.id} className={`adm-chip${v.glasses === g.id ? " is-on" : ""}`} onClick={() => set("glasses", g.id)}>
+                {g.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        {setsFor(v.committee).map((s) => (
+          <div key={s.name} className="adm-crew__set">
+            <p className="adm-small adm-muted">{s.name}</p>
             <div className="adm-chars">
-              {set.characters.map((c) => (
-                <button key={c.id} type="button" className={`adm-char${c.id === character ? " is-on" : ""}`} aria-pressed={c.id === character} onClick={() => setCharacter(c.id)}>
-                  <CrewCharacter character={c.id} />
+              {s.characters.map((c) => (
+                <button key={c.id} type="button" className={`adm-char${c.id === v.character ? " is-on" : ""}`} aria-pressed={c.id === v.character} onClick={() => set("character", c.id)}>
+                  <CrewCharacter character={c.id} {...look} />
                   {c.name}
                 </button>
               ))}
@@ -221,8 +270,13 @@ function Crew({ milestone, badges, reload }) {
         ))}
         <div className="adm-actions">
           <Button type="submit" variant="primary" disabled={busy}>
-            {busy ? "Adding…" : "+ Add character"}
+            {busy ? "Saving…" : editing ? "Save changes" : "+ Add character"}
           </Button>
+          {editing && (
+            <Button onClick={reset} disabled={busy}>
+              Cancel
+            </Button>
+          )}
         </div>
       </fieldset>
     </form>

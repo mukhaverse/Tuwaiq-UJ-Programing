@@ -63,6 +63,10 @@ export const eventCrew = sqliteTable(
     name: text("name").notNull(),
     committee: text("committee", { enum: COMMITTEES }).notNull(),
     character: text("character").notNull(),
+    // A palette key for the character's main part; empty keeps its own colour.
+    colour: text("colour"),
+    // "glasses" or "shades" (CREW_GLASSES in src/data/crew.ts), or empty for none.
+    glasses: text("glasses"),
     createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
   },
   (t) => [index("event_crew_milestone").on(t.milestoneId)]

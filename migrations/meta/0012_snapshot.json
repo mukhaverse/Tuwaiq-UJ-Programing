@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b3a6d034-fb52-4d7f-ba99-e0c42d82137e",
-  "prevId": "1599f1aa-b852-4b28-a840-b7bfe56b2b6b",
+  "id": "98ab16bf-9770-49bf-a506-d59487fd9642",
+  "prevId": "f1be4bf1-d05f-4f17-ad2e-a1784eb2e3c4",
   "tables": {
     "access_events": {
       "name": "access_events",
@@ -384,6 +384,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "colour": {
+          "name": "colour",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "glasses": {
+          "name": "glasses",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {

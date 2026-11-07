@@ -22,7 +22,7 @@ export const sameOrigin = createMiddleware<AppEnv>(async (c, next) => {
  * Limits how often one visitor (by IP) can hit a route, using a Cloudflare rate
  * limiter from wrangler.jsonc. `bucket` keeps routes that share a limiter apart.
  */
-export const rateLimit = (limiter: keyof Pick<Env, "RL_WRITES" | "RL_AUTH">, bucket: string) =>
+export const rateLimit = (limiter: keyof Pick<Env, "RL_WRITES" | "RL_AUTH" | "RL_PORTFOLIO" | "RL_MEMBER_SIGNIN">, bucket: string) =>
   createMiddleware<AppEnv>(async (c, next) => {
     if (UNSAFE.has(c.req.method)) {
       const ip = c.req.header("cf-connecting-ip") ?? "local";

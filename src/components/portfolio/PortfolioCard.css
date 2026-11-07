@@ -1,0 +1,168 @@
+/* The portfolio task line on the home page, and the full-screen layer the portfolio
+   pages open in (their own styles are in src/portfolio/portfolio.css, loaded with them). */
+
+.ptc {
+  padding-block: clamp(24px, 4vw, 48px) 0;
+}
+
+/* One clickable band: words on the left, the action on the right, hairlines around. */
+.ptc__card {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 40px;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: clamp(22px, 3vw, 32px) 0;
+  border-block: 1px solid rgb(237 237 237 / 0.12);
+}
+
+.ptc__text {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ptc__eyebrow {
+  margin: 0;
+  color: var(--orange);
+  letter-spacing: 0.16em;
+}
+
+.ptc__title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  transition: color 0.2s;
+}
+
+.ptc__card:hover .ptc__title {
+  color: var(--violet);
+}
+
+.ptc__line {
+  margin: 0;
+  color: var(--muted);
+}
+
+.ptc__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.ptc__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.ptc__status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ptc__status--idle {
+  color: var(--muted);
+}
+.ptc__status--wait {
+  color: var(--cyan);
+}
+.ptc__status--act {
+  color: var(--orange);
+}
+.ptc__status--done {
+  color: var(--leaf);
+}
+
+.ptc__late {
+  color: var(--cherry);
+}
+
+.ptc__unread {
+  color: var(--orange);
+  font-weight: 600;
+}
+
+.ptc__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1px solid rgb(237 237 237 / 0.2);
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.ptc__card:hover .ptc__go {
+  border-color: var(--violet);
+  background: var(--violet);
+  color: #120c22;
+}
+
+/* Progress, as a hairline along the bottom edge. */
+.ptc__bar {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 2px;
+}
+
+.ptc__bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+}
+
+/* ---------- The full-screen layer ---------- */
+.pf-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+}
+
+.pf-layer__loading {
+  padding: 40px var(--gutter);
+  color: var(--muted);
+}
+
+/* The header's portfolio link and its unread dot. */
+.header__link--portfolio {
+  position: relative;
+  color: var(--cyan);
+}
+
+.header__dot {
+  position: absolute;
+  top: -4px;
+  right: -9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--bg);
+  font-size: 0.62rem;
+  line-height: 16px;
+  text-align: center;
+}

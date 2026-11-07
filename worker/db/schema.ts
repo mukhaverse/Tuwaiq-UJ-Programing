@@ -3,6 +3,8 @@
 import { sql } from "drizzle-orm";
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { COMMITTEES } from "../../src/data/crew";
+import { STATUSES, SUBMISSION_KINDS } from "../../src/data/portfolio";
+import { user } from "./auth-schema";
 
 const timestamps = {
   createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
@@ -233,6 +235,260 @@ export const projectMembers = sqliteTable(
       .references(() => members.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.projectId, t.memberId] })]
+);
+
+/* ---------- Portfolio task: the official roster and who's linked to it ----------
+   Private: only the /api/portfolio routes read these, never /api/content. */
+
+// Programming Track members from the club's registration sheet, imported by a leader.
+// The email is how a member proves who they are (a code is sent to it), stored
+// trimmed and lowercased. Inactive members keep their history but lose access.
+export const roster = sqliteTable("roster", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  // Their public member card on the site, found automatically by an exact name match
+  // (ignoring case and extra spaces), so the portfolio pages can show their character.
+  // Read only: the character itself lives on the member card (members table).
+  memberId: text("member_id")
+    .unique()
+    .references(() => members.id, { onDelete: "set null" }),
+  ...timestamps,
+});
+
+// Every member sign-in attempt by email, for the leaders (dashboard → Sign-ins) and to
+// slow down guessing: too many misses from one visitor and the form stops answering.
+export const memberSignins = sqliteTable(
+  "member_signins",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    // The roster member it matched; null for an email that isn't on the roster.
+    rosterId: integer("roster_id").references(() => roster.id, { onDelete: "set null" }),
+    // What was typed, trimmed and lowercased.
+    email: text("email").notNull(),
+    ok: integer("ok", { mode: "boolean" }).notNull(),
+    // Only used to count misses per visitor; never shown.
+    ip: text("ip").notNull().default(""),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("member_signins_created").on(t.createdAt), index("member_signins_ip").on(t.ip, t.createdAt)]
+);
+
+// A verified link between a roster member and the login (GitHub account) that proved
+// it owns their email. One login per member and one member per login, held by the
+// database itself: a second claim fails on the unique keys, however it's attempted.
+export const rosterLinks = sqliteTable("roster_links", {
+  rosterId: integer("roster_id")
+    .primaryKey()
+    .references(() => roster.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  linkedAt: text("linked_at").notNull().default(sql`(datetime('now'))`),
+});
+
+// One-time codes emailed to a roster address. Only a keyed hash of the code is kept;
+// each is single-use, expires after a few minutes and allows a few wrong tries.
+export const emailCodes = sqliteTable(
+  "email_codes",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    rosterId: integer("roster_id")
+      .notNull()
+      .references(() => roster.id, { onDelete: "cascade" }),
+    codeHash: text("code_hash").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    expiresAt: text("expires_at").notNull(),
+    usedAt: text("used_at"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("email_codes_user").on(t.userId), index("email_codes_roster").on(t.rosterId)]
+);
+
+export const ACCESS_EVENT_KINDS = [
+  "linked",
+  "unlinked",
+  "blocked",
+  "unblocked",
+  "not_on_roster",
+  "already_linked",
+  "wrong_code",
+  "too_many_tries",
+  "email_failed",
+  "several_matches",
+  "github_set",
+  "github_cleared",
+  "character_set",
+] as const;
+
+// Sign-up and access history for the leaders: links made and removed, and the problems
+// (an email that isn't on the roster, a member someone else already linked…).
+export const accessEvents = sqliteTable(
+  "access_events",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    kind: text("kind", { enum: ACCESS_EVENT_KINDS }).notNull(),
+    rosterId: integer("roster_id").references(() => roster.id, { onDelete: "set null" }),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    // Who it was (their GitHub name), what they typed, or which leader did it.
+    detail: text("detail").notNull().default(""),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("access_events_created").on(t.createdAt)]
+);
+
+/* ---------- Portfolio task: submissions, reviews, the conversation ---------- */
+
+// One per roster member, made when they link (or first touched). `seq` counts every
+// change of state; each change writes portfolio_events (rosterId, seq + 1), whose unique
+// key makes a double click or two leaders acting at once fail instead of applying twice.
+export const portfolioTasks = sqliteTable("portfolio_tasks", {
+  rosterId: integer("roster_id")
+    .primaryKey()
+    .references(() => roster.id, { onDelete: "cascade" }),
+  status: text("status", { enum: STATUSES }).notNull().default("not_started"),
+  seq: integer("seq").notNull().default(0),
+  // Final corrections asked for so far (capped by MAX_CORRECTIONS).
+  corrections: integer("corrections").notNull().default(0),
+  currentUrl: text("current_url"),
+  initialAt: text("initial_at"),
+  revisedAt: text("revised_at"),
+  completedAt: text("completed_at"),
+  completedBy: text("completed_by"),
+  lastActivityAt: text("last_activity_at").notNull().default(sql`(datetime('now'))`),
+  ...timestamps,
+});
+
+// Every portfolio a member sent, oldest first. Never edited or removed.
+export const portfolioSubmissions = sqliteTable(
+  "portfolio_submissions",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    rosterId: integer("roster_id")
+      .notNull()
+      .references(() => roster.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    kind: text("kind", { enum: SUBMISSION_KINDS }).notNull(),
+    url: text("url").notNull(),
+    // Late against the deadline it counted for; null when it had none.
+    late: integer("late", { mode: "boolean" }),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [uniqueIndex("portfolio_submissions_version").on(t.rosterId, t.version)]
+);
+
+export const PORTFOLIO_EVENT_KINDS = ["submitted", "revisions_requested", "approved"] as const;
+
+// The review history: each change of state, who made it and from what to what.
+export const portfolioEvents = sqliteTable(
+  "portfolio_events",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    rosterId: integer("roster_id")
+      .notNull()
+      .references(() => roster.id, { onDelete: "cascade" }),
+    seq: integer("seq").notNull(),
+    kind: text("kind", { enum: PORTFOLIO_EVENT_KINDS }).notNull(),
+    fromStatus: text("from_status", { enum: STATUSES }).notNull(),
+    toStatus: text("to_status", { enum: STATUSES }).notNull(),
+    actorId: text("actor_id").references(() => user.id, { onDelete: "set null" }),
+    actorName: text("actor_name").notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [uniqueIndex("portfolio_events_seq").on(t.rosterId, t.seq)]
+);
+
+export const MESSAGE_KINDS = ["comment", "submission", "feedback", "revisions", "approval"] as const;
+
+// The member's conversation with the leaders, in order: questions and replies, the note
+// sent with each submission, and the leaders' official feedback. There are no routes
+// that edit or delete these, for anyone.
+export const portfolioMessages = sqliteTable(
+  "portfolio_messages",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    rosterId: integer("roster_id")
+      .notNull()
+      .references(() => roster.id, { onDelete: "cascade" }),
+    authorId: text("author_id").references(() => user.id, { onDelete: "set null" }),
+    authorName: text("author_name").notNull(),
+    authorRole: text("author_role", { enum: ["member", "leader"] }).notNull(),
+    kind: text("kind", { enum: MESSAGE_KINDS }).notNull(),
+    body: text("body").notNull().default(""),
+    // The submission this message came with (kind "submission"), by version.
+    version: integer("version"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("portfolio_messages_roster").on(t.rosterId, t.createdAt)]
+);
+
+// When each person last opened a member's thread, so newer messages show as new.
+export const portfolioReads = sqliteTable(
+  "portfolio_reads",
+  {
+    rosterId: integer("roster_id")
+      .notNull()
+      .references(() => roster.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    readAt: text("read_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [primaryKey({ columns: [t.rosterId, t.userId] })]
+);
+
+export const NOTIFICATION_KINDS = [
+  // For the leaders
+  "submitted",
+  "resubmitted",
+  "url_updated",
+  "member_comment",
+  // For the member
+  "feedback",
+  "reply",
+  "revisions_requested",
+  "reviewed",
+  "approved",
+] as const;
+
+// In-app notifications. "leaders" ones are for every leader, "member" ones for the
+// member of rosterId. Whether someone has read one is kept per person in
+// notification_reads, so one leader reading it leaves it unread for the other.
+export const notifications = sqliteTable(
+  "notifications",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    audience: text("audience", { enum: ["leaders", "member"] }).notNull(),
+    rosterId: integer("roster_id")
+      .notNull()
+      .references(() => roster.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: NOTIFICATION_KINDS }).notNull(),
+    actorName: text("actor_name").notNull(),
+    // Unique per event, so the same event can't notify twice.
+    dedupeKey: text("dedupe_key").notNull().unique(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("notifications_audience").on(t.audience, t.rosterId)]
+);
+
+export const notificationReads = sqliteTable(
+  "notification_reads",
+  {
+    notificationId: integer("notification_id")
+      .notNull()
+      .references(() => notifications.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    readAt: text("read_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [primaryKey({ columns: [t.notificationId, t.userId] })]
 );
 
 export * from "./auth-schema";

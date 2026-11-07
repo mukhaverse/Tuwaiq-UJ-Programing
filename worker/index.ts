@@ -13,6 +13,7 @@ import bios from "./routes/bios";
 import content from "./routes/content";
 import looks from "./routes/looks";
 import media from "./routes/media";
+import portfolio from "./routes/portfolio";
 import requests from "./routes/requests";
 
 const app = new Hono<AppEnv>().basePath("/api");
@@ -42,6 +43,8 @@ app.get("/health", (c) => c.json({ ok: true }));
 
 // Login: sign in with GitHub, sign out, sessions (handled by Better Auth).
 app.use("/auth/*", sameOrigin, rateLimit("RL_AUTH", "auth"));
+// Member sign-in by email (lib/memberSignIn.ts): a tighter limit, to slow down guessing.
+app.use("/auth/member/*", rateLimit("RL_MEMBER_SIGNIN", "member-signin"));
 app.on(["GET", "POST"], "/auth/*", (c) => createAuth(c.env).handler(c.req.raw));
 
 // Who's signed in (null when nobody is). The admin panel starts here.
@@ -50,6 +53,12 @@ app.get("/me", async (c) => {
   const user = await getUser(c.env, c.req.raw.headers);
   return c.json({ user: user && { name: user.name, email: user.email, image: user.image, role: user.role } });
 });
+
+// The portfolio task: members (after proving their roster email) and the track leaders.
+// Each route checks who's signed in. Email codes also have per-login caps in the route.
+app.use("/portfolio/*", sameOrigin);
+app.use("/portfolio/*", rateLimit("RL_PORTFOLIO", "portfolio"));
+app.route("/portfolio", portfolio);
 
 // Admin only
 app.use("/admin/*", sameOrigin);

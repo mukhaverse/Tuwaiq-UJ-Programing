@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { track } from "../../data/track";
 import Mountain from "../brand/Mountain";
+import { usePortfolioSession } from "../../portfolio/session";
 import "./Layout.css";
 
 // `minor` links are dropped on phones, where all of them don't fit next to the logo.
@@ -14,6 +15,9 @@ const links = [
 /* While the splash plays, the header is bare and its mark is an empty slot; when
    it ends the mark mounts with the splash mountain's layoutId and flies in. */
 export default function Header({ booting = false }) {
+  const portfolio = usePortfolioSession();
+  // Only for people the portfolio task is for: members and leaders, or anyone while sign-up is open.
+  const showPortfolio = ["member", "leader"].includes(portfolio.kind) || (portfolio.signupOpen && ["guest", "unverified"].includes(portfolio.kind));
   return (
     <header className={`header ${booting ? "is-booting" : ""}`}>
       <div className="wrap header__inner">
@@ -43,6 +47,16 @@ export default function Header({ booting = false }) {
               {l.label}
             </a>
           ))}
+          {!booting && showPortfolio && (
+            <a href="#portfolio" className="header__link header__link--portfolio mono">
+              Portfolio
+              {portfolio.unread > 0 && (
+                <span className="header__dot" aria-label={`${portfolio.unread} unread`}>
+                  {portfolio.unread > 9 ? "9+" : portfolio.unread}
+                </span>
+              )}
+            </a>
+          )}
         </nav>
       </div>
     </header>

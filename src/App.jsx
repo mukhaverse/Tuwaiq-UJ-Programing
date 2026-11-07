@@ -10,12 +10,14 @@ import NextToast from "./components/members/NextToast";
 import Playground from "./components/playground/Playground";
 import Journey from "./components/journey/Journey";
 import Builds from "./components/builds/Builds";
+import PortfolioCard from "./components/portfolio/PortfolioCard";
+import PortfolioRoute from "./components/portfolio/PortfolioRoute";
 // The admin panel is a separate page (see vite.config.js); nothing here links to it.
 
 const BOOTED_KEY = "pt:booted";
 
 // The boot splash plays once per browser session. It's skipped for deep links
-// (#members, #member/<id>, #memories/<id>, #request) and for people who prefer reduced motion.
+// (#members, #member/<id>, #memories/<id>, #request, #portfolio) and for people who prefer reduced motion.
 function needsSplash() {
   if (window.location.hash) return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
@@ -81,6 +83,7 @@ export default function App() {
           <>
             <main>
               <Hero />
+              <PortfolioCard />
               <Members />
               <Builds />
               <Journey />
@@ -88,6 +91,7 @@ export default function App() {
             </main>
             <Footer />
             <NextToast />
+            <PortfolioRoute />
           </>
         )}
       </LayoutGroup>

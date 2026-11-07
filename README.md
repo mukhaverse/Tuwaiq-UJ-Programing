@@ -12,7 +12,7 @@ npm run dev        # site + API + local database at http://localhost:5173
 npm run build      # production build into dist/
 npm run lint
 npm run typecheck  # the Worker (TypeScript)
-npm test           # the look rules (src/data/looks.ts)
+npm test           # the look rules (src/data/looks.ts) and the portfolio workflow (src/data/portfolio.ts)
 ```
 
 ## How it fits together
@@ -34,6 +34,9 @@ worker/                 the API (TypeScript)
   routes/media.ts       GET /api/media/<key>: uploaded files
   routes/bios.ts        POST /api/bios/<member id>: anyone writes a member's bio from their profile
   routes/looks.ts       POST /api/looks/<member id>: anyone suggests a look for a member (waits for an admin)
+  routes/portfolio/     the portfolio task: sign-up with an emailed code, a member's own task,
+                        and the leaders' side (see "Portfolio task" below)
+  lib/email.ts          sending email (the portfolio sign-up codes)
   routes/admin/         one file per thing the admin panel edits (members, milestones, crew, badges,
                         settings, uploads, survey, projects, tracks); index.ts puts all of them behind requireRole("admin")
   db/schema.ts          the site's tables (Drizzle)
@@ -142,6 +145,40 @@ The change applies on their next click. **Locally**, the sign-in page also has a
 **The hero climb** puts the first few members' characters on the Commit Mountain: the leader up the left slope, the co-leader one step below her, and the next member on the right slope. Who stands where is `SPOTS` in `src/components/intro/Hero.jsx`: one mountain column (0–14; the summit is 8) per character, in roster order.
 
 **Share a member's card** — every profile has a link: `/#member/<id>`.
+
+## Portfolio task ("Build Your Portfolio")
+
+Members submit a portfolio link, get feedback from the leaders, resubmit, and get approved. It lives at `/#portfolio` (a full-screen page over the site, its own code chunk), with a card under the hero and a **Portfolio** link in the header for signed-in members and leaders. Code: `worker/routes/portfolio/` (API), `src/portfolio/` (pages), `src/data/portfolio.ts` (the workflow rules, shared by both, `npm test`).
+
+**Who sees what** (checked by the Worker on every request, never just hidden in the page):
+
+- **Leaders**: the GitHub accounts in `LEADER_GITHUB_IDS` (`wrangler.jsonc`, numeric ids). They get the dashboard, every member's task, reviews, deadlines, the roster and sign-ups. This is separate from the admin panel (`ADMIN_GITHUB_IDS`, unchanged).
+- **Members** sign in with **the email they registered with in the club** (`worker/lib/memberSignIn.ts`, `POST /api/auth/member/sign-in`). If it's on the roster (trimmed, lowercased) and their access isn't paused, they're signed in; otherwise the page says *"We couldn't find your account. Contact a track leader."* No code and no GitHub for members. There's no proof they own the email, so anyone who knows a member's email can sign in as them. To slow down guessing: 5 tries a minute per visitor (`RL_MEMBER_SIGNIN`), at most 15 misses an hour per visitor, and every attempt is logged (**Dashboard → Sign-ins**: email and time). Members see their own task only; roster emails never reach their browser.
+- **Everyone else** sees nothing private. GitHub sign-in is only for admins and leaders.
+- **Characters**: each roster entry is matched to its public member card automatically, by exact name (ignoring case and extra spaces), and the portfolio pages show that character, read-only. No match shows a "?", and Roster lists who didn't match (fix the spelling on either side; it matches on the next load). Character editing is unchanged (profiles, badge rules).
+
+**Workflow**: Not started → Submitted (awaiting review) → Revisions requested → Resubmitted (awaiting final review) → Completed. A final review may ask for **one** final correction (no deadline of its own); after that it can only be approved. A leader can approve at any review. While waiting for a review, a member can send a new link (kept as a new version, status unchanged). Every version, message and decision is kept; nothing can be edited or deleted. Messages never change the status.
+
+**Turning member sign-in on** (it's off by default):
+
+1. Leaders: **Portfolio → Roster → Import**, choose the registration sheet (.xlsx or .csv) and its name and email columns. It's read in the browser; only names and emails are saved, to the private `roster` table. Re-importing adds new emails, renames, and never touches existing sign-ins. **Never commit the sheet** (`*.xlsx` / `*.csv` are git-ignored).
+2. Check **Roster**: it says how many members matched a member card (for their character) and lists the ones that didn't.
+3. `MEMBER_SIGNUP: "true"` in `wrangler.jsonc` and push.
+
+**Sign out** on a roster row ends that member's session (they can sign in again with their email); **Pause** stops them signing in at all.
+
+**The earlier emailed one-time codes** (`worker/lib/email.ts`, `/api/portfolio/verify/*`) are kept but off: they only work with `MEMBER_VERIFY: "email_code"` plus `EMAIL_PROVIDER`, `EMAIL_FROM` and the `EMAIL_API_KEY` secret.
+
+**Deadlines**: leaders manage them under **Portfolio → Deadlines** (in their own timezone; everyone sees them in theirs). **+ Add deadline** as many times as needed (up to 20): each has a date and time, an optional title and note, and **Counts for**:
+
+- *Initial submission* / *Revised submission* (at most one each): what submissions are marked On time / Late against, and what makes a member Overdue.
+- *Just a date* (check-ins, a showcase…): shown to members with a countdown; never marks anyone late.
+
+Members see every deadline in order with the next one highlighted (and the next one on the home page card). It's still one task with one portfolio link: adding, editing or removing deadlines never changes anyone's status, progress or past On time / Late flags (each flag is saved when the submission is made). Late submissions are accepted and marked Late unless "Close submissions once their deadline passes" is ticked (it only applies to the initial and revised deadlines). Deadlines are stored as one JSON value in `settings` (`portfolio_deadlines`); the first two-deadline format is still read.
+
+**Access**: **Dashboard → Sign-ins** shows every member sign-in by email, and the misses. **Roster → Log** keeps sign-outs, pauses and imports.
+
+**Adding a leader**: put their GitHub numeric id (from `https://api.github.com/users/<username>`, field `id`) in `LEADER_GITHUB_IDS`, comma-separated, and push. Locally, an email + password account with `role = 'admin'` counts as a leader.
 
 ## Deploying
 

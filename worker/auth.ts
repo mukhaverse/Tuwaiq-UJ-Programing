@@ -1,8 +1,13 @@
-// Login (Better Auth): "Sign in with GitHub", sessions stored in D1.
-// Only the GitHub accounts listed in ADMIN_GITHUB_IDS (wrangler.jsonc) can sign in
-// at all: anyone else is turned away before an account or session is created.
+// Login (Better Auth), sessions stored in D1.
+//
+// Who can sign in:
+//   - with GitHub: only the accounts in ADMIN_GITHUB_IDS (the admin panel) and
+//     LEADER_GITHUB_IDS (the portfolio task's leaders), both in wrangler.jsonc. Anyone
+//     else is turned away before an account or session is created;
+//   - members of the portfolio task: with the email they registered with in the club,
+//     while MEMBER_SIGNUP=true (lib/memberSignIn.ts, POST /api/auth/member/sign-in).
 // A GitHub account's numeric id never changes (unlike its username or email); find
-// yours at https://api.github.com/users/<username> ("id").
+// one at https://api.github.com/users/<username> ("id").
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { github } from "better-auth/social-providers";
@@ -10,35 +15,80 @@ import { and, eq, ne } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { getDb, type AppEnv } from "./db/client";
 import * as schema from "./db/schema";
+import { devLogin, emailProvider } from "./lib/email";
+import { memberSignIn } from "./lib/memberSignIn";
+
+export { devLogin };
 
 export type Role = "admin" | "member";
 
-const allowedIds = (env: Env) =>
+const idList = (value: string | undefined) =>
   new Set(
-    (env.ADMIN_GITHUB_IDS ?? "")
+    (value ?? "")
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
   );
+const adminIds = (env: Env) => idList(env.ADMIN_GITHUB_IDS);
+const leaderIds = (env: Env) => idList(env.LEADER_GITHUB_IDS);
 
-// Email + password sign-in, for local development only (DEV_LOGIN in .dev.vars),
-// because the GitHub app can only send people back to the live site. It stays off
-// unless the site itself runs on localhost, even if DEV_LOGIN is set by mistake.
-export const devLogin = (env: Env) => env.DEV_LOGIN === "true" && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(env.BETTER_AUTH_URL);
+/** Members can sign in with their roster email only while this is switched on. */
+export const memberSignupOpen = (env: Env) => env.MEMBER_SIGNUP === "true";
 
-/** True when this user signed in with an allowed GitHub account (or is a local dev account). */
-async function isAllowed(env: Env, userId: string) {
-  const db = getDb(env);
-  const ids = allowedIds(env);
-  const accounts = await db
+/**
+ * The earlier sign-up by an emailed one-time code. Kept, but off unless MEMBER_VERIFY is
+ * "email_code" (and email is set up).
+ */
+export const emailCodesOn = (env: Env) => memberSignupOpen(env) && String(env.MEMBER_VERIFY ?? "") === "email_code" && emailProvider(env) !== null;
+
+async function accountsOf(env: Env, userId: string) {
+  return getDb(env)
     .select({ providerId: schema.account.providerId, accountId: schema.account.accountId })
     .from(schema.account)
     .where(eq(schema.account.userId, userId));
+}
+
+/** True when this user signed in with an admin GitHub account (or is a local dev account). */
+async function isAllowed(env: Env, userId: string) {
+  const ids = adminIds(env);
+  const accounts = await accountsOf(env, userId);
   return accounts.some((a) => (a.providerId === "github" && ids.has(a.accountId)) || (a.providerId === "credential" && devLogin(env)));
 }
 
+/**
+ * True when this user is one of the portfolio task's leaders: a GitHub account in
+ * LEADER_GITHUB_IDS. Locally (DEV_LOGIN), an email + password account with the admin
+ * role counts too, so the leader side can be tried without GitHub.
+ */
+export async function isLeader(env: Env, user: { id: string; role?: string }) {
+  const ids = leaderIds(env);
+  const accounts = await accountsOf(env, user.id);
+  return accounts.some(
+    (a) => (a.providerId === "github" && ids.has(a.accountId)) || (a.providerId === "credential" && devLogin(env) && user.role === "admin")
+  );
+}
+
+/** True when this user's login is linked to a roster member. */
+async function isLinked(env: Env, userId: string) {
+  const [row] = await getDb(env).select({ id: schema.rosterLinks.rosterId }).from(schema.rosterLinks).where(eq(schema.rosterLinks.userId, userId));
+  return Boolean(row);
+}
+
+/** May this GitHub account sign in? Admins and leaders only; checked before anything is written. */
+function githubMaySignIn(env: Env, githubId: string) {
+  return adminIds(env).has(githubId) || leaderIds(env).has(githubId);
+}
+
+/** May this (already created) user get a session? */
+async function userMayHaveSession(env: Env, userId: string) {
+  if (await isAllowed(env, userId)) return true;
+  const accounts = await accountsOf(env, userId);
+  if (accounts.some((a) => a.providerId === "github" && leaderIds(env).has(a.accountId))) return true;
+  // Members: the email sign-in links the login to the roster before asking for a session.
+  return isLinked(env, userId);
+}
+
 export function createAuth(env: Env) {
-  const ids = allowedIds(env);
   const githubOptions = { clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET };
   const githubDefault = github(githubOptions);
 
@@ -50,15 +100,16 @@ export function createAuth(env: Env) {
     socialProviders: {
       github: {
         ...githubOptions,
-        // Ask GitHub who this is, and stop right there unless it's an allowed account:
+        // Ask GitHub who this is, and stop right there unless they may sign in:
         // nothing is written to the database for anyone else.
         getUserInfo: async (token) => {
           const info = await githubDefault.getUserInfo(token);
-          return info && ids.has(String(info.data.id)) ? info : null;
+          return info && githubMaySignIn(env, String(info.data.id)) ? info : null;
         },
       },
     },
     emailAndPassword: { enabled: devLogin(env) },
+    plugins: [memberSignIn(env, { open: () => memberSignupOpen(env) })],
     // Never join a new login onto an existing user just because the emails match.
     account: { accountLinking: { enabled: false } },
     // Short sessions: a day, renewed while in use.
@@ -68,12 +119,12 @@ export function createAuth(env: Env) {
       ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
     },
     databaseHooks: {
-      // Second lock: no session for anyone outside the list, whatever route they came in by.
+      // Second lock: no session for anyone who may not sign in, whatever route they came in by.
       // One session at a time: signing in ends every other one for that account, so a
       // forgotten browser (or one someone else got into) is logged out by the next sign-in.
       session: {
         create: {
-          before: async (session) => ((await isAllowed(env, session.userId)) ? undefined : false),
+          before: async (session) => ((await userMayHaveSession(env, session.userId)) ? undefined : false),
           after: async (session) => {
             await getDb(env)
               .delete(schema.session)
@@ -104,5 +155,35 @@ export const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
   if (!user) return c.json({ error: "Sign in first" }, 401);
   if (user.role !== "admin" || !(await isAllowed(c.env, user.id))) return c.json({ error: "You don't have access to this" }, 403);
   c.set("user", user);
+  await next();
+});
+
+/** Lets the request through only for the portfolio task's leaders (checked on every request). */
+export const requireLeader = createMiddleware<AppEnv>(async (c, next) => {
+  const user = await getUser(c.env, c.req.raw.headers);
+  if (!user) return c.json({ error: "Sign in first" }, 401);
+  if (!(await isLeader(c.env, user))) return c.json({ error: "You don't have access to this" }, 403);
+  c.set("user", user);
+  await next();
+});
+
+/** The roster member this user is linked to, if the link exists and the member is active. */
+export async function linkedMember(env: Env, userId: string) {
+  const [row] = await getDb(env)
+    .select({ id: schema.roster.id, name: schema.roster.name, active: schema.roster.active, memberId: schema.roster.memberId })
+    .from(schema.rosterLinks)
+    .innerJoin(schema.roster, eq(schema.roster.id, schema.rosterLinks.rosterId))
+    .where(eq(schema.rosterLinks.userId, userId));
+  return row ?? null;
+}
+
+/** Lets the request through only for a verified, active roster member, and notes which one. */
+export const requireMember = createMiddleware<AppEnv>(async (c, next) => {
+  const user = await getUser(c.env, c.req.raw.headers);
+  if (!user) return c.json({ error: "Sign in first" }, 401);
+  const member = await linkedMember(c.env, user.id);
+  if (!member || !member.active) return c.json({ error: "You don't have access to this" }, 403);
+  c.set("user", user);
+  c.set("member", { id: member.id, name: member.name, memberId: member.memberId });
   await next();
 });

@@ -37,7 +37,19 @@
     "GITHUB_CLIENT_ID": "Ov23likp9e0LlwBePyir",
     // The only GitHub accounts that can sign in to the admin panel (numeric ids,
     // comma-separated). 178550280 = Shumokh.
-    "ADMIN_GITHUB_IDS": "178550280"
+    "ADMIN_GITHUB_IDS": "178550280",
+    // The portfolio task's leaders (same format): they review every member's portfolio,
+    // set the deadlines and manage member access.
+    // 178550280 = Shumokh (leader), 153850211 = Remas, @Rema230Al (co-leader).
+    "LEADER_GITHUB_IDS": "178550280,153850211",
+    // Member sign-in for the portfolio task: "true" lets members sign in with the email
+    // they registered with in the club (when it's on the roster). Leaders always use GitHub.
+    "MEMBER_SIGNUP": "false",
+    // The earlier sign-up by emailed one-time code: off. "email_code" turns it back on (it
+    // also needs EMAIL_PROVIDER, EMAIL_FROM and the EMAIL_API_KEY secret). See README.
+    "MEMBER_VERIFY": "",
+    "EMAIL_PROVIDER": "",
+    "EMAIL_FROM": ""
   },
 
   // Per-visitor rate limits (see worker/lib/guard.ts). Period is 10 or 60 seconds.
@@ -45,7 +57,12 @@
     // Public writes: bio suggestions and build requests.
     { "name": "RL_WRITES", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
     // Sign-in attempts.
-    { "name": "RL_AUTH", "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } }
+    { "name": "RL_AUTH", "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } },
+    // Portfolio task: submissions, comments, reviews and email codes. Generous, because a
+    // whole class on campus Wi-Fi shares one IP; codes have their own caps per login (routes/portfolio/account.ts).
+    { "name": "RL_PORTFOLIO", "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } },
+    // Member sign-in by email: few tries per visitor, to slow down guessing emails.
+    { "name": "RL_MEMBER_SIGNIN", "namespace_id": "1004", "simple": { "limit": 5, "period": 60 } }
   ],
 
   "observability": { "enabled": true }

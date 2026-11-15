@@ -36,8 +36,8 @@
     "BETTER_AUTH_URL": "https://tuwaiq-uj-programing.shumokhalsharif.workers.dev",
     "GITHUB_CLIENT_ID": "Ov23likp9e0LlwBePyir",
     // The only GitHub accounts that can sign in to the admin panel (numeric ids,
-    // comma-separated). 178550280 = Shumokh.
-    "ADMIN_GITHUB_IDS": "178550280"
+    // comma-separated). 178550280 = Shumokh, 153850211 = Remas (co-leader).
+    "ADMIN_GITHUB_IDS": "178550280,153850211"
   },
 
   // Per-visitor rate limits (see worker/lib/guard.ts). Period is 10 or 60 seconds.

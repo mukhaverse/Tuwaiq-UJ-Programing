@@ -239,4 +239,34 @@ export const projectMembers = sqliteTable(
   (t) => [primaryKey({ columns: [t.projectId, t.memberId] })]
 );
 
+// Live board (/live/): one question at a time on the projector, answered from phones.
+// The current session is the newest one with no ended_at; publishing a question ends it.
+export const liveSessions = sqliteTable("live_sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  question: text("question").notNull(),
+  isOpen: integer("is_open", { mode: "boolean" }).notNull().default(true),
+  // The leader (auth user id) who published it.
+  createdBy: text("created_by"),
+  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  endedAt: text("ended_at"),
+});
+
+export const liveAnswers = sqliteTable(
+  "live_answers",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    sessionId: integer("session_id")
+      .notNull()
+      .references(() => liveSessions.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    // Hidden by a leader: kept, but never sent to the board again.
+    hidden: integer("hidden", { mode: "boolean" }).notNull().default(false),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("live_answers_session").on(t.sessionId, t.createdAt)]
+);
+
 export * from "./auth-schema";

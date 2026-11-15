@@ -11,6 +11,7 @@ import { rateLimit, sameOrigin } from "./lib/guard";
 import admin from "./routes/admin";
 import bios from "./routes/bios";
 import content from "./routes/content";
+import live from "./routes/live";
 import looks from "./routes/looks";
 import media from "./routes/media";
 import requests from "./routes/requests";
@@ -38,6 +39,8 @@ app.use("/bios/*", sameOrigin, rateLimit("RL_WRITES", "bios"));
 app.route("/bios", bios);
 app.use("/looks/*", sameOrigin, rateLimit("RL_WRITES", "looks"));
 app.route("/looks", looks);
+app.use("/live/*", sameOrigin);
+app.route("/live", live);
 app.get("/health", (c) => c.json({ ok: true }));
 
 // Login: sign in with GitHub, sign out, sessions (handled by Better Auth).
@@ -64,4 +67,19 @@ app.onError((err, c) => {
   return c.json({ error: "Something went wrong" }, 500);
 });
 
-export default app;
+// The live board's WebSocket goes straight to its Durable Object, before Hono adds headers
+// to a response that can't take them. Same-site pages only.
+export { LiveBoard } from "./live/LiveBoard";
+
+export default {
+  fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname === "/api/live/ws") {
+      const origin = request.headers.get("origin");
+      if (origin && origin !== new URL(env.BETTER_AUTH_URL).origin) return new Response("Request refused", { status: 403 });
+      if (request.headers.get("upgrade")?.toLowerCase() !== "websocket") return new Response("Expected a WebSocket", { status: 426 });
+      return env.LIVE_BOARD.get(env.LIVE_BOARD.idFromName("board")).fetch(request);
+    }
+    return app.fetch(request, env, ctx);
+  },
+} satisfies ExportedHandler<Env>;

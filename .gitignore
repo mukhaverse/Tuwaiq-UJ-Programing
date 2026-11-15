@@ -32,3 +32,6 @@ dist-ssr
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# Live board design reference (read only, never committed)
+live-board-reference.html

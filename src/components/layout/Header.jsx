@@ -9,6 +9,8 @@ const links = [
   { href: "#builds", label: "Builds" },
   { href: "#journey", label: "Journey" },
   { href: "#playground", label: "Playground", minor: true },
+  // Its own page (src/live/), for workshops.
+  { href: "/live/", label: "Live Board" },
 ];
 
 /* While the splash plays, the header is bare and its mark is an empty slot; when

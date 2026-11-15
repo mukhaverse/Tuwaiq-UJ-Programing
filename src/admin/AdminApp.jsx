@@ -12,6 +12,7 @@ import SiteTextSection from "./sections/SiteText";
 import FilesSection from "./sections/Files";
 import SurveySection from "./sections/Survey";
 import TracksSection from "./sections/Tracks";
+import LiveBoardSection from "./sections/LiveBoard";
 import useAdminRoute from "./useAdminRoute";
 import "./admin.css";
 
@@ -21,6 +22,7 @@ const SECTIONS = [
   { id: "projects", label: "Projects", Component: ProjectsSection },
   { id: "tracks", label: "Tracks", Component: TracksSection },
   { id: "survey", label: "Survey", Component: SurveySection },
+  { id: "live", label: "Live board", Component: LiveBoardSection },
   { id: "journey", label: "Journey", Component: JourneySection },
   { id: "badges", label: "Badges", Component: BadgesSection },
   { id: "announcement", label: "Up next tile", Component: AnnouncementSection },

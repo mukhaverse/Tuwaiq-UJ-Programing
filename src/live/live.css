@@ -1,0 +1,608 @@
+/* The live board (CLIMB): one dark pixel theme. Hard edges, 2–3px borders,
+   offset black shadows; no rounded corners, no blur. */
+:root {
+  --bg: #0b0818;
+  --bg2: #120d24;
+  --panel: #1a1333;
+  --line: #2e2452;
+  --fg: #f4efff;
+  --muted: #b9aedb;
+  --dim: #857aad;
+  --purple: #7b4be0;
+  --teal: #2dd4bf;
+  --orange: #f5a54a;
+  --red: #fb7185;
+  /* Pixelify has no Arabic letters, so Arabic falls back to the site's Arabic face. */
+  --pix: "Pixelify Sans", "IBM Plex Sans Arabic", monospace;
+  --tag: "Silkscreen", "IBM Plex Sans Arabic", monospace;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--pix);
+  /* Only the ridge scrolls sideways. */
+  overflow-x: clip;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+  border-radius: 0;
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 14px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- nav ---------- */
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--line);
+}
+.topnav .brand {
+  font-family: var(--tag);
+  font-size: 13px;
+  color: var(--teal);
+  text-decoration: none;
+}
+.topnav .links {
+  margin-inline-start: auto;
+  display: flex;
+  gap: 4px;
+  font-family: var(--tag);
+  font-size: 12px;
+}
+.topnav .links a {
+  padding: 6px 10px;
+  color: var(--dim);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid transparent;
+}
+.topnav .links a:hover {
+  border-color: var(--line);
+  color: var(--fg);
+}
+.topnav .links a.on {
+  color: var(--fg);
+  background: var(--panel);
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--red);
+  animation: live-blink 1.2s steps(2) infinite;
+}
+@keyframes live-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  border: 2px solid var(--line);
+  background: var(--bg2);
+  padding: 9px 14px;
+  cursor: pointer;
+  font-family: var(--tag);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 #000;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--teal);
+}
+.btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #000;
+}
+.btn--pri {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+}
+.btn--danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: #1a0b12;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- question ---------- */
+.q {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+.q__main {
+  min-width: 0;
+}
+.q__state {
+  font-family: var(--tag);
+  font-size: 11px;
+  color: var(--teal);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.q__state.is-closed {
+  color: var(--dim);
+}
+.conn {
+  color: var(--orange);
+  border: 2px solid var(--orange);
+  padding: 1px 6px;
+}
+.q h1 {
+  margin: 6px 0 0;
+  font-weight: 700;
+  font-size: clamp(24px, 3.6vw, 42px);
+  line-height: 1.15;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.q__count {
+  flex: none;
+  text-align: end;
+}
+.q__count .n {
+  font-family: var(--tag);
+  font-size: 40px;
+  line-height: 1;
+}
+.q__count .l {
+  font-family: var(--tag);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ---------- the ridge ---------- */
+.ridge {
+  position: relative;
+}
+.stage {
+  position: relative;
+  /* Tall enough that the lower row of signs stays above the highest ledge. */
+  height: 600px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  border: 2px solid var(--line);
+  background: #0e0a22;
+  scrollbar-color: var(--purple) var(--bg2);
+  scrollbar-width: thin;
+}
+.stage::-webkit-scrollbar {
+  height: 10px;
+}
+.stage::-webkit-scrollbar-thumb {
+  background: var(--purple);
+}
+.stage::-webkit-scrollbar-track {
+  background: var(--bg2);
+}
+.track {
+  position: relative;
+}
+.ridge__tile {
+  position: absolute;
+  top: 0;
+  image-rendering: pixelated;
+}
+.layer {
+  position: absolute;
+  inset: 0;
+}
+.empty {
+  position: absolute;
+  left: 0;
+  top: 34%;
+  text-align: center;
+  font-family: var(--tag);
+  font-size: 14px;
+  color: var(--muted);
+}
+.jump {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 8;
+}
+
+/* A sign on its row, and under it the stem the pole runs down to the ledge. */
+.post {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+.sign {
+  position: relative;
+  flex: none;
+  z-index: 3;
+  background: #1e1640;
+  border: 3px solid var(--c);
+  padding: 8px 10px;
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 0.45);
+  transform-origin: 50% 100%;
+  pointer-events: auto;
+}
+.sign--leader {
+  cursor: pointer;
+}
+.sign--leader:hover {
+  outline: 2px dashed var(--red);
+  outline-offset: 2px;
+}
+.sign__who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--tag);
+  font-size: 11px;
+  color: var(--c);
+  min-width: 0;
+}
+.sign__who b {
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sign__icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+.sign p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sign__hide {
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  transform: translateY(-100%);
+  padding: 5px 10px;
+  font-size: 11px;
+}
+.post__stem {
+  position: relative;
+  flex: 1 0 10px;
+}
+.pole {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #e8dcc0;
+  transform-origin: 50% 100%;
+}
+.flag {
+  position: absolute;
+  top: 4px;
+  width: 16px;
+  height: 12px;
+  transform-origin: 0 50%;
+}
+.climber {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* Characters (the site's SVG ones). */
+.char {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.char .eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: char-blink 5.5s infinite;
+}
+@keyframes char-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+.char .sun__rays {
+  transform-origin: 100px 100px;
+  animation: char-spin 24s linear infinite;
+}
+@keyframes char-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* ---------- composer ---------- */
+.composer {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.composer__row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.composer__label {
+  font-family: var(--tag);
+  font-size: 11px;
+  color: var(--muted);
+}
+.composer input,
+.lead input {
+  flex: 1;
+  min-width: 180px;
+  background: var(--bg2);
+  border: 2px solid var(--line);
+  padding: 10px 12px;
+  font-size: 17px;
+  outline: none;
+}
+.composer input:focus,
+.lead input:focus {
+  border-color: var(--teal);
+}
+.composer input:disabled {
+  opacity: 0.5;
+}
+.composer__left {
+  font-family: var(--tag);
+  font-size: 10px;
+  color: var(--dim);
+  min-width: 3ch;
+  text-align: end;
+}
+.composer__left.is-low {
+  color: var(--orange);
+}
+.composer__error,
+.note {
+  margin: 0;
+  font-family: var(--tag);
+  font-size: 11px;
+  color: var(--red);
+}
+.composer__closed {
+  margin: 0;
+  border: 2px dashed var(--line);
+  padding: 8px;
+  text-align: center;
+  font-family: var(--tag);
+  font-size: 12px;
+  color: var(--muted);
+}
+.me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--tag);
+  font-size: 12px;
+  padding-inline: 4px;
+  min-width: 0;
+}
+.me__icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+.me__change {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--dim);
+  font-family: var(--tag);
+  font-size: 10px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ---------- leader ---------- */
+.lead {
+  border: 2px solid var(--line);
+  background: var(--bg2);
+}
+.lead summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-family: var(--tag);
+  font-size: 12px;
+  color: var(--orange);
+}
+.lead__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+.lead__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+.lead input {
+  min-width: 220px;
+  font-size: 15px;
+}
+.lead__hint {
+  font-family: var(--tag);
+  font-size: 10px;
+  color: var(--dim);
+}
+
+/* ---------- confirm ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgb(5 3 14 / 0.75);
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.box {
+  background: var(--panel);
+  border: 3px solid var(--purple);
+  padding: 20px;
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 6px 6px 0 #000;
+}
+.box h2 {
+  margin: 0;
+  font-family: var(--tag);
+  font-size: 16px;
+}
+.box p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.box__row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ---------- presentation mode (projector) ---------- */
+.exit {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 30;
+}
+body.present .topnav {
+  display: none;
+}
+body.present .wrap {
+  max-width: none;
+  padding-inline: 3vw;
+}
+body.present .stage {
+  height: calc(100vh - 190px);
+  min-height: 600px;
+}
+body.present .q h1 {
+  font-size: clamp(34px, 4.6vw, 64px);
+}
+body.present .q__count .n {
+  font-size: 56px;
+}
+body.present .sign p {
+  font-size: 17px;
+}
+body.present .sign__who {
+  font-size: 12px;
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 700px) {
+  .wrap {
+    padding-bottom: 150px;
+    gap: 12px;
+  }
+  .stage {
+    height: 460px;
+  }
+  .sign p {
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  .q__count .n {
+    font-size: 30px;
+  }
+  /* The composer stays at the bottom, under the ridge. */
+  body:not(.present) .composer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    border-width: 2px 0 0;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 0 #000;
+  }
+  .composer input {
+    min-width: 0;
+    font-size: 16px;
+  }
+  .composer__row:has(#live-answer) .me {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}

@@ -146,6 +146,7 @@ The change applies on their next click. **Locally**, the sign-in page also has a
 - **Leaders**: sign in on the admin page first (same browser), then open `/live/`: a **LEADER** panel appears to publish a question (clears the board for everyone), close or open answers, reset the board, and go into **Presentation mode** for the projector (Esc leaves it). Click a sign to hide an answer. Every one of these is checked on the server (`requireAdmin`), whatever the page shows.
 - **Limits**: 140 characters, plain text (tags are stripped); one answer every 10 seconds and at most 3 per member per question; 100 requests a minute per IP (`RL_LIVE`), since a whole room shares one wifi.
 - **How it's live**: answers are saved in D1 (`live_sessions`, `live_answers`) first, then sent through the `LiveBoard` Durable Object to every open board over WebSockets. Boards reconnect on their own and are sent the whole board again; if WebSockets can't get through they check `/api/live/state` every 3 seconds.
+- **Log**: every question asked, with all its answers (hidden ones marked), is in the admin panel under **Live board**. Publishing a new question keeps the old answers there; **Reset board** deletes the current question's answers for good.
 - **Locally**: `npm run dev`, then open `http://localhost:5173/live/`. For leader controls, sign in on the admin page with an email + password account promoted to admin (see Admin access below, with `--local`).
 
 **Share a member's card** — every profile has a link: `/#member/<id>`.

@@ -5,6 +5,7 @@ import type { AppEnv } from "../../db/client";
 import accessories from "./accessories";
 import badges from "./badges";
 import crew from "./crew";
+import live from "./live";
 import members from "./members";
 import milestones from "./milestones";
 import projects from "./projects";
@@ -30,5 +31,6 @@ admin.route("/accessories", accessories);
 admin.route("/settings", settings);
 admin.route("/uploads", uploads);
 admin.route("/survey", survey);
+admin.route("/live", live);
 
 export default admin;

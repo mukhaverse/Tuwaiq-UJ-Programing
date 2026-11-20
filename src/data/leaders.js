@@ -6,14 +6,12 @@
 //   title  their club role, shown on hover
 //   piece  "knight" | "rook" | "cone" (see components/intro/Leaders.jsx)
 //   hidden      true keeps them off the mountain; their spot stays empty
+//   was    (optional) the piece that stands in their spot first: it lands with
+//          everyone, drops through a trap door, and then their own piece lands.
+//          No name or tag, so it reads as a new look, not a new person.
 //   knockedOff  true on the second: they land with everyone, then the first's piece
-//               leaps over and knocks them off the mountain (not used for now; to use
-//               it, put `knockedOff: true` on whoever is second)
-//
-// Albaraa, the former Vice President, is kept (hidden) for a later animation.
-// Only the first two spots exist, so he has to stay hidden in third place.
+//               leaps over and knocks them off the mountain (not used for now)
 export const leaders = [
   { name: "Jana", title: "President", piece: "knight" },
-  { name: "Yehya", title: "Vice President", piece: "cone" },
-  { name: "Albaraa", title: "Former Vice President", piece: "rook", hidden: true },
+  { name: "Yehya", title: "Vice President", piece: "cone", was: "rook" },
 ];

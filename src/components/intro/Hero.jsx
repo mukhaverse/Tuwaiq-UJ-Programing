@@ -43,7 +43,8 @@ const getClimbers = () =>
   members.slice(0, SPOTS.length).map((m, i) => ({
     member: m,
     ...perches.find((p) => p.c === SPOTS[i]),
-    lead: i === 0,
+    // Both leaders are lead-sized, to stand up to the chess pieces beside them.
+    lead: m.role === "leader" || m.role === "co-leader",
   }));
 
 

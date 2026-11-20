@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { gsap, useGSAP, MOTION_OK } from "../../lib/gsap";
 import { Eye } from "../character/Character";
 import { palette as c } from "../../lib/palette";
@@ -134,60 +134,16 @@ function useKnockOff(buttons, start) {
   }, []);
 }
 
-/* The old look, swapped out: the `was` piece lands in the spot with no tag,
-   wobbles, and drops through a trap door that snaps open in the block under it
-   and shuts behind it. Then the real piece lands (Leaders delays it by SWAP).
-   Never shown with reduced motion. */
-const SWAP = 2.2;
-
-function StandIn({ piece, spot, start }) {
-  const ref = useRef(null);
-  useGSAP(() => {
-    const el = ref.current;
-    const fall = el.querySelector(".climb__fall");
-    const trap = el.querySelector(".climb__trap");
-    const mm = gsap.matchMedia();
-    mm.add(MOTION_OK, () => {
-      gsap
-        .timeline({ delay: start })
-        .fromTo(el, { y: -60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: "back.out(2.5)" })
-        // Uh oh: a nervous little wobble.
-        .to(fall, { rotate: -6, duration: 0.08, yoyo: true, repeat: 3, transformOrigin: "50% 92%", ease: "sine.inOut" }, "+=0.6")
-        .set(fall, { rotate: 0 })
-        // The trap door snaps open, it hangs there a beat, then drops straight through.
-        .to(trap, { scaleX: 1, duration: 0.14, ease: "power2.out" }, "+=0.1")
-        .to(fall, { y: "110%", duration: 0.4, ease: "power3.in" }, "+=0.08")
-        .to(trap, { scaleX: 0, duration: 0.16, ease: "power2.in" }, "+=0.05")
-        .set(el, { autoAlpha: 0 });
-    });
-    return () => mm.revert();
-  }, []);
-  return (
-    <span ref={ref} className="climb__leader climb__leader--second climb__standin" style={spot} aria-hidden="true">
-      <span className="climb__trap" />
-      <span className="climb__hatch">
-        <svg viewBox="0 0 200 240" className="climb__fall char sticker">
-          {pieces[piece].draw()}
-        </svg>
-      </span>
-    </span>
-  );
-}
-
 /* The President and Vice President on the mountain's end blocks (`spots`, as
    left/bottom styles), each under an "@name" tag that rolls to their role on
    hover or tap. They land after the climbers (`delay`). */
 export default function Leaders({ spots, delay = 0 }) {
   const buttons = useRef([]);
-  const reduce = useReducedMotion();
   useKnockOff(buttons, delay + 1);
   return leaders.map((l, i) => {
     if (l.hidden) return null;
     const piece = pieces[l.piece];
-    const swap = l.was && !reduce;
-    const lands = delay + i * 0.1 + (swap ? SWAP : 0);
-    return [
-      swap && <StandIn key={`${l.name}-was`} piece={l.was} spot={spots[i]} start={delay + i * 0.1} />,
+    return (
       <motion.button
         key={l.name}
         ref={(el) => (buttons.current[i] = el)}
@@ -197,7 +153,7 @@ export default function Leaders({ spots, delay = 0 }) {
         aria-label={`${l.title}: ${l.name}`}
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 420, damping: 16, delay: lands }}
+        transition={{ type: "spring", stiffness: 420, damping: 16, delay: delay + i * 0.1 }}
         whileHover={{ y: -8 }}
       >
         <span className="climb__piece">
@@ -209,7 +165,7 @@ export default function Leaders({ spots, delay = 0 }) {
             {piece.draw()}
           </svg>
         </span>
-      </motion.button>,
-    ];
+      </motion.button>
+    );
   });
 }

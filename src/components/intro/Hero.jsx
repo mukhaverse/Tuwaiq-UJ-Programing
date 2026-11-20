@@ -36,9 +36,9 @@ const perches = [...new Set(CELLS.map(([c]) => c))]
 
 // Who stands on the mountain, and where: the first few on the roster, each on
 // the step of the mountain column listed here (0–14, the summit is 8). The
-// leader is up the left slope, the co-leader one step below her, and the next
-// member across on the right slope so the mountain isn't lopsided.
-const SPOTS = [6, 5, 11];
+// leader is up the left slope and the co-leader across from her on the right
+// slope, on the same step, so the mountain isn't lopsided.
+const SPOTS = [6, 10];
 const getClimbers = () =>
   members.slice(0, SPOTS.length).map((m, i) => ({
     member: m,

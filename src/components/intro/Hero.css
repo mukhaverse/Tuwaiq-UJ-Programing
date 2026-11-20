@@ -159,8 +159,10 @@
   --accent: var(--butter);
 }
 
+/* The Vice President's cone, a touch bigger than the knight. */
 .climb__leader--second {
   --accent: var(--cyan);
+  width: 13.25%;
 }
 
 .climb__leader:focus-visible {

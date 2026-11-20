@@ -12,8 +12,12 @@ const line = { fill: "none", strokeLinecap: "round" };
 const MARBLE = "#5a4038";
 // Dark blue marble (lapis), for the President's knight.
 const LAPIS = "#22408f";
+// Safety orange, for the Vice President's construction cone, and a darker shade for its base.
+const CONE = "#f07c22";
+const CONE_BASE = "#c85a12";
 
-/* A marble chess set: the Knight in dark blue, the Rook in dark brown. Same outline
+/* A marble chess set: the Knight in dark blue, the Rook in dark brown, plus
+   an orange construction cone that isn't a chess piece at all. Same outline
    as the members' characters, but on a taller 200 × 240 grid so the pieces stand
    tall and slim. They aren't in CHARACTERS, so the admin can't hand one to a
    member. Each base ends 19 units above the bottom (8%), which Hero.css nudges
@@ -57,6 +61,25 @@ const pieces = {
         <Eye cx={86} cy={112} r={12} delay={1.1} />
         <Eye cx={114} cy={112} r={12} delay={1.5} />
         <path d="M90 142Q100 152 110 142" fill="none" {...S} stroke={c.cream} />
+      </>
+    ),
+  },
+  cone: {
+    draw: () => (
+      <>
+        {/* Rounded tip widening down to the base */}
+        <path d="M88 32Q100 16 112 32L148 198H52Z" fill={CONE} {...S} />
+        {/* Two white reflective bands, inside the outline */}
+        <path d="M82.9 54H117.1L120.6 70H79.4Z" fill={c.cream} />
+        <path d="M61.9 152H138.1L142 170H58Z" fill={c.cream} />
+        {/* Shine down the left side */}
+        <path d="M90 82L80 132" {...line} stroke={c.cream} strokeOpacity=".45" strokeWidth="4" />
+        {/* Outline again, over the bands */}
+        <path d="M88 32Q100 16 112 32L148 198H52Z" fill="none" {...S} />
+        <Eye cx={89} cy={102} r={10} delay={0.8} />
+        <Eye cx={111} cy={102} r={10} delay={1.3} />
+        <path d="M91 124Q100 133 109 124" fill="none" {...S} />
+        <rect x="42" y="195" width="116" height="26" rx="10" fill={CONE_BASE} {...S} />
       </>
     ),
   },
